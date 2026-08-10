@@ -37,10 +37,14 @@ import {
   normaliseInteractionState, shouldRequestPlay, type CompanionInteractionState,
 } from "./interaction";
 import {
-  applyCare, loadNeeds, mostUrgentNeed, needMessage, saveNeeds, wellbeingScore,
+  applyCare, loadNeeds, mostUrgentNeed, saveNeeds, wellbeingScore,
   type CareAction, type PetNeeds,
 } from "./needs";
 import { PET_SHORTCUT_LABEL, petShortcutForKey } from "./shortcuts";
+import {
+  careSound, playCompanionSound, unlockCompanionAudio,
+  type CompanionSoundName,
+} from "./audio";
 import { loadSettings } from "./store";
 import { DEFAULT_SETTINGS, personalise, REMINDER_TEXT, type Settings } from "./settings";
 
@@ -130,6 +134,8 @@ let wanderUntil = 0;
 let playUntil = 0;
 let careUntil = 0;
 let careFrame = "idle";
+let careFrameStartedAt = 0;
+let careSequenceRun = 0;
 let needs: PetNeeds;
 let interactionState: CompanionInteractionState;
 let playRequestUntil = 0;
@@ -232,25 +238,48 @@ async function boot() {
 }
 
 function handleCare(action: CareAction) {
+  const run = ++careSequenceRun;
   if (action !== "rest" && restUntil > performance.now()) endTimedRest(false);
   needs = saveNeeds(applyCare(needs, action));
   if (action === "feed" || action === "play") comfortCompanion();
+  const cat = settings.appearance.breed.endsWith("-cat");
+  playSound(careSound(action, cat ? "cat" : "dog"));
   if (action === "rest") {
     beginTimedRest();
     lastNeedRequest = "";
-    flashNote(`${settings.petName} is resting for one minute. Touch your companion to wake them.`);
+    flashNote("Zzz…", MESSAGE_DURATION_MS);
     broadcastNeeds();
     return;
   }
-  careFrame = action === "feed" ? "eat" : action === "water" ? "drink" :
-    "tail_wag";
-  careUntil = performance.now() + 2800;
+  const now = performance.now();
+  const firstStageMs = action === "feed" ? 1900 : action === "water" ? 2100 : 3200;
+  showCareFrame(action === "feed" ? "eat" : action === "water" ? "drink" :
+    reducedMotion ? "tail_wag" : "zoomies", firstStageMs, now);
   lastNeedRequest = "";
-  const message = action === "feed" ? `${settings.petName} loved that snack!` :
-    action === "water" ? `${settings.petName} feels refreshed!` :
-    `${settings.petName} is having the best time!`;
-  flashNote(message);
+  flashNote(action === "feed" ? "Nom nom!" : action === "water" ? "Slurp slurp!" :
+    cat ? "Purr purr!" : "Woof woof!", 2400);
+  if (action === "feed" || action === "water") {
+    setTimeout(() => {
+      if (run !== careSequenceRun || performance.now() < restUntil) return;
+      showCareFrame(reducedMotion ? "tail_wag" : action === "feed" ? "happy_jump" : "shake",
+        reducedMotion ? 1800 : 3000);
+      flashNote(cat ? "Purr purr!" : "Woof woof!", 2600);
+      playSound("happy");
+    }, firstStageMs);
+  }
   broadcastNeeds();
+}
+
+function showCareFrame(frame: string, durationMs: number, now = performance.now()) {
+  careFrame = frame;
+  careFrameStartedAt = now;
+  careUntil = now + durationMs;
+}
+
+function showCareFrameUntil(frame: string, until: number) {
+  careFrame = frame;
+  careFrameStartedAt = performance.now();
+  careUntil = until;
 }
 
 function loadInteractionState(): CompanionInteractionState {
@@ -294,9 +323,8 @@ function beginPlayRequest(now: number) {
   const call = cat ? "Meow meow!" : "Woof woof!";
   const sound = cat ? "purr" : "bark";
   playRequestUntil = performance.now() + PLAY_REQUEST_DURATION_MS;
-  careFrame = "beg";
-  careUntil = playRequestUntil;
-  flashNote(`${call} ${settings.petName} wants to play. Pet them or offer a snack to settle them.`, PLAY_REQUEST_DURATION_MS);
+  showCareFrameUntil("beg", playRequestUntil);
+  flashNote(call, PLAY_REQUEST_DURATION_MS);
   playSound(sound);
   playRequestBarkTimer = setInterval(() => {
     if (quietMode || performance.now() >= playRequestUntil) return;
@@ -320,8 +348,7 @@ function beginTimedRest() {
   if (restTimer) clearTimeout(restTimer);
   stopPlayRequest(true);
   restUntil = performance.now() + REST_DURATION_MS;
-  careFrame = "sleep";
-  careUntil = restUntil;
+  showCareFrameUntil("sleep", restUntil);
   restTimer = setTimeout(() => endTimedRest(false), REST_DURATION_MS);
 }
 
@@ -330,19 +357,22 @@ function endTimedRest(touched: boolean) {
   if (restTimer) clearTimeout(restTimer);
   restTimer = null;
   restUntil = 0;
-  careFrame = "wake";
-  careUntil = performance.now() + 1800;
-  if (touched) dismissTransientNote();
+  showCareFrame("wake", 1800);
+  playSound("wake");
+  if (touched) {
+    dismissTransientNote();
+  }
 }
 
 function handlePetTouch() {
+  careSequenceRun++;
   const waking = restUntil > performance.now();
   const soothing = playRequestUntil > performance.now();
   if (waking) endTimedRest(true);
   comfortCompanion();
-  if (soothing && !waking) {
-    careFrame = "pet_happy";
-    careUntil = performance.now() + 1800;
+  if (!waking) {
+    showCareFrame("pet_happy", soothing ? 2200 : 1500);
+    playSound(settings.appearance.breed.endsWith("-cat") ? "purr" : "yip");
   }
 }
 
@@ -356,9 +386,11 @@ function updateVirtualPet() {
   if (urgent === lastNeedRequest && now - lastNeedRequestAt < 20 * 60_000) return;
   lastNeedRequest = urgent;
   lastNeedRequestAt = now;
-  careFrame = urgent === "thirst" ? "drink" : urgent === "energy" ? "sleep" : "beg";
-  careUntil = performance.now() + 6000;
-  flashNote(needMessage(urgent, settings.petName));
+  const cat = settings.appearance.breed.endsWith("-cat");
+  showCareFrame(urgent === "thirst" ? "drink" : urgent === "energy" ? "sleep" : "beg", 6000);
+  flashNote(urgent === "thirst" ? "Slurp?" : urgent === "energy" ? "Zzz…" :
+    cat ? "Meow meow!" : "Woof woof!", 6000);
+  playSound(urgent === "energy" ? "sleepy" : cat ? "purr" : "yip");
 }
 
 function broadcastNeeds() {
@@ -375,7 +407,7 @@ function wirePetOnlyControls() {
     void win.setFocus().catch(() => {});
     if (event.button === 0) handlePetTouch();
   });
-  window.addEventListener("pointerdown", () => { void unlockCompanionAudio(); }, { once: true, capture: true });
+  window.addEventListener("pointerdown", () => { void unlockAndFlushAudio(); }, { capture: true });
   window.addEventListener("keydown", event => {
     if (isEditableTarget(event.target)) return;
     const shortcut = petShortcutForKey(event);
@@ -430,9 +462,8 @@ function previewAction(action: string) {
 function showPreview(action: string, duration?: number) {
   const preview = PREVIEW_FRAMES[action];
   if (!preview) return;
-  careFrame = preview.frame;
   const visibleFor = duration ?? preview.duration ?? 4200;
-  careUntil = performance.now() + visibleFor;
+  showCareFrame(preview.frame, visibleFor);
   flashNote(preview.message, visibleFor);
 }
 
@@ -485,6 +516,7 @@ async function fetchJson<T>(url: string): Promise<T> {
 
 async function applySettings(next: Settings) {
   settings = next;
+  if (!settings.soundEnabled) pendingSound = null;
   if (!settings.playRequestEnabled) stopPlayRequest(false);
   reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches || settings.reducedMotion;
   await loadBreedAtlas(settings);
@@ -702,77 +734,29 @@ function onActivity(a: Activity) {
   }
 }
 
+let pendingSound: CompanionSoundName | null = null;
+let lastSoundAt = 0;
+
 function playSound(name: string) {
-  if (!settings.soundEnabled) return;
-  void playCompanionSound(name).catch(() => {});
+  if (!settings.soundEnabled || quietMode) return;
+  const sound = name as CompanionSoundName;
+  const now = performance.now();
+  // A single click can be observed by both the local canvas and the privacy-
+  // safe activity stream. Keep that from becoming two overlapping animal calls.
+  if (now - lastSoundAt < 220) return;
+  lastSoundAt = now;
+  void playCompanionSound(sound, settings.soundVolume).then(played => {
+    pendingSound = played ? null : sound;
+  }).catch(() => { pendingSound = sound; });
 }
 
-let audioContext: AudioContext | null = null;
-
-async function unlockCompanionAudio(): Promise<AudioContext | null> {
-  const audioClass = window.AudioContext
-    ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-  if (!audioClass) return null;
-  audioContext ??= new audioClass();
-  if (audioContext.state === "suspended") await audioContext.resume();
-  return audioContext;
-}
-
-async function playCompanionSound(name: string) {
-  const audio = await unlockCompanionAudio();
-  if (!audio) return;
-  const now = audio.currentTime;
-  const master = audio.createGain();
-  master.gain.setValueAtTime(0.0001, now);
-  master.gain.exponentialRampToValueAtTime(name === "bark" ? 0.045 : 0.028, now + 0.018);
-  master.gain.exponentialRampToValueAtTime(0.0001, now + soundDuration(name));
-  master.connect(audio.destination);
-
-  const notes = soundNotes(name);
-  for (const [i, hz] of notes.entries()) {
-    const osc = audio.createOscillator();
-    const voice = audio.createGain();
-    const start = now + i * (name === "purr" ? 0.12 : 0.09);
-    const duration = name === "purr" ? 0.22 : 0.16;
-    osc.type = name === "bark" ? "sawtooth" : name === "purr" ? "sine" : "triangle";
-    osc.frequency.setValueAtTime(hz, start);
-    if (name === "bark") osc.frequency.exponentialRampToValueAtTime(hz * .58, start + duration);
-    voice.gain.setValueAtTime(0.0001, start);
-    voice.gain.exponentialRampToValueAtTime(name === "bark" ? .7 : .45, start + .012);
-    voice.gain.exponentialRampToValueAtTime(0.0001, start + duration);
-    osc.connect(voice);
-    voice.connect(master);
-    osc.start(start);
-    osc.stop(start + duration + .01);
-
-    // A quiet octave supplies warmth without the harsh prototype square wave.
-    if (name !== "bark") {
-      const harmonic = audio.createOscillator();
-      const harmonicGain = audio.createGain();
-      harmonic.type = "sine";
-      harmonic.frequency.setValueAtTime(hz * 2, start);
-      harmonicGain.gain.setValueAtTime(.0001, start);
-      harmonicGain.gain.exponentialRampToValueAtTime(.13, start + .018);
-      harmonicGain.gain.exponentialRampToValueAtTime(.0001, start + duration);
-      harmonic.connect(harmonicGain);
-      harmonicGain.connect(master);
-      harmonic.start(start);
-      harmonic.stop(start + duration + .01);
-    }
-  }
-}
-
-function soundNotes(name: string): number[] {
-  switch (name) {
-    case "purr": return [73, 82, 73, 92];
-    case "bark": return [220, 165];
-    case "chime": return [523.25, 659.25, 783.99];
-    default: return [440, 554.37];
-  }
-}
-
-function soundDuration(name: string): number {
-  return Math.max(0.24, soundNotes(name).length * (name === "purr" ? 0.12 : 0.09) + 0.18);
+async function unlockAndFlushAudio() {
+  const audio = await unlockCompanionAudio().catch(() => null);
+  if (!audio || !pendingSound || !settings.soundEnabled || quietMode) return;
+  const sound = pendingSound;
+  pendingSound = null;
+  const played = await playCompanionSound(sound, settings.soundVolume).catch(() => false);
+  if (!played) pendingSound = sound;
 }
 
 // ─── Reminders, Pomodoro, pinned note (Phase 4) ────────────────────────────────
@@ -856,9 +840,6 @@ function toggleQuietMode() {
 function triggerPlay() {
   playUntil = performance.now() + 5000;
   wanderUntil = playUntil;
-  pendingAgentEvent = "done";
-  flashNote(`${settings.petName} got the zoomies.`);
-  playSound("bark");
 }
 
 async function applyPeekMode(enabled: boolean) {
@@ -1094,35 +1075,37 @@ function loop(now: number) {
 }
 
 function draw() {
+  const now = performance.now();
   visibleFrame = idleLifeFrame({
     frame: currentFrame,
     mode,
-    now: performance.now(),
+    now,
     lastActivityAt,
     availableFrames: available,
     reducedMotion,
   });
-  if (performance.now() < wanderUntil) {
+  if (now < wanderUntil) {
     visibleFrame = available.has("walk_a") ? "walk_a" : visibleFrame;
   }
-  if (performance.now() < playUntil) {
+  if (now < playUntil) {
     visibleFrame = available.has("zoomies") ? "zoomies" : visibleFrame;
   }
-  if (performance.now() < careUntil) {
+  const showingCare = now < careUntil;
+  if (showingCare) {
     visibleFrame = available.has(careFrame) ? careFrame : visibleFrame;
   }
-  visibleFrame = animatedCel(visibleFrame, performance.now(), available);
+  visibleFrame = animatedCel(visibleFrame, showingCare ? now - careFrameStartedAt : now, available);
   const f = atlas.frames[visibleFrame] ?? atlas.frames[currentFrame] ?? atlas.frames["idle"];
   if (!f) return;
-  const offset = motionOffset(performance.now());
+  const offset = motionOffset(now);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.save();
   if (facingLeft) { ctx.translate(canvas.width, 0); ctx.scale(-1, 1); }
-  drawSpriteCel(f, offset, performance.now());
+  drawSpriteCel(f, offset, now);
   drawMarkingStyle(offset);
   drawEyeFollow(offset);
   ctx.restore();
-  drawStateEffects(performance.now());
+  drawStateEffects(now);
 }
 
 /** Apply pose-specific squash, stretch and anticipation around the sprite centre. */

@@ -13,7 +13,7 @@ for companion in sorted((ROOT / "art" / "premium").iterdir()):
     run([
         sys.executable,
         str(ROOT / "scripts" / "build-premium-atlas.py"),
-        str(companion / "sheet-transparent.png"),
+        str(companion / "source.png"),
         str(ROOT / "art" / "exported" / companion.name),
     ], check=True)
     print(f"rebuilt {companion.name}")

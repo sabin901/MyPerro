@@ -3,6 +3,41 @@
 All notable MyPerro changes are documented here. The project follows Semantic
 Versioning once it reaches 1.0.
 
+## 0.9.0-rc.4 — 2026-08-10
+
+### Added
+
+- Adjustable cute-sound volume and a one-click sound preview in Settings.
+- Distinct snack, slurp, happy, sleepy, wake, yip, bark, purr, and chime cues.
+- A short celebration dance after feeding and a happy shake after drinking,
+  with calmer alternatives when reduced motion is enabled.
+- Automated checks that reject sprite frames with an opaque rectangular
+  background.
+
+### Changed
+
+- Rebuilt all nine companion atlases with cleaner transparent edges.
+- Removed food and water bowls from Husky's neutral frames; the props now
+  appear only during the matching care actions.
+- Replaced long care messages above the pet with short animal sounds such as
+  “Woof woof!”, “Purr purr!”, and “Nom nom!”.
+- Replaced the rectangular canvas focus outline with an alpha-aware pet glow.
+- Updated GitHub Actions and Linux dependencies for cross-platform CI.
+
+### Fixed
+
+- Removed the dark square around Midnight Cat and guarded every future pack
+  against the same export defect.
+- Made companion sounds loud enough to hear and reliably retried audio after
+  the first user interaction when a platform blocks autoplay.
+- Started care animations from their first frame and prevented stale staged
+  reactions from interrupting later actions.
+
+### Verified
+
+- TypeScript type checking, atlas validation, production build, and 176 unit
+  tests across 13 test files.
+
 ## 0.9.0-rc.3 — 2026-08-10
 
 ### Added

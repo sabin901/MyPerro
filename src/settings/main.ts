@@ -18,6 +18,7 @@ import {
   applyCare, loadNeeds, moodMessage, petMood, saveNeeds, wellbeingScore,
   type CareAction, type PetNeeds,
 } from "../pet/needs";
+import { playCompanionSound } from "../pet/audio";
 
 const $ = <T extends HTMLElement = HTMLInputElement>(id: string) =>
   document.getElementById(id) as T;
@@ -77,6 +78,8 @@ function fill(s: Settings) {
   $("petOpacityValue").textContent = `${Math.round(s.appearance.opacity * 100)}%`;
 
   ($("soundEnabled") as HTMLInputElement).checked = s.soundEnabled;
+  ($("soundVolume") as HTMLInputElement).value = String(Math.round(s.soundVolume * 100));
+  $("soundVolumeValue").textContent = `${Math.round(s.soundVolume * 100)}%`;
   ($("peekMode") as HTMLInputElement).checked = s.peekMode;
   ($("alwaysOnTop") as HTMLInputElement).checked = s.alwaysOnTop;
   ($("reducedMotion") as HTMLInputElement).checked = s.reducedMotion;
@@ -113,6 +116,7 @@ function collect(): Settings {
       roundsBeforeLongBreak: int("roundsBeforeLongBreak"),
     },
     soundEnabled: checked("soundEnabled"),
+    soundVolume: Number(text("soundVolume")) / 100,
     peekMode: checked("peekMode"),
     alwaysOnTop: checked("alwaysOnTop"),
     reducedMotion: checked("reducedMotion"),
@@ -191,6 +195,9 @@ async function main() {
   $("petScale").addEventListener("input", () => {
     $("petScaleValue").textContent = `${text("petScale")}%`;
   });
+  $("soundVolume").addEventListener("input", () => {
+    $("soundVolumeValue").textContent = `${text("soundVolume")}%`;
+  });
 
   $("gentlePreset").addEventListener("click", () => setReminderPreset(true, 60, true, 45));
   $("focusPreset").addEventListener("click", () => setReminderPreset(true, 30, true, 25));
@@ -240,6 +247,15 @@ function wireOnboarding() {
 }
 
 function wireProductionControls() {
+  $("testSound").addEventListener("click", async () => {
+    const button = $("testSound") as HTMLButtonElement;
+    button.disabled = true;
+    const played = await playCompanionSound("happy", Number(text("soundVolume")) / 100).catch(() => false);
+    const badge = $("saved");
+    badge.textContent = played ? "Happy sound played" : "Sound is unavailable on this device";
+    badge.className = played ? "saved" : "saved error";
+    setTimeout(() => { button.disabled = false; }, 350);
+  });
   $("inputMonitoringEnabled").addEventListener("change", async () => {
     if (checked("inputMonitoringEnabled")) {
       await invoke("enable_input_monitoring").catch(async error => {

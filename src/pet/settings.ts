@@ -54,6 +54,7 @@ export interface Settings {
   pomodoro: PomodoroConfig;
 
   soundEnabled: boolean;
+  soundVolume: number;
   reducedMotion: boolean;
   startAtLogin: boolean;
   inputMonitoringEnabled: boolean;
@@ -65,7 +66,7 @@ export interface Settings {
   appearance: Appearance;
 }
 
-export const CURRENT_SCHEMA = 4;
+export const CURRENT_SCHEMA = 5;
 export const BUILT_IN_BREEDS = [
   "shiba-inu", "pomeranian", "husky", "german-shepherd", "dalmatian", "lhasa-apso",
   "calico-cat", "midnight-cat", "cream-tabby",
@@ -175,6 +176,7 @@ export const DEFAULT_SETTINGS: Settings = {
   quietTo: null,
   pomodoro: DEFAULT_POMODORO,
   soundEnabled: true,
+  soundVolume: .8,
   reducedMotion: false,
   startAtLogin: false,
   inputMonitoringEnabled: false,
@@ -238,6 +240,7 @@ export function normaliseSettings(raw: unknown): Settings {
       roundsBeforeLongBreak: num(pm.roundsBeforeLongBreak, d.pomodoro.roundsBeforeLongBreak, 1, 12),
     },
     soundEnabled: bool(r.soundEnabled, d.soundEnabled),
+    soundVolume: num(r.soundVolume, d.soundVolume, 0.1, 1),
     reducedMotion: bool(r.reducedMotion, d.reducedMotion),
     startAtLogin: bool(r.startAtLogin, d.startAtLogin),
     inputMonitoringEnabled: bool(r.inputMonitoringEnabled, d.inputMonitoringEnabled),

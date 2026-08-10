@@ -118,6 +118,16 @@ describe("validatePack — atlas image", () => {
     expect(r.ok).toBe(true);
     expect(r.warnings.some(w => w.includes("visually unique"))).toBe(true);
   });
+
+  it("rejects a mostly opaque rectangular frame even when its outer gutter is clear", () => {
+    const blocked: AtlasInfo = {
+      width: 480, height: 384, hasAlpha: true,
+      boundaryOpaqueRatio: 0, maxFrameOpaqueRatio: 0.82,
+    };
+    const r = validatePack(goodManifest(), blocked);
+    expect(r.ok).toBe(false);
+    expect(r.errors.some(e => e.includes("rectangular background"))).toBe(true);
+  });
 });
 
 describe("validatePack — collects all problems at once", () => {

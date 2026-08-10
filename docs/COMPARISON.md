@@ -1,5 +1,10 @@
 # MyPerro vs ComNyang — honest status
 
+> Historical pre-alpha baseline. This document is retained to show where the
+> project began; it does not describe the current release candidate. See
+> [EVALUATION.md](EVALUATION.md) and [COMPETITIVE_REVIEW.md](COMPETITIVE_REVIEW.md)
+> for the verified rc.4 position.
+
 Asked plainly: **how functional is MyPerro compared to the app you showed me?**
 
 Short answer: **as a product, near zero. As an engine, maybe 60% of the behaviour surface.** Those two numbers are both true and the gap between them is the whole story.

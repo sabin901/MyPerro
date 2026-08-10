@@ -17,7 +17,8 @@ macOS · Windows · Linux (X11/XWayland) · MIT licensed · free forever · no t
 - Native-resolution premium atlas support shared by Windows, macOS, and Linux builds.
 - First-run privacy tour before input reactions are enabled, native reminders,
   rotating local logs, and a privacy-safe diagnostic export.
-- Gentle food, water, play, and rest interactions with animated reactions;
+- Gentle food, water, play, and rest interactions with distinct cute sounds;
+  feeding ends in a happy dance and drinking ends in a celebratory shake;
   needs never reach zero and offline decay is capped to avoid punishment.
 - Optional play reminders: after the chosen quiet period the puppy says
   “Woof woof!” for up to 20 seconds, then stops as soon as it is touched, fed,
@@ -29,8 +30,8 @@ macOS · Windows · Linux (X11/XWayland) · MIT licensed · free forever · no t
   typing, idle micro-motions, sleeping, waking, stretch, water, notes, and
   Pomodoro reactions.
 - Task-based, auto-saving settings for names, reminders, scheduled messages,
-  quiet hours, Pomodoro, breed, 65–200% size, opacity, colours, markings, sound,
-  reduced motion, always-on-top, start at login, and peek mode.
+  quiet hours, Pomodoro, breed, 65–200% size, opacity, colours, markings, sound
+  volume and preview, reduced motion, always-on-top, start at login, and peek mode.
 - Tray controls for show/hide, play, Pomodoro, quiet mode, peek mode, settings,
   feeding, water, rest, and quit.
 - Local AI-agent bridge through `agent-status.json` for `thinking`, `done`, and

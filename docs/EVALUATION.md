@@ -2,7 +2,7 @@
 
 ## Executive verdict
 
-MyPerro `0.9.0-rc.3` is a credible public release candidate and a good fit for
+MyPerro `0.9.0-rc.4` is a credible public release candidate and a good fit for
 a free, accountless public beta. It is no longer a prototype: the current
 Windows executable and installer build and run, the same revision produces
 Linux AppImage and Debian packages and reaches `Pet ready` in a native startup
@@ -19,7 +19,7 @@ are publisher signing, a notarized macOS build, and physical clean-machine QA.
 Those require credentials and hardware outside this workspace and cannot be
 honestly replaced by source-level checks.
 
-**Readiness:** 8.8/10 as a product, 8.7/10 as a release candidate, and 7.7/10
+**Readiness:** 9.0/10 as a product, 8.9/10 as a release candidate, and 7.9/10
 as a stable public-release operation.
 
 ## Acceptance evidence
@@ -27,19 +27,20 @@ as a stable public-release operation.
 | Check | Result | Evidence |
 |---|---:|---|
 | TypeScript | Pass | `tsc --noEmit` on Windows and Linux |
-| Frontend logic | Pass | 12 Vitest files, 170 tests on Windows and Linux |
+| Frontend logic | Pass | 13 Vitest files, 176 tests on Windows and Linux |
 | Interaction timing | Pass | explicit tests for 20-second requests, cooldown, initial anti-nag behavior, 60-second rest, and touch-to-wake |
 | Native privacy logic | Pass | 3 Rust tests, including no-keycode serialization, on Windows and Linux |
 | Production frontend | Pass | Vite 8.2.1 build and packaged CSP/asset smoke test |
-| Companion art | Pass | all 9 premium packs; boundary-alpha and frame-uniqueness validation |
+| Companion art | Pass | all 9 premium packs; boundary-alpha, frame-density and frame-uniqueness validation; Midnight Cat square removed |
+| Sound design | Pass with human acceptance pending | tested bark/purr/yip, snack, slurp, happy, sleep/wake and chime recipes; volume persists and Settings includes a direct preview |
 | JavaScript audit | Pass | 0 known npm vulnerabilities |
 | RustSec audit | Reviewed | 0 classified vulnerabilities; 17 allowed upstream warnings |
-| Windows native runtime | Pass | responsive rc.3 executable, approximately 32 MB working set; pet-only surface and live F/S shortcuts verified |
+| Windows native runtime | Pass | responsive rc.4 executable, approximately 30 MB working set; transparent pet-only surface verified without a focus rectangle |
 | Windows size control | Pass | accessibility tree exposes 65–200%; 150% produced a 288×288 pet window from the 192×192 base |
-| Windows Settings | Pass | free/accountless message, play-request controls, Wellbeing, actions, tabs and creator attribution visible |
+| Windows Settings | Pass | free/accountless message, play-request controls, sound volume/preview, Wellbeing, actions, tabs and creator attribution visible |
 | Windows package | Pass | current x64 NSIS installer and SHA-256 manifest generated |
-| Linux native runtime | Pass | rc.3 reached `Pet ready` and remained alive after 8 seconds under Xvfb/DBus |
-| Linux packages | Pass | rc.3 x64 AppImage and `.deb`; Debian metadata identifies Sabin Raut |
+| Linux native runtime | Pass | rc.4 reached `Pet ready` and remained alive after 8 seconds under Xvfb/DBus |
+| Linux packages | Pass | rc.4 x64 AppImage and `.deb`; Debian metadata identifies Sabin Raut |
 | SBOM/checksums | Pass | CycloneDX web SBOM and SHA-256 manifests generated |
 | macOS artifacts | Pending externally | CI has separate ARM64 and Intel jobs; a macOS runner and signing/notarization secrets are still required |
 
@@ -65,6 +66,11 @@ debt and must be revisited when the desktop stack migrates.
 - Rest is a real 60-second state. Touching the companion, feeding it, offering
   water, or starting play wakes it early; automatic wandering and cursor chase
   stay suspended while it rests.
+- Feeding plays a snack cue, shows the food pose, then runs a three-second
+  celebration dance. Water plays a slurp cue, shows the bowl only while
+  drinking, then runs a happy shake. Reduced motion uses a calmer tail wag.
+- Sound volume is adjustable from 10% to 100%; the Settings preview provides a
+  direct user gesture so Windows, macOS and Linux webviews can unlock audio.
 - Desktop size is continuously adjustable from 65% to 200%, is persisted, and
   the resized pet is clamped back onto the active monitor.
 - Transient messages remain visible for 20 seconds by default, with explicit
@@ -100,8 +106,8 @@ debt and must be revisited when the desktop stack migrates.
 | Core virtual-pet loop | 9.0 | Play requests, interruptible rest, persistent wellbeing and kind offline caps create attachment without punishing absence. Long-term progression and learned tricks remain shallow. |
 | Reactive behavior | 9.0 | Cursor attention, drag, shake, pet, typing, scrolling, wander, sleep, reminders, requests and agent states are broad. Active-window perching and automatic video awareness remain absent. |
 | Feature discoverability | 9.1 | The desktop is cleaner but less self-explanatory. First-run guidance, Settings shortcut cards, accessibility metadata, right-click and tray labels compensate without permanent controls. |
-| Character art | 8.0 | Clean, high-resolution and consistent across nine companions, but still atlas artwork derived from fewer principal poses than a bespoke commercial frame-by-frame production. |
-| Motion quality | 8.2 | Anticipation/impact/recovery sequences, eye follow and micro-motion read well. Live2D deformation and hand-authored transition continuity would be smoother. |
+| Character art | 8.3 | Clean, transparent and consistent across nine companions; neutral poses are now prop-free and density-checked. It still uses fewer principal poses than bespoke commercial frame-by-frame production. |
+| Motion quality | 8.5 | Anticipation/impact/recovery, a post-feed dance, post-water shake, eye follow and micro-motion read well. Live2D deformation and hand-authored transition continuity would be smoother. |
 | Settings/accessibility | 9.0 | Clear information architecture, native keyboard tabs, auto-save status, range controls, reduced motion and large targets. Screen-reader/high-contrast audits still need real OS coverage. |
 | Privacy/security | 9.3 | Local-only, narrow capabilities, restrictive CSP, consent, no account and no telemetry are excellent. Unsigned global-input software will still attract antivirus scrutiny. |
 | Cross-platform engineering | 8.9 | One Tauri codebase, verified Windows/Linux packages, dual-architecture macOS CI. Native Wayland input is compositor-limited and macOS runtime acceptance is external. |
@@ -131,16 +137,15 @@ drawings and active-window physics, not another Settings redesign.
 
 | Platform | Verified here | Remaining acceptance |
 |---|---|---|
-| Windows 10/11 x64 | optimized rc.3 executable, NSIS, live pet-only shortcut test, single instance | Authenticode; clean-VM install/upgrade/uninstall; SmartScreen, audio and mixed-DPI matrix |
-| Linux x64 X11/XWayland | optimized rc.3 executable, AppImage, Debian package, DBus/Xvfb launch | real GNOME/KDE tray, transparency, audio, scaling, sleep/resume and global-input sessions |
+| Windows 10/11 x64 | optimized rc.4 executable, NSIS, transparent pet-only runtime, single instance | Authenticode; clean-VM install/upgrade/uninstall; human audio acceptance and mixed-DPI matrix |
+| Linux x64 X11/XWayland | optimized rc.4 executable, AppImage, Debian package, DBus/Xvfb launch | real GNOME/KDE tray, transparency, audio, scaling, sleep/resume and global-input sessions |
 | Linux native Wayland | UI can launch | global reactions are compositor-dependent and must remain labelled degraded |
 | macOS 12+ ARM64/Intel | shared code and separate CI jobs | build both DMGs, Accessibility flow, Developer ID signing, notarization, audio and hardware QA |
 
 ## Remaining stable-release gates
 
-1. Create the first intentional Git commit and connect the repository to its
-   public remote. The local repository currently has no tracked files or remote,
-   so the otherwise complete CI workflow cannot run yet.
+1. Merge the reviewed release-candidate pull request only after all four native
+   GitHub Actions build jobs pass.
 2. Supply a Windows code-signing certificate and Apple Developer ID/notarization
    secrets, then build and verify signed artifacts in CI.
 3. Run the clean-machine matrix: Windows mixed DPI and sleep/wake; macOS Intel

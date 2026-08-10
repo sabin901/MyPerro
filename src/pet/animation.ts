@@ -24,7 +24,7 @@ const SEQUENCES: Record<string, MotionSequence> = {
   paper_unroll: { cels: ["paper_unroll", "paper_unroll_alt"], frameMs: 210 },
   sleep: { cels: ["sleep", "sleep_alt"], frameMs: 920 },
   lie_down: { cels: ["lie_down", "sleep_alt"], frameMs: 920 },
-  happy_jump: { cels: ["jump", "happy_jump", "land", "idle"], frameMs: 140 },
+  happy_jump: { cels: ["tail_wag", "jump", "happy_jump", "land", "tail_wag_alt", "pet_happy"], frameMs: 140 },
   jump: { cels: ["jump", "happy_jump", "land"], frameMs: 140 },
   stretch: { cels: ["wake", "stretch", "yawn", "stretch"], frameMs: 420 },
   shake: { cels: ["shake", "drag", "shake", "land"], frameMs: 95 },

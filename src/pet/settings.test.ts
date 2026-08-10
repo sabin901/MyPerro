@@ -24,6 +24,14 @@ describe("normaliseSettings", () => {
     expect(normaliseSettings({ pomodoro: { focusMinutes: -5 } }).pomodoro.focusMinutes).toBe(1);
     expect(normaliseSettings({ playRequestMinutes: 1 }).playRequestMinutes).toBe(5);
     expect(normaliseSettings({ playRequestMinutes: 999 }).playRequestMinutes).toBe(240);
+    expect(normaliseSettings({ soundVolume: 0 }).soundVolume).toBe(.1);
+    expect(normaliseSettings({ soundVolume: 9 }).soundVolume).toBe(1);
+  });
+
+  it("keeps sound on at an audible default while preserving an explicit volume", () => {
+    expect(DEFAULT_SETTINGS.soundEnabled).toBe(true);
+    expect(DEFAULT_SETTINGS.soundVolume).toBeGreaterThanOrEqual(.7);
+    expect(normaliseSettings({ soundVolume: .55 }).soundVolume).toBe(.55);
   });
 
   it("rejects a bad hour but keeps a good one", () => {

@@ -20,11 +20,12 @@ describe("animatedCel", () => {
   });
 
   it("gives celebration actions anticipation, peak and recovery", () => {
-    const frames = new Set(["jump", "happy_jump", "land", "idle"]);
-    expect(animatedCel("happy_jump", 0, frames)).toBe("jump");
-    expect(animatedCel("happy_jump", 140, frames)).toBe("happy_jump");
-    expect(animatedCel("happy_jump", 280, frames)).toBe("land");
-    expect(animatedCel("happy_jump", 420, frames)).toBe("idle");
+    const frames = new Set(["tail_wag", "jump", "happy_jump", "land", "tail_wag_alt", "pet_happy"]);
+    expect(animatedCel("happy_jump", 0, frames)).toBe("tail_wag");
+    expect(animatedCel("happy_jump", 140, frames)).toBe("jump");
+    expect(animatedCel("happy_jump", 280, frames)).toBe("happy_jump");
+    expect(animatedCel("happy_jump", 420, frames)).toBe("land");
+    expect(animatedCel("happy_jump", 700, frames)).toBe("pet_happy");
   });
 
   it("filters unsupported sequence cels for community packs", () => {

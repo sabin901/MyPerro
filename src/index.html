@@ -7,28 +7,41 @@
     <style>
       html, body {
         margin: 0; padding: 0;
-        background: transparent;
+        width: 100%; height: 100%;
+        background: transparent !important;
         overflow: hidden;
         user-select: none;
         -webkit-user-select: none;
       }
       #pet {
         display: block;
+        background: transparent !important;
+        outline: none;
         image-rendering: pixelated;
         image-rendering: crisp-edges;
         cursor: grab;
+      }
+      #pet:focus-visible {
+        filter: drop-shadow(0 0 4px rgba(255, 218, 98, .82));
       }
       body.dragging #pet { cursor: grabbing; }
       body.peek #clock { display: none; }
       body.peek #pet { cursor: default; }
       /* Pinned note bubble above the dog's head (ComNyang "fixed message"). */
       #note {
-        position: fixed; left: 6px; right: 6px; top: 6px;
-        max-width: none; padding: 6px 9px;
-        font: 11px/1.4 -apple-system, "Segoe UI", system-ui, sans-serif;
+        position: fixed; left: 50%; top: 6px; transform: translateX(-50%);
+        width: max-content; max-width: calc(100% - 24px); padding: 6px 11px;
+        font: 700 11px/1.35 -apple-system, "Segoe UI", system-ui, sans-serif;
         color: #23324a; text-align: center;
-        background: #fdf6da; border: 2px solid #caa94e; border-radius: 8px;
+        background: rgba(255,250,226,.96); border: 2px solid #caa94e; border-radius: 999px;
         box-shadow: 0 2px 0 rgba(0,0,0,.18);
+        pointer-events: none;
+      }
+      #note::after {
+        content: ""; position: absolute; left: 50%; bottom: -7px;
+        width: 9px; height: 9px; transform: translateX(-50%) rotate(45deg);
+        background: rgba(255,250,226,.96); border-right: 2px solid #caa94e;
+        border-bottom: 2px solid #caa94e;
       }
       /* Pixel Pomodoro clock beside the dog. */
       #clock {

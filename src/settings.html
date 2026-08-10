@@ -425,6 +425,10 @@
       <fieldset data-pane="app">
         <legend>General</legend>
         <label><span>Sound</span><input type="checkbox" id="soundEnabled" /></label>
+        <label><span>Cute sound volume</span>
+          <span class="row"><input type="range" id="soundVolume" min="10" max="100" step="5" />
+          <output id="soundVolumeValue">80%</output></span></label>
+        <div class="quick-row"><button class="secondary" type="button" id="testSound">Hear a happy sound</button></div>
         <label><span>Private typing and pointer reactions</span><input type="checkbox" id="inputMonitoringEnabled" /></label>
         <label><span>Native reminder notifications</span><input type="checkbox" id="notificationsEnabled" /></label>
         <label><span>Peek mode</span><input type="checkbox" id="peekMode" /></label>

@@ -13,8 +13,8 @@ jobs:
     name: Typecheck & test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 20
           cache: npm
@@ -25,16 +25,21 @@ jobs:
       - run: npm run validate:packs
       - run: npm run smoke:dist
       - run: npm audit --audit-level=high
+      - name: Install Linux native test dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
       - run: cargo test --manifest-path src-tauri/Cargo.toml
 
   security:
     name: Rust dependency audit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: rustsec/audit-check@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          working-directory: src-tauri
 
   # Slow lane: prove it actually builds a native app on all three platforms.
   build:
@@ -58,7 +63,7 @@ jobs:
             artifact: linux-packages
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install Linux build deps
         if: startsWith(matrix.os, 'ubuntu-')
@@ -66,7 +71,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 20
           cache: npm
@@ -92,14 +97,14 @@ jobs:
           npm run checksums
           npm run sbom
       - name: Upload installer
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: myperro-${{ matrix.artifact }}
           path: src-tauri/target/release/bundle/**
           if-no-files-found: error
           retention-days: 30
       - name: Upload software bill of materials
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: myperro-${{ matrix.artifact }}-sbom
           path: myperro-web.cdx.json
@@ -114,7 +119,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           path: release-files
       - name: Create draft release with every platform artifact

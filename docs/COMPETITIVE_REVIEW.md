@@ -16,11 +16,12 @@ Current public products reviewed:
 | Area | MyPerro | Competitive position |
 |---|---|---|
 | Reactive desktop motion | Cursor, drag, shake, pet, type, overheat, scroll, reminders, AI states | Strong breadth; commercial transition polish still trails ComNyang |
-| Feature visibility | Gear entry, complete animation tour, live care dock, tray previews | Leading discoverability |
+| Feature visibility | First-run guide, first-letter controls, right-click/tray actions, complete animation tour | Strong without adding permanent controls around the pet |
 | Virtual-pet care | Persistent food, water, happiness, energy, requests, rest | Stronger than mascot-only products |
 | Characters | Nine premium dog/cat companions | Strong built-in breadth |
 | Productivity | Pomodoro, stretch/water/message reminders, pinned note | Strong |
-| Desktop presence | 4 sizes, opacity, always-on-top, peek, drag, wander | Competitive after current pass |
+| Desktop presence | 65–200% size, opacity, always-on-top, peek, drag, wander | Competitive after current pass |
+| Sound/personality | Adjustable cute care cues, play-request calls, post-meal dance and post-water shake | Strong foundation; recorded voice packs and richer choreography remain open opportunities |
 | Privacy | Local activity counts only; no keycodes or telemetry | Leading and verifiable |
 | Platform reach | Windows/macOS plus Linux X11/XWayland build path | Broader than ComNyang; native Wayland remains experimental |
 | Personal creation | Presets, colours, markings | Behind Deskie AI creation and VPet Workshop |
