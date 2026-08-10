@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>MyPerro — Settings</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #3b281d;
+        --muted: #7a5c42;
+        --paper: #f3dfb8;
+        --panel: #fff3cf;
+        --line: #8f6336;
+        --red: #b9523b;
+        --blue: #356b7d;
+        --green: #557447;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0; padding: 18px 20px 82px;
+        font: 13px/1.55 -apple-system, "Segoe UI", system-ui, sans-serif;
+        color: var(--ink);
+        background:
+          linear-gradient(rgba(91, 58, 29, .05) 50%, transparent 50%) 0 0 / 100% 4px,
+          radial-gradient(circle at 20% 10%, rgba(255,255,255,.55), transparent 28%),
+          var(--paper);
+      }
+      header {
+        display: grid; grid-template-columns: 118px 1fr; gap: 14px;
+        align-items: center; margin-bottom: 14px;
+        border: 2px solid var(--line); border-radius: 8px;
+        background: var(--panel); box-shadow: 4px 4px 0 rgba(59,40,29,.2);
+        padding: 10px 12px;
+      }
+      .preview {
+        display: grid; place-items: center;
+        width: 104px; height: 104px;
+        border: 2px solid var(--line); border-radius: 6px;
+        background:
+          linear-gradient(45deg, rgba(143,99,54,.13) 25%, transparent 25% 75%, rgba(143,99,54,.13) 75%),
+          linear-gradient(45deg, rgba(143,99,54,.13) 25%, transparent 25% 75%, rgba(143,99,54,.13) 75%) 8px 8px / 16px 16px,
+          #f8ebc6;
+      }
+      #breedPreview { width: 96px; height: 96px; image-rendering: pixelated; }
+      h1 {
+        font: 700 20px/1.1 Georgia, "Times New Roman", serif;
+        margin: 0 0 4px; letter-spacing: .04em; text-transform: uppercase;
+      }
+      p.sub { margin: 0; color: var(--muted); font-size: 12px; }
+      form { display: grid; gap: 12px; }
+      details {
+        border: 2px solid var(--line); border-radius: 8px; margin: 0;
+        background: rgba(255,243,207,.82);
+        box-shadow: 3px 3px 0 rgba(59,40,29,.14);
+        overflow: hidden;
+      }
+      summary {
+        list-style: none; cursor: pointer; padding: 10px 14px;
+        font: 700 11px/1 Georgia, "Times New Roman", serif;
+        text-transform: uppercase; letter-spacing: .08em; color: #fff;
+        background: var(--blue); border-bottom: 2px solid var(--line);
+      }
+      summary::-webkit-details-marker { display: none; }
+      details .inside { padding: 12px 14px; }
+      fieldset {
+        border: 2px solid var(--line); border-radius: 8px; margin: 0;
+        padding: 12px 14px; background: rgba(255,243,207,.82);
+        box-shadow: 3px 3px 0 rgba(59,40,29,.14);
+      }
+      legend {
+        font: 700 11px/1 Georgia, "Times New Roman", serif;
+        text-transform: uppercase; letter-spacing: .08em; color: #fff;
+        background: var(--blue); border: 2px solid var(--line);
+        border-radius: 999px; padding: 4px 9px;
+      }
+      label { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 7px 0; }
+      label span { flex: 1; }
+      input[type="text"], input[type="number"], input[type="datetime-local"], select {
+        width: 138px; padding: 5px 7px; border-radius: 5px;
+        border: 2px solid #9d7045; background: #fff9df; color: var(--ink);
+        box-shadow: inset 2px 2px 0 rgba(59,40,29,.08);
+      }
+      input[type="text"].wide { width: 180px; }
+      input[type="datetime-local"].wide { width: 180px; }
+      input[type="color"] {
+        width: 38px; height: 28px; border: 2px solid #9d7045;
+        background: #fff9df; padding: 2px; border-radius: 5px;
+      }
+      input[type="checkbox"] { accent-color: var(--red); }
+      .row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .quick-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0 4px; }
+      .breed-cards {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px; margin: 8px 0 10px;
+      }
+      .breed-card {
+        border: 2px solid #9d7045; border-radius: 7px;
+        background: #fff9df; color: var(--ink);
+        min-height: 58px; padding: 7px 8px; text-align: left; cursor: pointer;
+        box-shadow: 2px 2px 0 rgba(59,40,29,.14);
+      }
+      .breed-card.active {
+        background: #ffe09f; border-color: var(--red);
+        box-shadow: inset 0 0 0 2px rgba(185,82,59,.18), 2px 2px 0 rgba(59,40,29,.14);
+      }
+      .breed-card strong { display: block; font-size: 12px; }
+      .breed-card small { color: var(--muted); }
+      .breed-card em {
+        display: inline-block; font-style: normal; font-size: 10px; line-height: 1;
+        padding: 3px 5px; margin-bottom: 5px; border-radius: 999px;
+        background: rgba(53,107,125,.14); color: var(--blue);
+      }
+      .saved { font-size: 12px; color: var(--green); opacity: 0; transition: opacity .2s; }
+      .saved.show { opacity: 1; }
+      footer {
+        position: fixed; left: 0; right: 0; bottom: 0;
+        display: flex; align-items: center; gap: 12px;
+        padding: 12px 20px; border-top: 2px solid var(--line);
+        background: rgba(243,223,184,.96); backdrop-filter: blur(6px);
+      }
+      button {
+        background: var(--red); color: #fff7d2; border: 2px solid var(--line);
+        border-radius: 7px; box-shadow: 3px 3px 0 rgba(59,40,29,.22);
+        padding: 8px 18px; font-size: 13px; font-weight: 800; cursor: pointer;
+      }
+      button.secondary {
+        background: #fff9df; color: var(--ink); font-weight: 700;
+        padding: 6px 10px; box-shadow: 2px 2px 0 rgba(59,40,29,.14);
+      }
+      button:hover { transform: translate(1px, 1px); box-shadow: 2px 2px 0 rgba(59,40,29,.22); }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="preview"><canvas id="breedPreview" width="96" height="96"></canvas></div>
+      <div>
+        <h1>MyPerro</h1>
+        <p class="sub">A tiny vintage control room for your desktop companion.</p>
+      </div>
+    </header>
+
+    <form id="form">
+      <fieldset>
+        <legend>Names</legend>
+        <label><span>Your name (used in reminders)</span>
+          <input type="text" id="ownerName" class="wide" maxlength="40" placeholder="optional" /></label>
+        <label><span>Companion name</span>
+          <input type="text" id="petName" maxlength="40" /></label>
+        <label><span>Pinned note above its head</span>
+          <input type="text" id="pinnedNote" class="wide" maxlength="120" placeholder="empty = hidden" /></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Reminders</legend>
+        <div class="quick-row">
+          <button class="secondary" type="button" id="gentlePreset">Gentle</button>
+          <button class="secondary" type="button" id="focusPreset">Focus</button>
+          <button class="secondary" type="button" id="remindersOff">Off</button>
+        </div>
+        <label><span>Stretch break</span>
+          <span class="row"><input type="checkbox" id="stretchEnabled" />
+          every <input type="number" id="stretchEveryMinutes" min="1" max="1440" style="width:60px" /> min</span></label>
+        <label><span>Water break</span>
+          <span class="row"><input type="checkbox" id="waterEnabled" />
+          every <input type="number" id="waterEveryMinutes" min="1" max="1440" style="width:60px" /> min</span></label>
+        <label><span>Message reminder</span>
+          <span class="row"><input type="checkbox" id="messageEnabled" />
+          <input type="datetime-local" id="messageAt" class="wide" /></span></label>
+        <label><span>Message text</span>
+          <input type="text" id="messageText" class="wide" maxlength="120" placeholder="e.g. meeting in 5" /></label>
+        <label><span>Quiet hours (no nagging)</span>
+          <span class="row">from <input type="number" id="quietFrom" min="0" max="23" style="width:52px" placeholder="–" />
+          to <input type="number" id="quietTo" min="0" max="23" style="width:52px" placeholder="–" /></span></label>
+      </fieldset>
+
+      <details>
+        <summary>Focus Timer</summary>
+        <div class="inside">
+          <div class="quick-row">
+            <button class="secondary" type="button" id="classicPomodoro">25 / 5</button>
+            <button class="secondary" type="button" id="deepWorkPomodoro">50 / 10</button>
+          </div>
+          <label><span>Focus length</span><span><input type="number" id="focusMinutes" min="1" max="180" style="width:60px" /> min</span></label>
+          <label><span>Short break</span><span><input type="number" id="breakMinutes" min="1" max="60" style="width:60px" /> min</span></label>
+          <label><span>Long break</span><span><input type="number" id="longBreakMinutes" min="1" max="120" style="width:60px" /> min</span></label>
+          <label><span>Rounds before a long break</span><span><input type="number" id="roundsBeforeLongBreak" min="1" max="12" style="width:60px" /></span></label>
+        </div>
+      </details>
+
+      <fieldset>
+        <legend>Appearance</legend>
+        <div class="breed-cards" id="breedCards"></div>
+        <div class="quick-row">
+          <button class="secondary" type="button" id="surpriseCompanion">Surprise</button>
+          <button class="secondary" type="button" id="resetLook">Reset Look</button>
+        </div>
+        <label><span>Companion</span>
+          <select id="breed">
+            <option value="shiba-inu">Shiba Inu</option>
+            <option value="pomeranian">Pomeranian</option>
+            <option value="husky">Husky</option>
+            <option value="german-shepherd">German Shepherd</option>
+            <option value="dalmatian">Dalmatian</option>
+            <option value="lhasa-apso">Lhasa Apso</option>
+            <option value="calico-cat">Calico Cat</option>
+            <option value="midnight-cat">Midnight Cat</option>
+            <option value="cream-tabby">Cream Tabby</option>
+          </select></label>
+        <label><span>Base colour</span><input type="color" id="baseColor" /></label>
+        <label><span>Markings</span><input type="color" id="markingColor" /></label>
+        <label><span>Marking style</span>
+          <select id="markingStyle">
+            <option value="classic">Classic</option>
+            <option value="mask">Mask</option>
+            <option value="patch">Patch</option>
+            <option value="freckles">Freckles</option>
+          </select></label>
+        <label><span>Collar</span><input type="color" id="collarColor" /></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>General</legend>
+        <label><span>Sound</span><input type="checkbox" id="soundEnabled" /></label>
+        <label><span>Peek mode</span><input type="checkbox" id="peekMode" /></label>
+        <label><span>Reduced motion (calmer animations)</span><input type="checkbox" id="reducedMotion" /></label>
+        <label><span>Start when I log in</span><input type="checkbox" id="startAtLogin" /></label>
+      </fieldset>
+
+      <footer>
+        <button type="submit">Save</button>
+        <span class="saved" id="saved">Saved ✓</span>
+      </footer>
+    </form>
+
+    <script type="module" src="/settings/main.ts"></script>
+  </body>
+</html>

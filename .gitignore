@@ -1,0 +1,9 @@
+node_modules/
+dist/
+build/
+target/
+.DS_Store
+*.log
+.env
+.env.local
+apps/desktop/src-tauri/target/
