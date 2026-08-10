@@ -189,6 +189,7 @@ fn main() {
         .manage(input_service)
         .invoke_handler(tauri::generate_handler![
             perf_stats,
+            mark_startup_ready,
             open_settings,
             set_pass_through,
             input_health,
@@ -312,4 +313,17 @@ fn main() {
         })
         .run(tauri::generate_context!())
         .expect("error while running MyPerro");
+}
+
+/// A fixed-path, opt-in readiness marker used only by packaged-app CI.
+/// Normal installations never set the environment gate and never write it.
+#[tauri::command]
+fn mark_startup_ready() -> Result<bool, String> {
+    if std::env::var("MYPERRO_CI_SMOKE").as_deref() != Ok("1") {
+        return Ok(false);
+    }
+    let marker = std::env::temp_dir().join("myperro-startup-ready");
+    std::fs::write(&marker, b"ready\n")
+        .map_err(|error| format!("cannot write startup marker: {error}"))?;
+    Ok(true)
 }
