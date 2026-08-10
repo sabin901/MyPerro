@@ -101,6 +101,23 @@ describe("validatePack — atlas image", () => {
   it("still validates the manifest with no atlas provided", () => {
     expect(validatePack(goodManifest()).ok).toBe(true);
   });
+
+  it("rejects artwork that can bleed across frame boundaries", () => {
+    const bleeding: AtlasInfo = {
+      width: 480, height: 384, hasAlpha: true, boundaryOpaqueRatio: 0.08,
+    };
+    const r = validatePack(goodManifest(), bleeding);
+    expect(r.errors.some(e => e.includes("boundaries"))).toBe(true);
+  });
+
+  it("warns when named animations mostly reuse identical artwork", () => {
+    const duplicated: AtlasInfo = {
+      width: 480, height: 384, hasAlpha: true, uniqueVisualFrameRatio: 0.25,
+    };
+    const r = validatePack(goodManifest(), duplicated);
+    expect(r.ok).toBe(true);
+    expect(r.warnings.some(w => w.includes("visually unique"))).toBe(true);
+  });
 });
 
 describe("validatePack — collects all problems at once", () => {

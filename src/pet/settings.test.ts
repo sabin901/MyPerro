@@ -22,6 +22,8 @@ describe("normaliseSettings", () => {
     expect(normaliseSettings({ waterEveryMinutes: 0 }).waterEveryMinutes).toBe(1);
     expect(normaliseSettings({ waterEveryMinutes: 99999 }).waterEveryMinutes).toBe(1440);
     expect(normaliseSettings({ pomodoro: { focusMinutes: -5 } }).pomodoro.focusMinutes).toBe(1);
+    expect(normaliseSettings({ playRequestMinutes: 1 }).playRequestMinutes).toBe(5);
+    expect(normaliseSettings({ playRequestMinutes: 999 }).playRequestMinutes).toBe(240);
   });
 
   it("rejects a bad hour but keeps a good one", () => {
@@ -103,6 +105,15 @@ describe("normaliseSettings", () => {
   it("persists peek mode as a simple safe toggle", () => {
     expect(normaliseSettings({ peekMode: true }).peekMode).toBe(true);
     expect(normaliseSettings({ peekMode: "yes" }).peekMode).toBe(false);
+  });
+
+  it("clamps desktop presence controls", () => {
+    expect(normaliseSettings({ appearance: { scale: 0.1, opacity: 2 } }).appearance)
+      .toMatchObject({ scale: 0.65, opacity: 1 });
+    expect(normaliseSettings({ appearance: { scale: 1.25, opacity: 0.7 } }).appearance)
+      .toMatchObject({ scale: 1.25, opacity: 0.7 });
+    expect(normaliseSettings({ appearance: { scale: 8 } }).appearance.scale).toBe(2);
+    expect(normaliseSettings({ alwaysOnTop: false }).alwaysOnTop).toBe(false);
   });
 });
 

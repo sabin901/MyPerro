@@ -8,9 +8,10 @@
 use serde_json::Value;
 use std::fs;
 use std::path::PathBuf;
-#[cfg(target_os = "windows")]
-use std::process::Command;
 use tauri::{AppHandle, Manager};
+use tauri_plugin_autostart::ManagerExt;
+
+const LEGACY_IDENTIFIER: &str = "dev.myperro.desktop";
 
 fn settings_path(app: &AppHandle) -> Result<PathBuf, String> {
     let dir = app
@@ -26,8 +27,50 @@ fn settings_path(app: &AppHandle) -> Result<PathBuf, String> {
 #[tauri::command]
 pub fn load_settings(app: AppHandle) -> Result<Value, String> {
     let path = settings_path(&app)?;
-    match fs::read_to_string(&path) {
-        Ok(text) => serde_json::from_str(&text).map_err(|e| format!("corrupt settings: {e}")),
+    let backup = path.with_extension("json.bak");
+    if !path.exists() && backup.exists() {
+        fs::rename(&backup, &path)
+            .map_err(|e| format!("cannot recover settings backup: {e}"))?;
+    }
+    let source = if path.exists() {
+        path.clone()
+    } else {
+        let legacy = path
+            .parent()
+            .and_then(|parent| parent.parent())
+            .map(|root| root.join(LEGACY_IDENTIFIER).join("settings.json"));
+        match legacy.filter(|candidate| candidate.exists()) {
+            Some(legacy) => {
+                // Preserve the old file as a rollback copy. A failed migration
+                // still loads it, so changing the stable app ID never resets a pet.
+                let _ = fs::copy(&legacy, &path);
+                legacy
+            }
+            None => path.clone(),
+        }
+    };
+    match fs::read_to_string(&source) {
+        Ok(text) => {
+            let settings: Value = match serde_json::from_str(&text) {
+                Ok(value) => value,
+                Err(error) => {
+                    let corrupt = path.with_extension("json.corrupt");
+                    let _ = fs::remove_file(&corrupt);
+                    let _ = fs::rename(&source, &corrupt);
+                    log::warn!("Recovered corrupt settings file: {error}");
+                    return Ok(Value::Null);
+                }
+            };
+            // Repair stale development or pre-plugin login entries as soon as
+            // an upgraded user launches. Waiting for the next settings save
+            // could leave a dead debug executable registered indefinitely.
+            if let Some(enabled) = settings.get("startAtLogin").and_then(Value::as_bool) {
+                if let Err(error) = set_start_at_login(&app, enabled) {
+                    log::warn!("Could not synchronize launch-at-login during migration: {error}");
+                }
+            }
+            Ok(settings)
+        }
         Err(_) => Ok(Value::Null), // first run — no file yet
     }
 }
@@ -38,9 +81,20 @@ pub fn load_settings(app: AppHandle) -> Result<Value, String> {
 pub fn save_settings(app: AppHandle, settings: Value) -> Result<(), String> {
     let path = settings_path(&app)?;
     let tmp = path.with_extension("json.tmp");
+    let backup = path.with_extension("json.bak");
     let text = serde_json::to_string_pretty(&settings).map_err(|e| e.to_string())?;
     fs::write(&tmp, text).map_err(|e| format!("write failed: {e}"))?;
-    fs::rename(&tmp, &path).map_err(|e| format!("rename failed: {e}"))?;
+    let _ = fs::remove_file(&backup);
+    if path.exists() {
+        fs::rename(&path, &backup).map_err(|e| format!("backup failed: {e}"))?;
+    }
+    if let Err(error) = fs::rename(&tmp, &path) {
+        if backup.exists() {
+            let _ = fs::rename(&backup, &path);
+        }
+        return Err(format!("atomic settings replace failed: {error}"));
+    }
+    let _ = fs::remove_file(&backup);
     if let Some(enabled) = settings.get("startAtLogin").and_then(Value::as_bool) {
         set_start_at_login(&app, enabled)?;
     }
@@ -48,106 +102,20 @@ pub fn save_settings(app: AppHandle, settings: Value) -> Result<(), String> {
 }
 
 fn set_start_at_login(app: &AppHandle, enabled: bool) -> Result<(), String> {
-    #[cfg(target_os = "macos")]
-    {
-        return set_macos_login_item(app, enabled);
+    let manager = app.autolaunch();
+    let current = manager
+        .is_enabled()
+        .map_err(|e| format!("cannot read login setting: {e}"))?;
+    if current == enabled {
+        return Ok(());
     }
-    #[cfg(target_os = "windows")]
-    {
-        return set_windows_login_item(enabled);
-    }
-    #[cfg(target_os = "linux")]
-    {
-        return set_linux_login_item(app, enabled);
-    }
-    #[allow(unreachable_code)]
-    Ok(())
-}
-
-#[cfg(target_os = "macos")]
-fn set_macos_login_item(app: &AppHandle, enabled: bool) -> Result<(), String> {
-    let home = app.path().home_dir().map_err(|e| format!("no home dir: {e}"))?;
-    let dir = home.join("Library").join("LaunchAgents");
-    fs::create_dir_all(&dir).map_err(|e| format!("cannot create LaunchAgents dir: {e}"))?;
-    let plist = dir.join("dev.myperro.desktop.plist");
-    if !enabled {
-        return remove_if_exists(&plist);
-    }
-
-    let exe = std::env::current_exe().map_err(|e| format!("cannot locate executable: {e}"))?;
-    let text = format!(
-        r#"<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-  <key>Label</key><string>dev.myperro.desktop</string>
-  <key>ProgramArguments</key>
-  <array><string>{}</string></array>
-  <key>RunAtLoad</key><true/>
-</dict>
-</plist>
-"#,
-        escape_xml(&exe.to_string_lossy())
-    );
-    fs::write(plist, text).map_err(|e| format!("write LaunchAgent failed: {e}"))
-}
-
-#[cfg(target_os = "linux")]
-fn set_linux_login_item(app: &AppHandle, enabled: bool) -> Result<(), String> {
-    let dir = app
-        .path()
-        .config_dir()
-        .map_err(|e| format!("no config dir: {e}"))?
-        .join("autostart");
-    fs::create_dir_all(&dir).map_err(|e| format!("cannot create autostart dir: {e}"))?;
-    let desktop = dir.join("myperro.desktop");
-    if !enabled {
-        return remove_if_exists(&desktop);
-    }
-
-    let exe = std::env::current_exe().map_err(|e| format!("cannot locate executable: {e}"))?;
-    let text = format!(
-        "[Desktop Entry]\nType=Application\nName=MyPerro\nExec={}\nX-GNOME-Autostart-enabled=true\n",
-        exe.to_string_lossy()
-    );
-    fs::write(desktop, text).map_err(|e| format!("write autostart file failed: {e}"))
-}
-
-#[cfg(target_os = "windows")]
-fn set_windows_login_item(enabled: bool) -> Result<(), String> {
-    let key = r"HKCU\Software\Microsoft\Windows\CurrentVersion\Run";
-    let status = if enabled {
-        let exe = std::env::current_exe().map_err(|e| format!("cannot locate executable: {e}"))?;
-        Command::new("reg")
-            .args(["add", key, "/v", "MyPerro", "/t", "REG_SZ", "/d"])
-            .arg(format!("\"{}\"", exe.to_string_lossy()))
-            .args(["/f"])
-            .status()
+    if enabled {
+        manager
+            .enable()
+            .map_err(|e| format!("cannot enable launch at login: {e}"))
     } else {
-        Command::new("reg").args(["delete", key, "/v", "MyPerro", "/f"]).status()
+        manager
+            .disable()
+            .map_err(|e| format!("cannot disable launch at login: {e}"))
     }
-    .map_err(|e| format!("could not update Run key: {e}"))?;
-
-    if status.success() {
-        Ok(())
-    } else {
-        Err(format!("reg exited with status {status}"))
-    }
-}
-
-fn remove_if_exists(path: &PathBuf) -> Result<(), String> {
-    match fs::remove_file(path) {
-        Ok(()) => Ok(()),
-        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
-        Err(e) => Err(e.to_string()),
-    }
-}
-
-#[cfg(target_os = "macos")]
-fn escape_xml(s: &str) -> String {
-    s.replace('&', "&amp;")
-        .replace('<', "&lt;")
-        .replace('>', "&gt;")
-        .replace('"', "&quot;")
-        .replace('\'', "&apos;")
 }

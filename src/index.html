@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>MyPerro</title>
     <style>
       html, body {
@@ -20,11 +21,10 @@
       body.dragging #pet { cursor: grabbing; }
       body.peek #clock { display: none; }
       body.peek #pet { cursor: default; }
-
       /* Pinned note bubble above the dog's head (ComNyang "fixed message"). */
       #note {
-        position: fixed; left: 50%; top: 4px; transform: translateX(-50%);
-        max-width: 180px; padding: 5px 9px;
+        position: fixed; left: 6px; right: 6px; top: 6px;
+        max-width: none; padding: 6px 9px;
         font: 11px/1.4 -apple-system, "Segoe UI", system-ui, sans-serif;
         color: #23324a; text-align: center;
         background: #fdf6da; border: 2px solid #caa94e; border-radius: 8px;
@@ -51,14 +51,18 @@
         pointer-events: none;
       }
       #hud.hidden { display: none; }
+      #hud.error {
+        color: #fff; background: rgba(127,33,24,.94); padding: 9px 11px;
+        border: 2px solid rgba(255,255,255,.72); border-radius: 8px;
+      }
       #hud b { color: #fff; font-weight: 600; }
     </style>
   </head>
   <body>
     <div id="note" class="hidden"></div>
     <div id="clock" class="hidden"></div>
-    <canvas id="pet"></canvas>
-    <div id="hud">booting…</div>
+    <canvas id="pet" tabindex="0" role="img" aria-label="Your animated MyPerro companion" aria-keyshortcuts="F W P R S"></canvas>
+    <div id="hud" class="hidden">booting…</div>
     <script type="module" src="/pet/main.ts"></script>
   </body>
 </html>

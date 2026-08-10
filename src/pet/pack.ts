@@ -42,6 +42,10 @@ export interface AtlasInfo {
   height: number;
   /** True when the PNG has an alpha channel; a desktop pet needs transparency. */
   hasAlpha: boolean;
+  /** Fraction of frame-edge pixels that are opaque. Zero is ideal. */
+  boundaryOpaqueRatio?: number;
+  /** Fraction of frames whose rendered pixel content is genuinely distinct. */
+  uniqueVisualFrameRatio?: number;
 }
 
 export interface ValidationResult {
@@ -124,6 +128,16 @@ export function validatePack(raw: unknown, atlas?: AtlasInfo): ValidationResult 
   // ── atlas image ──
   if (atlas && !atlas.hasAlpha) {
     errors.push("atlas PNG has no transparency; the dog would render on a solid block");
+  }
+  if (atlas?.boundaryOpaqueRatio !== undefined) {
+    if (atlas.boundaryOpaqueRatio > 0.02) {
+      errors.push(`atlas content touches frame boundaries (${(atlas.boundaryOpaqueRatio * 100).toFixed(1)}% opaque); add a transparent gutter`);
+    } else if (atlas.boundaryOpaqueRatio > 0) {
+      warnings.push(`atlas has ${(atlas.boundaryOpaqueRatio * 100).toFixed(2)}% opaque boundary pixels`);
+    }
+  }
+  if (atlas?.uniqueVisualFrameRatio !== undefined && atlas.uniqueVisualFrameRatio < 0.6) {
+    warnings.push(`only ${(atlas.uniqueVisualFrameRatio * 100).toFixed(0)}% of named frames are visually unique; add real animation cels`);
   }
 
   return { ok: errors.length === 0, errors, warnings };

@@ -1,23 +1,38 @@
 # MyPerro
 
-An open-source desktop puppy that watches your cursor, reacts to your work,
-reminds you to take breaks, and quietly keeps you company.
+An open-source virtual pet that watches your cursor, reacts to your work,
+reminds you to take breaks, asks to play, and quietly keeps you company.
 
-macOS · Windows · Linux experimental · MIT licensed · no telemetry · no account
+**Created by Sabin Raut.**
+
+macOS · Windows · Linux (X11/XWayland) · MIT licensed · free forever · no telemetry · no account
 
 ## What It Does
 
 - Pixel puppy overlay with transparent click-through hit testing.
-- Six built-in dog breeds: Shiba Inu, Pomeranian, Husky, German Shepherd,
-  Dalmatian, and Lhasa Apso.
+- Persistent virtual-pet wellbeing: fullness, hydration, happiness, and energy.
+- Pet-only desktop surface with no overlay buttons or action dock.
+- First-letter controls after clicking the pet: `F` Feed, `W` Water, `P` Play,
+  `R` Rest, and `S` Settings. Right-click and tray controls remain available.
+- Native-resolution premium atlas support shared by Windows, macOS, and Linux builds.
+- First-run privacy tour before input reactions are enabled, native reminders,
+  rotating local logs, and a privacy-safe diagnostic export.
+- Gentle food, water, play, and rest interactions with animated reactions;
+  needs never reach zero and offline decay is capped to avoid punishment.
+- Optional play reminders: after the chosen quiet period the puppy says
+  “Woof woof!” for up to 20 seconds, then stops as soon as it is touched, fed,
+  or played with. Cats use a matching meow.
+- Rest lasts one minute and can be ended early by touching the companion.
+- Nine built-in companions: Shiba Inu, Pomeranian, Husky, German Shepherd,
+  Dalmatian, Lhasa Apso, Calico Cat, Midnight Cat, and Cream Tabby.
 - Cursor chase, eye follow, petting, dragging, shaking, scrolling, typing, hard
   typing, idle micro-motions, sleeping, waking, stretch, water, notes, and
   Pomodoro reactions.
-- Settings for names, reminders, scheduled message, quiet hours, Pomodoro,
-  breed, fur/marking/collar colours, marking style, sound, reduced motion,
-  start at login, and peek mode.
+- Task-based, auto-saving settings for names, reminders, scheduled messages,
+  quiet hours, Pomodoro, breed, 65–200% size, opacity, colours, markings, sound,
+  reduced motion, always-on-top, start at login, and peek mode.
 - Tray controls for show/hide, play, Pomodoro, quiet mode, peek mode, settings,
-  and quit.
+  feeding, water, rest, and quit.
 - Local AI-agent bridge through `agent-status.json` for `thinking`, `done`, and
   `error` reactions.
 - Community dog-pack validator.
@@ -32,6 +47,8 @@ npm run start
 
 macOS may ask for Accessibility permission so MyPerro can read cursor and input
 counts. It never stores or emits keycodes; only counts and geometry leave Rust.
+On Linux, global input reactions work with X11/XWayland; native Wayland can
+block global input by design. Settings → App shows a live compatibility check.
 
 ## Check
 
@@ -40,18 +57,21 @@ npm run typecheck
 npm test
 npm run build
 cargo check --manifest-path src-tauri/Cargo.toml
-for d in art/exported/*; do npm run validate-pack "$d"; done
+npm run validate:packs
+npm run smoke:dist
 ```
 
-## Change Dogs
+## Change Your Companion
 
-Open settings from the tray menu or right-click the puppy, then use
-`Appearance`:
+Open Settings by clicking the pet and pressing `S`, using the tray menu, or
+right-clicking the companion, then use the
+`Companion` tab:
 
 1. Click a breed card.
 2. The puppy name, breed, colors, marking style, and preview update together.
 3. Fine-tune `Base colour`, `Markings`, `Marking style`, and `Collar`.
-4. Press `Save`.
+4. Changes save automatically; use `Save now` for confirmation and `Done` to
+   return to the desktop pet.
 
 ## AI-Agent Bridge
 
@@ -77,8 +97,11 @@ Supported statuses are `thinking`, `done`, and `error`. `message` is optional.
 | `docs/PRD.md` | Product scope |
 | `docs/ART_GUIDE.md` | Pixel-art rules |
 | `docs/pack-format.md` | Community dog-pack format |
+| `docs/EVALUATION.md` | Current verification, critique, and release gates |
+| `docs/COMPETITIVE_REVIEW.md` | Product comparison and next investments |
+| `docs/RELEASE.md` | Signing, packaging, QA, updater and rollback runbook |
 
 ## Licence
 
-Code: MIT. Built-in generated artwork: CC BY 4.0. Third-party dog packs declare
-their own licences.
+Copyright © 2026 Sabin Raut. Code: MIT. Built-in generated artwork: CC BY 4.0.
+Third-party companion packs declare their own licences. See `NOTICE.md`.

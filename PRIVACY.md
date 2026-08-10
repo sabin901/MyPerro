@@ -7,7 +7,8 @@ enough to leave running all day. That trust depends on one promise:
 
 ## What is observed
 
-To react to you, the app watches global mouse and keyboard activity. It turns
+If you enable input reactions during onboarding or in Settings, the app watches
+global mouse and keyboard activity. It turns
 every raw event into an anonymous count or measurement **at the point of
 capture**, before it crosses into the rest of the app:
 
@@ -40,12 +41,20 @@ Nothing, unless you explicitly check for an update. There is:
 
 ## What is stored
 
-One settings file, in your OS config directory, in plain readable JSON. You can
-open it, edit it, or delete it. That's the entire footprint.
+- A plain JSON settings file in your OS config directory.
+- Companion wellbeing state in the local WebView store.
+- Window position and size through Tauri's window-state plugin.
+- Small rotating diagnostic logs in the standard OS application-log directory.
+- An OS login item only when you enable “Start when I log in.”
+
+Diagnostic logs contain lifecycle errors and compatibility state, never
+keycodes, typed text, application names, window titles, or browsing activity.
+The Settings → App diagnostic download is user initiated and privacy safe.
 
 ## Permissions
 
-On macOS, the app asks for Accessibility / Input Monitoring permission so it can
+On macOS, the app asks for Accessibility / Input Monitoring permission only
+after the first-run privacy explanation and opt-in so it can
 see global mouse and keyboard activity. If you decline, MyPerro still runs — the
 dog simply stops reacting to input. We explain this before asking, and you can
 revoke it any time in System Settings.

@@ -8,8 +8,13 @@
 
 import { currentMonitor, getCurrentWindow, monitorFromPoint } from "@tauri-apps/api/window";
 import { LogicalPosition, LogicalSize } from "@tauri-apps/api/dpi";
-import { listen } from "@tauri-apps/api/event";
+import { emit, listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
+import {
+  isPermissionGranted,
+  sendNotification,
+} from "@tauri-apps/plugin-notification";
+import { error as logError, info as logInfo, warn as logWarn } from "@tauri-apps/plugin-log";
 
 import { FPS, shouldDraw, isDegraded, keysPerSecond, THRESHOLDS, type Mode } from "./behaviour";
 import {
@@ -26,6 +31,16 @@ import {
 } from "./scheduler";
 import { idleLifeFrame } from "./idleLife";
 import { attentionMove } from "./attention";
+import { animatedCel } from "./animation";
+import {
+  PLAY_REQUEST_BARK_INTERVAL_MS, PLAY_REQUEST_DURATION_MS, REST_DURATION_MS,
+  normaliseInteractionState, shouldRequestPlay, type CompanionInteractionState,
+} from "./interaction";
+import {
+  applyCare, loadNeeds, mostUrgentNeed, needMessage, saveNeeds, wellbeingScore,
+  type CareAction, type PetNeeds,
+} from "./needs";
+import { PET_SHORTCUT_LABEL, petShortcutForKey } from "./shortcuts";
 import { loadSettings } from "./store";
 import { DEFAULT_SETTINGS, personalise, REMINDER_TEXT, type Settings } from "./settings";
 
@@ -35,6 +50,9 @@ interface Frame { x: number; y: number; w: number; h: number; index: number }
 interface Atlas {
   canvas: { width: number; height: number };
   grid: { cols: number; rows: number };
+  displayScale?: number;
+  artStyle?: string;
+  landmarks?: { eyes?: Array<{ x: number; y: number }> };
   frames: Record<string, Frame>;
 }
 
@@ -62,6 +80,8 @@ const DISPLAY_SCALE = 2;               // plan §9.3. Integer only.
 const FALLBACK_ATLAS_URL = "/placeholder/shiba_placeholder.png";
 const FALLBACK_META_URL  = "/placeholder/shiba_placeholder.json";
 const HIT_ALPHA = 8;
+const MESSAGE_DURATION_MS = 20_000;
+const INTERACTION_STORAGE_KEY = "myperro.companion-interaction.v1";
 
 /** Head occupies roughly the top 45% of the cell — used for petting. */
 const HEAD_FRACTION = 0.45;
@@ -108,6 +128,17 @@ let lastAutoWanderAt = 0;
 let lastAttentionMoveAt = 0;
 let wanderUntil = 0;
 let playUntil = 0;
+let careUntil = 0;
+let careFrame = "idle";
+let needs: PetNeeds;
+let interactionState: CompanionInteractionState;
+let playRequestUntil = 0;
+let playRequestBarkTimer: ReturnType<typeof setInterval> | null = null;
+let playRequestEndTimer: ReturnType<typeof setTimeout> | null = null;
+let restUntil = 0;
+let restTimer: ReturnType<typeof setTimeout> | null = null;
+let lastNeedRequest = "";
+let lastNeedRequestAt = 0;
 
 let lastActivity: Activity | null = null;
 let lastActivityAt = 0;
@@ -121,6 +152,7 @@ let lastAgentStatusSignature = "";
 
 let settings: Settings;
 let scheduler: SchedulerState;
+let notificationsGranted = false;
 
 let frames = 0, lastFpsAt = performance.now(), fps = 0, eventCount = 0, eventRate = 0;
 
@@ -128,16 +160,25 @@ let frames = 0, lastFpsAt = performance.now(), fps = 0, eventCount = 0, eventRat
 
 async function boot() {
   settings = await loadSettings();
+  needs = loadNeeds();
+  interactionState = loadInteractionState();
+  wirePetOnlyControls();
   await loadBreedAtlas(settings);
   await syncWindowGeometry();
+  await win.setAlwaysOnTop(settings.alwaysOnTop);
 
   reducedMotion = reducedMotion || settings.reducedMotion;
   scheduler = buildScheduler(settings, performance.now());
+  notificationsGranted = settings.notificationsEnabled
+    ? await isPermissionGranted().catch(() => false)
+    : false;
   applyPinnedNote();
   peekMode = false;
   setInterval(pollReminders, 1000);   // the scheduler ticks once a second
   setInterval(pollAgentStatus, 1000);
   setInterval(autoWander, 2000);
+  setInterval(pollCompanionInteraction, 5000);
+  setInterval(updateVirtualPet, 60_000);
 
   engine = new BehaviourEngine(performance.now());
 
@@ -150,6 +191,15 @@ async function boot() {
   await listen<Settings>("settings-updated", e => {
     void applySettings(e.payload);
   });
+  await listen("settings-closed", () => {
+    void (async () => {
+      await win.show();
+      await win.setAlwaysOnTop(settings.alwaysOnTop);
+      await syncWindowGeometry();
+      await win.setFocus();
+      canvas.focus({ preventScroll: true });
+    })();
+  });
   await listen("pomodoro-toggle", () => {
     togglePomodoro();
   });
@@ -161,12 +211,229 @@ async function boot() {
   });
   await listen("play-toggle", () => {
     triggerPlay();
+    handleCare("play");
   });
+  await listen<CareAction>("care-action", e => handleCare(e.payload));
+  await listen<string>("preview-action", e => previewAction(e.payload));
 
   wireDrag();
   wireHud();
   startDegradedWatchdog();
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) {
+      pollReminders();
+      void syncWindowGeometry();
+    }
+  });
+  window.addEventListener("focus", () => pollReminders());
   requestAnimationFrame(loop);
+  updateVirtualPet();
+  await logInfo(`Pet ready with companion pack ${settings.appearance.breed}`).catch(() => {});
+}
+
+function handleCare(action: CareAction) {
+  if (action !== "rest" && restUntil > performance.now()) endTimedRest(false);
+  needs = saveNeeds(applyCare(needs, action));
+  if (action === "feed" || action === "play") comfortCompanion();
+  if (action === "rest") {
+    beginTimedRest();
+    lastNeedRequest = "";
+    flashNote(`${settings.petName} is resting for one minute. Touch your companion to wake them.`);
+    broadcastNeeds();
+    return;
+  }
+  careFrame = action === "feed" ? "eat" : action === "water" ? "drink" :
+    "tail_wag";
+  careUntil = performance.now() + 2800;
+  lastNeedRequest = "";
+  const message = action === "feed" ? `${settings.petName} loved that snack!` :
+    action === "water" ? `${settings.petName} feels refreshed!` :
+    `${settings.petName} is having the best time!`;
+  flashNote(message);
+  broadcastNeeds();
+}
+
+function loadInteractionState(): CompanionInteractionState {
+  try {
+    const raw = localStorage.getItem(INTERACTION_STORAGE_KEY);
+    return normaliseInteractionState(raw ? JSON.parse(raw) : null);
+  } catch {
+    return normaliseInteractionState(null);
+  }
+}
+
+function saveInteractionState() {
+  try { localStorage.setItem(INTERACTION_STORAGE_KEY, JSON.stringify(interactionState)); }
+  catch { /* interaction timing is allowed to degrade without breaking the pet */ }
+}
+
+function comfortCompanion() {
+  interactionState.lastComfortAt = Date.now();
+  saveInteractionState();
+  stopPlayRequest(true);
+}
+
+function pollCompanionInteraction() {
+  const now = Date.now();
+  if (playRequestUntil > 0 && performance.now() >= playRequestUntil) stopPlayRequest(false);
+  if (!shouldRequestPlay(
+    interactionState,
+    now,
+    settings.playRequestMinutes,
+    settings.playRequestEnabled,
+    quietMode,
+  )) return;
+  beginPlayRequest(now);
+}
+
+function beginPlayRequest(now: number) {
+  if (playRequestUntil > performance.now()) return;
+  interactionState.lastRequestAt = now;
+  saveInteractionState();
+  const cat = settings.appearance.breed.endsWith("-cat");
+  const call = cat ? "Meow meow!" : "Woof woof!";
+  const sound = cat ? "purr" : "bark";
+  playRequestUntil = performance.now() + PLAY_REQUEST_DURATION_MS;
+  careFrame = "beg";
+  careUntil = playRequestUntil;
+  flashNote(`${call} ${settings.petName} wants to play. Pet them or offer a snack to settle them.`, PLAY_REQUEST_DURATION_MS);
+  playSound(sound);
+  playRequestBarkTimer = setInterval(() => {
+    if (quietMode || performance.now() >= playRequestUntil) return;
+    playSound(sound);
+  }, PLAY_REQUEST_BARK_INTERVAL_MS);
+  playRequestEndTimer = setTimeout(() => stopPlayRequest(false), PLAY_REQUEST_DURATION_MS);
+}
+
+function stopPlayRequest(dismissMessage: boolean) {
+  if (playRequestBarkTimer) clearInterval(playRequestBarkTimer);
+  if (playRequestEndTimer) clearTimeout(playRequestEndTimer);
+  playRequestBarkTimer = null;
+  playRequestEndTimer = null;
+  const wasActive = playRequestUntil > 0;
+  playRequestUntil = 0;
+  if (wasActive && careFrame === "beg") careUntil = performance.now();
+  if (wasActive && dismissMessage) dismissTransientNote();
+}
+
+function beginTimedRest() {
+  if (restTimer) clearTimeout(restTimer);
+  stopPlayRequest(true);
+  restUntil = performance.now() + REST_DURATION_MS;
+  careFrame = "sleep";
+  careUntil = restUntil;
+  restTimer = setTimeout(() => endTimedRest(false), REST_DURATION_MS);
+}
+
+function endTimedRest(touched: boolean) {
+  if (restUntil <= 0) return;
+  if (restTimer) clearTimeout(restTimer);
+  restTimer = null;
+  restUntil = 0;
+  careFrame = "wake";
+  careUntil = performance.now() + 1800;
+  if (touched) dismissTransientNote();
+}
+
+function handlePetTouch() {
+  const waking = restUntil > performance.now();
+  const soothing = playRequestUntil > performance.now();
+  if (waking) endTimedRest(true);
+  comfortCompanion();
+  if (soothing && !waking) {
+    careFrame = "pet_happy";
+    careUntil = performance.now() + 1800;
+  }
+}
+
+function updateVirtualPet() {
+  const resting = engine?.state === "asleep" || performance.now() < restUntil;
+  needs = saveNeeds(loadNeeds(Date.now(), resting));
+  broadcastNeeds();
+  const urgent = mostUrgentNeed(needs);
+  if (!urgent) { lastNeedRequest = ""; return; }
+  const now = Date.now();
+  if (urgent === lastNeedRequest && now - lastNeedRequestAt < 20 * 60_000) return;
+  lastNeedRequest = urgent;
+  lastNeedRequestAt = now;
+  careFrame = urgent === "thirst" ? "drink" : urgent === "energy" ? "sleep" : "beg";
+  careUntil = performance.now() + 6000;
+  flashNote(needMessage(urgent, settings.petName));
+}
+
+function broadcastNeeds() {
+  canvas.setAttribute(
+    "aria-label",
+    `${settings.petName}, animated desktop companion. Wellbeing ${wellbeingScore(needs)} percent. ${PET_SHORTCUT_LABEL}.`,
+  );
+  void emit("needs-updated", needs).catch(() => {});
+}
+
+function wirePetOnlyControls() {
+  canvas.addEventListener("pointerdown", event => {
+    canvas.focus({ preventScroll: true });
+    void win.setFocus().catch(() => {});
+    if (event.button === 0) handlePetTouch();
+  });
+  window.addEventListener("pointerdown", () => { void unlockCompanionAudio(); }, { once: true, capture: true });
+  window.addEventListener("keydown", event => {
+    if (isEditableTarget(event.target)) return;
+    const shortcut = petShortcutForKey(event);
+    if (!shortcut) return;
+    event.preventDefault();
+    event.stopPropagation();
+    if (shortcut === "settings") {
+      void invoke("open_settings");
+      return;
+    }
+    if (shortcut === "play") triggerPlay();
+    handleCare(shortcut);
+  });
+}
+
+function isEditableTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  return target.isContentEditable || target.matches("input, textarea, select");
+}
+
+const PREVIEW_FRAMES: Record<string, { frame: string; message: string; duration?: number }> = {
+  look: { frame: "look_up", message: "Move your pointer—those eyes are watching." },
+  drag: { frame: "drag", message: "Pick up your companion and give them a gentle wobble." },
+  hunt: { frame: "run", message: "A fast pointer starts the chase!" },
+  pet: { frame: "pet_happy", message: "Head pats are always welcome." },
+  typing: { frame: "type_paw", message: "Typing paws reporting for duty." },
+  overheat: { frame: "type_intense", message: "Too many keys! Cooling down…" },
+  stretch: { frame: "stretch", message: "Time to stretch together." },
+  drink: { frame: "drink", message: "Fresh water break." },
+  scroll: { frame: "paper_unroll", message: "Your scrolling unrolls a tiny paper trail." },
+  thinking: { frame: "head_tilt", message: "Thinking alongside your AI agent." },
+  done: { frame: "happy_jump", message: "Task complete—celebration jump!" },
+  focus: { frame: "focus_sit", message: "Focus mode keeps a tiny timer nearby." },
+  reminder: { frame: "deliver_note", message: "A reminder arrives right on time." },
+  sleep: { frame: "sleep", message: "Quiet time means a cozy nap.", duration: 6000 },
+};
+let previewRun = 0;
+
+function previewAction(action: string) {
+  const run = ++previewRun;
+  if (action === "all") {
+    const sequence = ["look", "drag", "hunt", "pet", "typing", "overheat", "stretch", "drink", "scroll", "thinking", "done", "focus", "reminder", "sleep"];
+    sequence.forEach((name, index) => setTimeout(() => {
+      if (previewRun !== run) return;
+      showPreview(name, index === sequence.length - 1 ? 5000 : 2400);
+    }, index * 2500));
+    return;
+  }
+  showPreview(action);
+}
+
+function showPreview(action: string, duration?: number) {
+  const preview = PREVIEW_FRAMES[action];
+  if (!preview) return;
+  careFrame = preview.frame;
+  const visibleFor = duration ?? preview.duration ?? 4200;
+  careUntil = performance.now() + visibleFor;
+  flashNote(preview.message, visibleFor);
 }
 
 async function loadBreedAtlas(s: Settings) {
@@ -196,10 +463,16 @@ function applyAtlas(meta: Atlas, img: HTMLImageElement, s: Settings) {
   canvas.height = atlas.canvas.height;
   ctx.imageSmoothingEnabled = false;
 
-  viewport = { ...viewport, cell: atlas.canvas.width };
+  viewport = {
+    ...viewport,
+    cell: atlas.canvas.width,
+    displayScale: (atlas.displayScale && atlas.displayScale > 0 ? atlas.displayScale : DISPLAY_SCALE)
+      * s.appearance.scale,
+  };
   const size = windowSize(viewport);
   canvas.style.width = `${size.x}px`;
   canvas.style.height = `${size.y}px`;
+  canvas.style.opacity = String(s.appearance.opacity);
 
   buildHitMask();
 }
@@ -212,10 +485,15 @@ async function fetchJson<T>(url: string): Promise<T> {
 
 async function applySettings(next: Settings) {
   settings = next;
+  if (!settings.playRequestEnabled) stopPlayRequest(false);
   reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches || settings.reducedMotion;
   await loadBreedAtlas(settings);
   await syncWindowGeometry();
+  await win.setAlwaysOnTop(settings.alwaysOnTop);
   scheduler = buildScheduler(settings, performance.now());
+  notificationsGranted = settings.notificationsEnabled
+    ? await isPermissionGranted().catch(() => false)
+    : false;
   applyPinnedNote();
   peekMode = false;
   await applyPeekMode(false);
@@ -332,6 +610,24 @@ async function syncWindowGeometry() {
   const p = await win.outerPosition();
   const logical = physicalToLogical({ x: p.x, y: p.y }, sf);
   viewport = { ...viewport, winX: logical.x, winY: logical.y, scaleFactor: sf };
+  const monitor = await currentMonitor().catch(() => null);
+  if (!monitor) return;
+  const monitorScale = monitor.scaleFactor || sf || 1;
+  const next = clampToMonitor(
+    { x: viewport.winX, y: viewport.winY },
+    viewport,
+    {
+      x: monitor.position.x / monitorScale,
+      y: monitor.position.y / monitorScale,
+      width: monitor.size.width / monitorScale,
+      height: monitor.size.height / monitorScale,
+    },
+    { top: 12, right: 12, bottom: 12, left: 12 },
+  );
+  if (next.x !== viewport.winX || next.y !== viewport.winY) {
+    viewport = { ...viewport, winX: next.x, winY: next.y };
+    await win.setPosition(new LogicalPosition(Math.round(next.x), Math.round(next.y)));
+  }
 }
 
 // ─── Signal derivation ────────────────────────────────────────────────────────
@@ -397,6 +693,7 @@ function onActivity(a: Activity) {
   if (out.changed && out.state === "agent" && pendingAgentEvent !== "thinking") pendingAgentEvent = null;
 
   if (out.changed && out.sound) playSound(out.sound);
+  if (out.changed && out.state === "pet") handlePetTouch();
 
   if (!dragging) {
     facingLeft = a.cursor_x < windowCentre(viewport).x;
@@ -407,47 +704,75 @@ function onActivity(a: Activity) {
 
 function playSound(name: string) {
   if (!settings.soundEnabled) return;
-  void chirp(name).catch(() => {});
+  void playCompanionSound(name).catch(() => {});
 }
 
-async function chirp(name: string) {
+let audioContext: AudioContext | null = null;
+
+async function unlockCompanionAudio(): Promise<AudioContext | null> {
   const audioClass = window.AudioContext
     ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-  if (!audioClass) return;
+  if (!audioClass) return null;
+  audioContext ??= new audioClass();
+  if (audioContext.state === "suspended") await audioContext.resume();
+  return audioContext;
+}
 
-  const audio = new audioClass();
+async function playCompanionSound(name: string) {
+  const audio = await unlockCompanionAudio();
+  if (!audio) return;
   const now = audio.currentTime;
-  const gain = audio.createGain();
-  gain.gain.setValueAtTime(0.0001, now);
-  gain.gain.exponentialRampToValueAtTime(0.035, now + 0.015);
-  gain.gain.exponentialRampToValueAtTime(0.0001, now + soundDuration(name));
-  gain.connect(audio.destination);
+  const master = audio.createGain();
+  master.gain.setValueAtTime(0.0001, now);
+  master.gain.exponentialRampToValueAtTime(name === "bark" ? 0.045 : 0.028, now + 0.018);
+  master.gain.exponentialRampToValueAtTime(0.0001, now + soundDuration(name));
+  master.connect(audio.destination);
 
-  for (const [i, hz] of soundNotes(name).entries()) {
+  const notes = soundNotes(name);
+  for (const [i, hz] of notes.entries()) {
     const osc = audio.createOscillator();
-    osc.type = "square";
-    osc.frequency.setValueAtTime(hz, now + i * 0.08);
-    osc.connect(gain);
-    osc.start(now + i * 0.08);
-    osc.stop(now + i * 0.08 + 0.07);
-  }
+    const voice = audio.createGain();
+    const start = now + i * (name === "purr" ? 0.12 : 0.09);
+    const duration = name === "purr" ? 0.22 : 0.16;
+    osc.type = name === "bark" ? "sawtooth" : name === "purr" ? "sine" : "triangle";
+    osc.frequency.setValueAtTime(hz, start);
+    if (name === "bark") osc.frequency.exponentialRampToValueAtTime(hz * .58, start + duration);
+    voice.gain.setValueAtTime(0.0001, start);
+    voice.gain.exponentialRampToValueAtTime(name === "bark" ? .7 : .45, start + .012);
+    voice.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+    osc.connect(voice);
+    voice.connect(master);
+    osc.start(start);
+    osc.stop(start + duration + .01);
 
-  window.setTimeout(() => {
-    void audio.close().catch(() => {});
-  }, Math.ceil(soundDuration(name) * 1000) + 80);
+    // A quiet octave supplies warmth without the harsh prototype square wave.
+    if (name !== "bark") {
+      const harmonic = audio.createOscillator();
+      const harmonicGain = audio.createGain();
+      harmonic.type = "sine";
+      harmonic.frequency.setValueAtTime(hz * 2, start);
+      harmonicGain.gain.setValueAtTime(.0001, start);
+      harmonicGain.gain.exponentialRampToValueAtTime(.13, start + .018);
+      harmonicGain.gain.exponentialRampToValueAtTime(.0001, start + duration);
+      harmonic.connect(harmonicGain);
+      harmonicGain.connect(master);
+      harmonic.start(start);
+      harmonic.stop(start + duration + .01);
+    }
+  }
 }
 
 function soundNotes(name: string): number[] {
   switch (name) {
-    case "purr": return [146, 164, 146];
-    case "bark": return [392, 294];
-    case "chime": return [523, 659, 784];
-    default: return [440];
+    case "purr": return [73, 82, 73, 92];
+    case "bark": return [220, 165];
+    case "chime": return [523.25, 659.25, 783.99];
+    default: return [440, 554.37];
   }
 }
 
 function soundDuration(name: string): number {
-  return Math.max(0.16, soundNotes(name).length * 0.08 + 0.12);
+  return Math.max(0.24, soundNotes(name).length * (name === "purr" ? 0.12 : 0.09) + 0.18);
 }
 
 // ─── Reminders, Pomodoro, pinned note (Phase 4) ────────────────────────────────
@@ -487,12 +812,25 @@ function pollReminders() {
     const text = out.message
       ?? personalise(out.reminder === "water" ? REMINDER_TEXT.water : REMINDER_TEXT.stretch, settings.ownerName);
     flashNote(text);
+    showNativeReminder(text);
   }
-  if (out.agentLikeCelebration) pendingAgentEvent = "done";
+  if (out.agentLikeCelebration) {
+    pendingAgentEvent = "done";
+    showNativeReminder(personalise(REMINDER_TEXT.focusDone, settings.ownerName));
+  }
 
   // Pomodoro clock (empty string when not running).
   clockEl.textContent = out.clock ?? "";
   clockEl.classList.toggle("hidden", out.clock === null);
+}
+
+function showNativeReminder(body: string) {
+  if (!settings.notificationsEnabled || !notificationsGranted) return;
+  try {
+    sendNotification({ title: `${settings.petName} · MyPerro`, body });
+  } catch (error) {
+    void logWarn(`Native reminder could not be delivered: ${String(error)}`).catch(() => {});
+  }
 }
 
 function togglePomodoro() {
@@ -508,6 +846,7 @@ async function togglePeekMode() {
 
 function toggleQuietMode() {
   quietMode = !quietMode;
+  if (quietMode) stopPlayRequest(false);
   document.body.classList.toggle("quiet", quietMode);
   flashNote(quietMode
     ? `${settings.petName} will stay quiet for now.`
@@ -570,11 +909,17 @@ function applyPinnedNote() {
 
 /** A reminder note that shows for a few seconds, then falls back to the pinned one. */
 let noteTimer: ReturnType<typeof setTimeout> | null = null;
-function flashNote(text: string) {
+function flashNote(text: string, durationMs = MESSAGE_DURATION_MS) {
   noteEl.textContent = text;
   noteEl.classList.remove("hidden");
   if (noteTimer) clearTimeout(noteTimer);
-  noteTimer = setTimeout(applyPinnedNote, 8000);
+  noteTimer = setTimeout(applyPinnedNote, durationMs);
+}
+
+function dismissTransientNote() {
+  if (noteTimer) clearTimeout(noteTimer);
+  noteTimer = null;
+  applyPinnedNote();
 }
 
 async function pollAgentStatus() {
@@ -601,7 +946,7 @@ async function autoWander() {
   const now = performance.now();
   const idleFor = lastActivityAt === 0 ? now : now - lastActivityAt;
   if (
-    reducedMotion || dragging || peekMode || degraded ||
+    reducedMotion || dragging || peekMode || degraded || performance.now() < restUntil ||
     mode !== "idle" || idleFor < 28_000 || now - lastAutoWanderAt < 12_000
   ) return;
 
@@ -650,7 +995,7 @@ async function followCursorAttention(a: Activity, now: number) {
     now,
     lastMovedAt: lastAttentionMoveAt,
     reducedMotion,
-    disabled: dragging || peekMode || degraded || performance.now() < playUntil,
+    disabled: dragging || peekMode || degraded || performance.now() < playUntil || performance.now() < restUntil,
   });
   if (!move) return;
   viewport = { ...viewport, winX: move.next.x, winY: move.next.y };
@@ -666,7 +1011,6 @@ async function updateHitState(gx: number, gy: number) {
   if (dragging || degraded) return;
   const sprite = globalToSprite({ x: gx, y: gy }, viewport);
   const solid = sprite !== null && isSolid(sprite.x, sprite.y);
-
   const shouldIgnore = !solid;
   if (shouldIgnore !== ignoringCursor) {
     ignoringCursor = shouldIgnore;
@@ -764,19 +1108,137 @@ function draw() {
   if (performance.now() < playUntil) {
     visibleFrame = available.has("zoomies") ? "zoomies" : visibleFrame;
   }
+  if (performance.now() < careUntil) {
+    visibleFrame = available.has(careFrame) ? careFrame : visibleFrame;
+  }
+  visibleFrame = animatedCel(visibleFrame, performance.now(), available);
   const f = atlas.frames[visibleFrame] ?? atlas.frames[currentFrame] ?? atlas.frames["idle"];
   if (!f) return;
   const offset = motionOffset(performance.now());
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.save();
   if (facingLeft) { ctx.translate(canvas.width, 0); ctx.scale(-1, 1); }
-  ctx.drawImage(sheet, f.x, f.y, f.w, f.h, offset.x, offset.y, f.w, f.h);
+  drawSpriteCel(f, offset, performance.now());
   drawMarkingStyle(offset);
   drawEyeFollow(offset);
   ctx.restore();
+  drawStateEffects(performance.now());
+}
+
+/** Apply pose-specific squash, stretch and anticipation around the sprite centre. */
+function drawSpriteCel(f: Frame, offset: { x: number; y: number }, now: number) {
+  if (reducedMotion) {
+    ctx.drawImage(sheet, f.x, f.y, f.w, f.h, offset.x, offset.y, f.w, f.h);
+    return;
+  }
+  const base = visibleFrame.replace(/_alt$/, "");
+  const t = now / 1000;
+  let sx = 1, sy = 1, rotate = 0;
+  if (base === "drag") { sx = 0.94; sy = 1.1; rotate = Math.sin(t * 16) * 0.025; }
+  else if (base === "shake") { sx = 1.04; sy = 0.97; rotate = Math.sin(t * 34) * 0.06; }
+  else if (["happy_jump", "jump", "land"].includes(base)) { sx = 0.98; sy = 1.04; }
+  else if (["run", "chase", "zoomies"].includes(base)) { sx = 1.05; sy = 0.96; }
+  else if (["type_paw", "type_intense"].includes(base)) { sx = 1.01; sy = 0.99; }
+  else if (base === "pet_happy") { const pulse = Math.sin(t * 9) * 0.015; sx += pulse; sy += pulse; }
+  else if (base === "tail_wag") { rotate = Math.sin(t * 10) * 0.018; sx = 1.01; sy = 0.99; }
+  else if (base === "head_tilt") { rotate = Math.sin(t * 2.4) * 0.055; }
+  else if (base === "look_up") { sy = 1.025; sx = 0.985; }
+  else if (base === "scratch") { rotate = Math.sin(t * 15) * 0.035; }
+  else if (base === "yawn" || base === "stretch") { sx = 1.035; sy = 0.97; }
+  else if (base === "drink" || base === "eat") { sy = 1 + Math.sin(t * 12) * 0.012; }
+  else if (base === "sleep" || base === "lie_down") { const breath = Math.sin(t * 2.5) * 0.008; sx += breath; sy -= breath; }
+  const cx = canvas.width / 2, cy = canvas.height * 0.68;
+  ctx.translate(cx, cy);
+  ctx.rotate(rotate);
+  ctx.scale(sx, sy);
+  ctx.translate(-cx, -cy);
+  ctx.drawImage(sheet, f.x, f.y, f.w, f.h, offset.x, offset.y, f.w, f.h);
+}
+
+function drawStateEffects(now: number) {
+  if (reducedMotion) return;
+  const frame = visibleFrame.replace(/_alt$/, "");
+  const t = now / 1000;
+  ctx.save();
+  ctx.imageSmoothingEnabled = false;
+  ctx.scale(canvas.width / 96, canvas.height / 96);
+
+  if (frame === "type_paw" || frame === "type_intense") {
+    const rapid = frame === "type_intense";
+    const key = Math.floor(t * (rapid ? 18 : 9)) % 5;
+    ctx.fillStyle = rapid ? "#ffd45a" : "#83d9ff";
+    ctx.fillRect(31 + key * 8, 78 + (key % 2), 4, 2);
+    if (rapid) {
+      ctx.fillStyle = `rgba(255,74,48,${0.12 + Math.abs(Math.sin(t * 8)) * 0.16})`;
+      ctx.fillRect(45, 27, 40, 34);
+      drawSteam(61, 19, t, 0); drawSteam(73, 13, t, 1); drawSteam(84, 21, t, 2);
+    }
+  } else if (frame === "pet_happy") {
+    drawFloatingHeart(20, 39, t, 0); drawFloatingHeart(82, 31, t, 1);
+  } else if (["run", "chase", "zoomies"].includes(frame)) {
+    ctx.fillStyle = "rgba(255,255,255,.72)";
+    for (let i = 0; i < 3; i++) {
+      const x = 7 + ((t * 45 + i * 17) % 22);
+      ctx.fillRect(Math.round(x), 46 + i * 10, 13 - i * 2, 2);
+    }
+    ctx.fillStyle = "rgba(190,161,126,.55)";
+    ctx.fillRect(19, 81, 7, 3); ctx.fillRect(11, 76, 4, 3);
+  } else if (frame === "paper_unroll") {
+    ctx.strokeStyle = "rgba(117,83,54,.65)"; ctx.lineWidth = 1;
+    const wave = Math.round(Math.sin(t * 12) * 2);
+    ctx.beginPath(); ctx.moveTo(25, 82 + wave); ctx.lineTo(67, 82 - wave); ctx.stroke();
+  } else if (frame === "drink") {
+    ctx.fillStyle = "#8bd8ef";
+    const splash = Math.floor(t * 8) % 3;
+    ctx.fillRect(77 + splash * 3, 65 - splash * 3, 2, 3);
+  } else if (frame === "eat") {
+    ctx.fillStyle = "#f1b53b";
+    const bite = Math.floor(t * 7) % 3;
+    ctx.fillRect(39 + bite * 8, 70 - bite, 3, 3);
+  } else if (frame === "beg") {
+    drawFloatingHeart(82, 31, t, 0);
+  } else if (frame === "focus_sit") {
+    ctx.strokeStyle = "rgba(255,220,92,.85)"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(84, 24, 7, -Math.PI / 2, -Math.PI / 2 + (t % 1) * Math.PI * 2); ctx.stroke();
+  } else if (["sleep", "lie_down"].includes(frame)) {
+    ctx.fillStyle = "#7cb9ee"; ctx.font = "bold 9px ui-monospace, monospace";
+    ctx.fillText("z", 73, 27 - Math.round((t * 5) % 7));
+    ctx.fillText("Z", 83, 18 - Math.round((t * 4) % 8));
+  } else if (frame === "head_tilt" && engine?.state === "agent") {
+    ctx.fillStyle = "#f3c957";
+    for (let i = 0; i < 3; i++) ctx.fillRect(73 + i * 6, 20 + Math.round(Math.sin(t * 5 + i) * 2), 3, 3);
+  } else if (["happy_jump", "tail_wag"].includes(frame)) {
+    drawSparkle(20, 31, t, 0); drawSparkle(83, 22, t, 1);
+  } else if (frame === "bark") {
+    ctx.strokeStyle = "#f4c94f"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(83, 45, 7 + (t * 8) % 5, -0.7, 0.7); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawSteam(x: number, y: number, t: number, phase: number) {
+  const rise = (t * 13 + phase * 5) % 10;
+  ctx.fillStyle = `rgba(245,247,250,${0.9 - rise * 0.055})`;
+  ctx.fillRect(x + Math.round(Math.sin(t * 6 + phase) * 2), y - Math.round(rise), 5, 4);
+}
+
+function drawFloatingHeart(x: number, y: number, t: number, phase: number) {
+  const rise = (t * 8 + phase * 6) % 14;
+  const px = x + Math.round(Math.sin(t * 4 + phase) * 2), py = y - Math.round(rise);
+  ctx.fillStyle = `rgba(239,91,103,${1 - rise / 18})`;
+  ctx.fillRect(px, py, 2, 2); ctx.fillRect(px + 3, py, 2, 2);
+  ctx.fillRect(px - 1, py + 2, 7, 2); ctx.fillRect(px + 1, py + 4, 3, 2);
+}
+
+function drawSparkle(x: number, y: number, t: number, phase: number) {
+  const on = Math.sin(t * 7 + phase * 2) > -0.15;
+  if (!on) return;
+  ctx.fillStyle = "#ffe37b";
+  ctx.fillRect(x + 2, y, 2, 6); ctx.fillRect(x, y + 2, 6, 2);
 }
 
 function drawMarkingStyle(offset: { x: number; y: number }) {
+  if (atlas.artStyle?.startsWith("premium-")) return;
   const style = settings.appearance.markingStyle;
   if (style === "classic" || EYELESS_FRAMES.has(visibleFrame)) return;
   const mark = settings.appearance.markingColor;
@@ -820,20 +1282,21 @@ function motionOffset(now: number): { x: number; y: number } {
   if (reducedMotion) return { x: 0, y: 0 };
   const t = now / 1000;
 
+  const s = canvas.width / 96;
   if (dragging || visibleFrame === "shake") {
-    return { x: Math.round(Math.sin(t * 38) * 2), y: 0 };
+    return { x: Math.round(Math.sin(t * 38) * 2 * s), y: 0 };
   }
   if (visibleFrame === "happy_jump" || visibleFrame === "jump" || visibleFrame === "land") {
-    return { x: 0, y: -Math.max(0, Math.round(Math.sin(t * 13) * 4)) };
+    return { x: 0, y: -Math.max(0, Math.round(Math.sin(t * 13) * 4 * s)) };
   }
   if (visibleFrame === "run" || visibleFrame === "chase" || visibleFrame === "zoomies") {
-    return { x: 0, y: Math.round(Math.sin(t * 24) * 2) };
+    return { x: 0, y: Math.round(Math.sin(t * 24) * 2 * s) };
   }
   if (visibleFrame === "type_paw" || visibleFrame === "type_intense") {
-    return { x: 0, y: Math.round(Math.sin(t * 18)) };
+    return { x: 0, y: Math.round(Math.sin(t * 18) * s) };
   }
   if (visibleFrame === "idle" || visibleFrame === "focus_sit" || visibleFrame === "sit_side") {
-    return { x: 0, y: Math.round(Math.sin(t * 3) * 0.7) };
+    return { x: 0, y: Math.round(Math.sin(t * 3) * 0.7 * s) };
   }
 
   return { x: 0, y: 0 };
@@ -841,18 +1304,21 @@ function motionOffset(now: number): { x: number; y: number } {
 
 function drawEyeFollow(offset: { x: number; y: number }) {
   if (reducedMotion || EYELESS_FRAMES.has(visibleFrame)) return;
+  const base = visibleFrame.replace(/_alt$/, "");
+  if (!["idle", "sit", "stand", "sit_side", "head_tilt", "look_up", "side_eye", "alert"].includes(base)) return;
   const look = eyeOffset();
-  const eyes = visibleFrame === "side_eye"
-    ? [{ x: 71, y: 39 }]
-    : [{ x: 58, y: 39 }, { x: 72, y: 39 }];
+  const scale = canvas.width / 96;
+  const defaultEyes = [{ x: 58 * scale, y: 39 * scale }, { x: 72 * scale, y: 39 * scale }];
+  const eyes = atlas.landmarks?.eyes?.length ? atlas.landmarks.eyes : defaultEyes;
 
   for (const eye of eyes) {
-    const x = Math.round(offset.x + eye.x + look.x);
-    const y = Math.round(offset.y + eye.y + look.y);
+    const x = Math.round(offset.x + eye.x + look.x * scale);
+    const y = Math.round(offset.y + eye.y + look.y * scale);
     ctx.fillStyle = "#251912";
-    ctx.fillRect(x, y, 2, 2);
+    const pupil = Math.max(2, Math.round(scale * 2));
+    ctx.fillRect(x, y, pupil, pupil);
     ctx.fillStyle = "rgba(255,255,255,0.75)";
-    ctx.fillRect(x, y, 1, 1);
+    ctx.fillRect(x, y, Math.max(1, Math.round(scale)), Math.max(1, Math.round(scale)));
   }
 }
 
@@ -870,8 +1336,9 @@ function eyeOffset(): { x: number; y: number } {
 
 function wireHud() {
   window.addEventListener("keydown", e => {
+    if (!e.ctrlKey || !e.shiftKey) return;
     if (e.key.toLowerCase() === "h") hudEl.classList.toggle("hidden");
-    if (e.key.toLowerCase() === "r") reducedMotion = !reducedMotion;
+    if (e.key.toLowerCase() === "m") reducedMotion = !reducedMotion;
   });
 }
 
@@ -892,9 +1359,17 @@ async function renderHud() {
     `   idle ${a ? (a.idle_ms / 1000) | 0 : "—"}s\n` +
     `motion   ${reducedMotion ? "reduced" : "full"}\n` +
     `quiet    ${quietMode ? "on" : "off"}\n` +
-    `[h] hide  [r] reduced motion`;
+    `[ctrl+shift+h] hide  [ctrl+shift+m] reduced motion`;
 }
 
-boot().catch(err => {
-  hudEl.textContent = `boot failed:\n${err}`;
+boot().catch(async err => {
+  const message = err instanceof Error ? err.message : String(err);
+  await logError(`Pet startup failed: ${message}`).catch(() => {});
+  // Never expose an internal stack or URL on the desktop. Keep Settings
+  // reachable so the user has a recovery path even if an art pack is damaged.
+  hudEl.textContent = "MyPerro needs attention";
+  hudEl.classList.remove("hidden");
+  hudEl.classList.add("error");
+  noteEl.textContent = "Press S or open Settings from the tray to repair this companion.";
+  noteEl.classList.remove("hidden");
 });

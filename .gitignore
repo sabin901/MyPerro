@@ -4,6 +4,14 @@ build/
 target/
 .DS_Store
 *.log
+*.cdx.json
 .env
 .env.local
+release-artifacts/
+release-linux/
 apps/desktop/src-tauri/target/
+
+# Local visual QA captures (never publish test desktop screenshots).
+pet-only-runtime.png
+pet-shortcut-*.png
+settings-shortcuts-runtime.png
