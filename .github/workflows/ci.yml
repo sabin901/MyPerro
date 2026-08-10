@@ -65,6 +65,8 @@ jobs:
             bundle: appimage,deb
             artifact: linux-packages
     runs-on: ${{ matrix.os }}
+    env:
+      HAS_APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE != '' }}
     steps:
       - uses: actions/checkout@v7
 
@@ -82,16 +84,27 @@ jobs:
       - uses: swatinem/rust-cache@v2
         with:
           workspaces: src-tauri
+          # Never reuse native target binaries across different runner images;
+          # Ubuntu 24 build scripts cannot execute on the Ubuntu 22 package job.
+          prefix-key: v1-rust-${{ matrix.os }}
+          cache-targets: false
 
       - run: npm ci
-      - name: Build
+      - name: Build Windows or Linux package
+        if: ${{ !startsWith(matrix.os, 'macos-') }}
+        run: npm run release -- --bundles ${{ matrix.bundle }}
+      - name: Build ad-hoc signed macOS package
+        if: ${{ startsWith(matrix.os, 'macos-') && env.HAS_APPLE_CERTIFICATE != 'true' }}
+        run: npm run release -- --bundles ${{ matrix.bundle }}
+        env:
+          APPLE_SIGNING_IDENTITY: '-'
+      - name: Build signed and notarized macOS package
+        if: ${{ startsWith(matrix.os, 'macos-') && env.HAS_APPLE_CERTIFICATE == 'true' }}
         run: npm run release -- --bundles ${{ matrix.bundle }}
         env:
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-          # Ad-hoc signing keeps unsigned Apple Silicon test builds launchable;
-          # a real Developer ID secret automatically replaces the fallback.
-          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY || '-' }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
