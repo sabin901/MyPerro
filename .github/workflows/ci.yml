@@ -40,6 +40,9 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           working-directory: src-tauri
+          # Mirrors audit.toml: glib 0.18 is inherited from Tauri's GTK stack,
+          # and MyPerro does not call the affected VariantStrIter API.
+          ignore: RUSTSEC-2024-0429
 
   # Slow lane: prove it actually builds a native app on all three platforms.
   build:
