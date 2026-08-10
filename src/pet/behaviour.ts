@@ -58,6 +58,11 @@ export function keysPerSecond(keysInBatch: number, batchMs: number): number {
   return batchMs <= 0 ? 0 : (keysInBatch * 1000) / batchMs;
 }
 
+/** Derive the last real user action from a monitoring batch's OS idle time. */
+export function actualActivityAt(batchAt: number, idleMs: number): number {
+  return Math.max(0, batchAt - Math.max(0, idleMs));
+}
+
 /**
  * Pick a frame and render mode from one activity batch.
  *

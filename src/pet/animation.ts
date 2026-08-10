@@ -18,6 +18,7 @@ const SEQUENCES: Record<string, MotionSequence> = {
   run: { cels: ["run", "run_alt"], frameMs: 105 },
   chase: { cels: ["chase", "run_alt"], frameMs: 105 },
   zoomies: { cels: ["zoomies", "run_alt", "run"], frameMs: 90 },
+  play: { cels: ["play", "tail_wag", "pet_happy", "tail_wag_alt"], frameMs: 145 },
   pet_happy: { cels: ["pet_happy", "pet_happy_alt"], frameMs: 220 },
   drink: { cels: ["drink", "drink_alt"], frameMs: 240 },
   eat: { cels: ["eat", "eat_alt"], frameMs: 210 },

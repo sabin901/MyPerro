@@ -3,6 +3,41 @@
 All notable MyPerro changes are documented here. The project follows Semantic
 Versioning once it reaches 1.0.
 
+## 0.9.0-rc.5 — 2026-08-10
+
+### Added
+
+- A complete responsive download website with an interactive behavior showcase,
+  all nine companions, privacy explanation, FAQs, and direct downloads for
+  Windows, Apple Silicon, Intel Mac, AppImage, and Debian.
+- GitHub Pages deployment from the same tested source and generated companion
+  previews, so the public page cannot drift away from the app's character art.
+- Continuous desktop roaming with natural acceleration, screen-safe targets,
+  direction changes, playful running, a procedural rolling/tumble phase, and
+  recovery back into movement.
+- Four deterministic roaming tests covering screen bounds, interpolation,
+  playful roll timing, and displays too small to fit the companion.
+
+### Changed
+
+- Reduced the idle delay before a companion starts exploring the desktop.
+- Play now starts a longer roaming sequence instead of animating in one spot.
+- Removed every card, border, pointer, and shadow behind pinned or temporary
+  pet text; only outlined transparent text remains above the real desktop.
+- Extended the release gate to build the public website on every release check.
+
+### Fixed
+
+- Separated input-monitor heartbeat time from real user activity time so idle
+  animations and roaming can begin even while the native monitor is healthy.
+
+### Verified
+
+- TypeScript type checking, production app and website builds, atlas validation,
+  packaged-page smoke checks, 181 unit tests across 14 files, and 3 Rust tests.
+- Desktop and 390 px mobile website layouts, all nine generated previews, live
+  animation controls, five direct platform links, and zero browser console errors.
+
 ## 0.9.0-rc.4 — 2026-08-10
 
 ### Added

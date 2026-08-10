@@ -1,6 +1,6 @@
 [package]
 name = "myperro"
-version = "0.9.0-rc.4"
+version = "0.9.0-rc.5"
 description = "A privacy-first virtual desktop companion for Windows, macOS, and Linux"
 authors = ["Sabin Raut"]
 license = "MIT"

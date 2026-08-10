@@ -1,7 +1,7 @@
 {
   "name": "myperro",
   "private": true,
-  "version": "0.9.0-rc.4",
+  "version": "0.9.0-rc.5",
   "description": "A privacy-first virtual desktop companion for Windows, macOS, and Linux",
   "author": "Sabin Raut",
   "license": "MIT",
@@ -12,6 +12,9 @@
   "scripts": {
     "dev": "vite",
     "demo": "vite --open /demo.html",
+    "site:assets": "node scripts/build-website-assets.mjs",
+    "site:dev": "npm run site:assets && vite --config website/vite.config.ts",
+    "site:build": "npm run site:assets && vite build --config website/vite.config.ts",
     "art:shiba": "node scripts/generate-dog-atlases.mjs",
     "art:dogs": "node scripts/generate-dog-atlases.mjs",
     "art:companions": "node scripts/generate-dog-atlases.mjs",
@@ -29,7 +32,7 @@
     "smoke:dist": "node scripts/smoke-dist.mjs",
     "sbom": "cyclonedx-npm --output-file myperro-web.cdx.json --spec-version 1.6",
     "checksums": "node scripts/checksums.mjs",
-    "release:check": "npm run typecheck && npm test && npm run build && npm run validate:packs && npm run smoke:dist && cargo test --manifest-path src-tauri/Cargo.toml"
+    "release:check": "npm run typecheck && npm test && npm run build && npm run site:build && npm run validate:packs && npm run smoke:dist && cargo test --manifest-path src-tauri/Cargo.toml"
   },
   "devDependencies": {
     "@cyclonedx/cyclonedx-npm": "^6.0.0",

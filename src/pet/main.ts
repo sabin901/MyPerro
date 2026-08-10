@@ -16,7 +16,7 @@ import {
 } from "@tauri-apps/plugin-notification";
 import { error as logError, info as logInfo, warn as logWarn } from "@tauri-apps/plugin-log";
 
-import { FPS, shouldDraw, isDegraded, keysPerSecond, THRESHOLDS, type Mode } from "./behaviour";
+import { actualActivityAt, FPS, shouldDraw, isDegraded, keysPerSecond, THRESHOLDS, type Mode } from "./behaviour";
 import {
   BehaviourEngine, SustainedDetector, ReversalDetector,
   type Signals, type ReminderKind, type AgentEvent,
@@ -32,6 +32,10 @@ import {
 import { idleLifeFrame } from "./idleLife";
 import { attentionMove } from "./attention";
 import { animatedCel } from "./animation";
+import {
+  isRoamRolling, planRoam, roamPosition, roamProgress, rollProgress,
+  type RoamPlan,
+} from "./roaming";
 import {
   PLAY_REQUEST_BARK_INTERVAL_MS, PLAY_REQUEST_DURATION_MS, REST_DURATION_MS,
   normaliseInteractionState, shouldRequestPlay, type CompanionInteractionState,
@@ -132,6 +136,8 @@ let lastAutoWanderAt = 0;
 let lastAttentionMoveAt = 0;
 let wanderUntil = 0;
 let playUntil = 0;
+let activeRoam: RoamPlan | null = null;
+let roamMovePending = false;
 let careUntil = 0;
 let careFrame = "idle";
 let careFrameStartedAt = 0;
@@ -148,6 +154,7 @@ let lastNeedRequestAt = 0;
 
 let lastActivity: Activity | null = null;
 let lastActivityAt = 0;
+let lastUserActivityAt = 0;
 let degraded = false;
 let reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
 
@@ -182,7 +189,8 @@ async function boot() {
   peekMode = false;
   setInterval(pollReminders, 1000);   // the scheduler ticks once a second
   setInterval(pollAgentStatus, 1000);
-  setInterval(autoWander, 2000);
+  setInterval(autoWander, 2200);
+  setInterval(tickRoaming, 50);
   setInterval(pollCompanionInteraction, 5000);
   setInterval(updateVirtualPet, 60_000);
 
@@ -191,6 +199,7 @@ async function boot() {
   await listen<Activity>("activity", e => {
     lastActivity = e.payload;
     lastActivityAt = performance.now();
+    lastUserActivityAt = actualActivityAt(lastActivityAt, e.payload.idle_ms);
     eventCount++;
     onActivity(e.payload);
   });
@@ -346,6 +355,7 @@ function stopPlayRequest(dismissMessage: boolean) {
 
 function beginTimedRest() {
   if (restTimer) clearTimeout(restTimer);
+  cancelRoam();
   stopPlayRequest(true);
   restUntil = performance.now() + REST_DURATION_MS;
   showCareFrameUntil("sleep", restUntil);
@@ -719,6 +729,7 @@ function onActivity(a: Activity) {
 
   currentFrame = out.frame;
   mode = out.mode;
+  if (activeRoam && out.mode !== "idle" && now >= playUntil) cancelRoam(now);
 
   // One-shot signals are consumed once the engine has seen them.
   if (out.changed && out.state === "reminder") pendingReminder = null;
@@ -838,8 +849,9 @@ function toggleQuietMode() {
 }
 
 function triggerPlay() {
-  playUntil = performance.now() + 5000;
+  playUntil = performance.now() + 9000;
   wanderUntil = playUntil;
+  void startRoam(true);
 }
 
 async function applyPeekMode(enabled: boolean) {
@@ -848,6 +860,7 @@ async function applyPeekMode(enabled: boolean) {
     peekTimer = null;
   }
   peekMode = enabled;
+  if (enabled) cancelRoam();
   document.body.classList.toggle("peek", enabled);
   if (!enabled) {
     if (beforePeekPosition) {
@@ -925,11 +938,17 @@ async function pollAgentStatus() {
 
 async function autoWander() {
   const now = performance.now();
-  const idleFor = lastActivityAt === 0 ? now : now - lastActivityAt;
+  const idleFor = lastActivity?.idle_ms ?? now;
   if (
-    reducedMotion || dragging || peekMode || degraded || performance.now() < restUntil ||
-    mode !== "idle" || idleFor < 28_000 || now - lastAutoWanderAt < 12_000
+    reducedMotion || dragging || peekMode || performance.now() < restUntil || activeRoam ||
+    mode !== "idle" || idleFor < 8_000 || now - lastAutoWanderAt < 5_000
   ) return;
+
+  await startRoam(false);
+}
+
+async function startRoam(playful: boolean) {
+  if (reducedMotion || dragging || peekMode || performance.now() < restUntil) return;
 
   const monitor = await currentMonitor().catch(() => null);
   if (!monitor) return;
@@ -940,22 +959,43 @@ async function autoWander() {
     width: monitor.size.width / sf,
     height: monitor.size.height / sf,
   };
-  const step = 18 + Math.round((Math.sin(now / 3700) + 1) * 14);
-  const direction = Math.sin(now / 5100) >= 0 ? 1 : -1;
-  const vertical = Math.round(Math.sin(now / 2900) * 10);
-  const next = clampToMonitor(
-    { x: viewport.winX + step * direction, y: viewport.winY + vertical },
-    viewport,
-    area,
-    { top: 18, right: 18, bottom: 18, left: 18 },
-  );
-
-  if (Math.abs(next.x - viewport.winX) < 1 && Math.abs(next.y - viewport.winY) < 1) return;
-  facingLeft = next.x < viewport.winX;
-  viewport = { ...viewport, winX: next.x, winY: next.y };
+  const now = performance.now();
+  const plan = planRoam({
+    viewport, monitor: area, now,
+    horizontalSeed: Math.random(), verticalSeed: Math.random(), playful,
+  });
+  if (!plan) return;
+  activeRoam = plan;
+  facingLeft = plan.target.x < plan.start.x;
   lastAutoWanderAt = now;
-  wanderUntil = now + 1400;
-  await win.setPosition(new LogicalPosition(Math.round(next.x), Math.round(next.y)));
+  wanderUntil = now + plan.durationMs;
+}
+
+function cancelRoam(now = performance.now()) {
+  activeRoam = null;
+  wanderUntil = Math.min(wanderUntil, now);
+}
+
+async function tickRoaming() {
+  const plan = activeRoam;
+  if (!plan || roamMovePending) return;
+  if (dragging || peekMode || performance.now() < restUntil || reducedMotion) {
+    cancelRoam();
+    return;
+  }
+  const now = performance.now();
+  const next = roamPosition(plan, now);
+  viewport = { ...viewport, winX: next.x, winY: next.y };
+  roamMovePending = true;
+  try {
+    await win.setPosition(new LogicalPosition(Math.round(next.x), Math.round(next.y)));
+  } finally {
+    roamMovePending = false;
+  }
+  if (roamProgress(plan, now) >= 1) {
+    activeRoam = null;
+    if (now < playUntil) setTimeout(() => { void startRoam(true); }, 260);
+  }
 }
 
 async function followCursorAttention(a: Activity, now: number) {
@@ -976,7 +1016,7 @@ async function followCursorAttention(a: Activity, now: number) {
     now,
     lastMovedAt: lastAttentionMoveAt,
     reducedMotion,
-    disabled: dragging || peekMode || degraded || performance.now() < playUntil || performance.now() < restUntil,
+    disabled: dragging || peekMode || degraded || activeRoam !== null || performance.now() < playUntil || performance.now() < restUntil,
   });
   if (!move) return;
   viewport = { ...viewport, winX: move.next.x, winY: move.next.y };
@@ -1026,6 +1066,7 @@ function wireDrag() {
   canvas.addEventListener("mousedown", e => {
     if (e.button !== 0) return;
     dragging = true;
+    cancelRoam();
     document.body.classList.add("dragging");
     grab = { x: e.screenX, y: e.screenY };
     shakeDetector.reset();
@@ -1080,15 +1121,20 @@ function draw() {
     frame: currentFrame,
     mode,
     now,
-    lastActivityAt,
+    lastActivityAt: lastUserActivityAt,
     availableFrames: available,
     reducedMotion,
   });
   if (now < wanderUntil) {
-    visibleFrame = available.has("walk_a") ? "walk_a" : visibleFrame;
+    visibleFrame = activeRoam?.gait === "run" && available.has("run")
+      ? "run"
+      : available.has("walk_a") ? "walk_a" : visibleFrame;
   }
   if (now < playUntil) {
     visibleFrame = available.has("zoomies") ? "zoomies" : visibleFrame;
+  }
+  if (isRoamRolling(activeRoam, now)) {
+    visibleFrame = available.has("play") ? "play" : available.has("pet_happy") ? "pet_happy" : visibleFrame;
   }
   const showingCare = now < careUntil;
   if (showingCare) {
@@ -1117,7 +1163,12 @@ function drawSpriteCel(f: Frame, offset: { x: number; y: number }, now: number) 
   const base = visibleFrame.replace(/_alt$/, "");
   const t = now / 1000;
   let sx = 1, sy = 1, rotate = 0;
-  if (base === "drag") { sx = 0.94; sy = 1.1; rotate = Math.sin(t * 16) * 0.025; }
+  if (isRoamRolling(activeRoam, now)) {
+    const direction = facingLeft ? -1 : 1;
+    rotate = rollProgress(activeRoam, now) * Math.PI * 2 * direction;
+    sx = 1.05; sy = .95;
+  }
+  else if (base === "drag") { sx = 0.94; sy = 1.1; rotate = Math.sin(t * 16) * 0.025; }
   else if (base === "shake") { sx = 1.04; sy = 0.97; rotate = Math.sin(t * 34) * 0.06; }
   else if (["happy_jump", "jump", "land"].includes(base)) { sx = 0.98; sy = 1.04; }
   else if (["run", "chase", "zoomies"].includes(base)) { sx = 1.05; sy = 0.96; }
@@ -1266,6 +1317,10 @@ function motionOffset(now: number): { x: number; y: number } {
   const t = now / 1000;
 
   const s = canvas.width / 96;
+  if (isRoamRolling(activeRoam, now)) {
+    const bounce = Math.sin(rollProgress(activeRoam, now) * Math.PI * 3);
+    return { x: 0, y: -Math.max(0, Math.round(bounce * 7 * s)) };
+  }
   if (dragging || visibleFrame === "shake") {
     return { x: Math.round(Math.sin(t * 38) * 2 * s), y: 0 };
   }

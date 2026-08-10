@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
-  decide, isOverSprite, shouldDraw, isDegraded,
+  actualActivityAt, decide, isOverSprite, shouldDraw, isDegraded,
   FPS, THRESHOLDS, REACHABLE_FRAMES,
   type Activity, type Mode,
 } from "./behaviour";
@@ -12,6 +12,11 @@ const quiet: Activity = {
   keys_since_last: 0, clicks_since_last: 0, scroll_delta: 0, idle_ms: 0,
 };
 const a = (o: Partial<Activity>): Activity => ({ ...quiet, ...o });
+
+it("distinguishes monitoring heartbeats from the last real user action", () => {
+  expect(actualActivityAt(20_000, 12_000)).toBe(8_000);
+  expect(actualActivityAt(2_000, 9_000)).toBe(0);
+});
 
 describe("decide — priority order", () => {
   it("dragging beats everything, including sleep", () => {
