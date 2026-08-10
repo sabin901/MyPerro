@@ -7,6 +7,8 @@ reminds you to take breaks, asks to play, and quietly keeps you company.
 
 macOS · Windows · Linux (X11/XWayland) · MIT licensed · free forever · no telemetry · no account
 
+**Website and downloads:** https://sabin901.github.io/MyPerro/
+
 ## What It Does
 
 - Pixel puppy overlay with transparent click-through hit testing.
@@ -27,8 +29,8 @@ macOS · Windows · Linux (X11/XWayland) · MIT licensed · free forever · no t
 - Nine built-in companions: Shiba Inu, Pomeranian, Husky, German Shepherd,
   Dalmatian, Lhasa Apso, Calico Cat, Midnight Cat, and Cream Tabby.
 - Cursor chase, eye follow, petting, dragging, shaking, scrolling, typing, hard
-  typing, idle micro-motions, sleeping, waking, stretch, water, notes, and
-  Pomodoro reactions.
+  typing, continuous free roaming, playful rolling, idle micro-motions, sleeping,
+  waking, stretch, water, notes, and Pomodoro reactions.
 - Task-based, auto-saving settings for names, reminders, scheduled messages,
   quiet hours, Pomodoro, breed, 65–200% size, opacity, colours, markings, sound
   volume and preview, reduced motion, always-on-top, start at login, and peek mode.

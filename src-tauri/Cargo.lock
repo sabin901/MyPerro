@@ -2270,7 +2270,7 @@ dependencies = [
 
 [[package]]
 name = "myperro"
-version = "0.9.0-rc.4"
+version = "0.9.0-rc.5"
 dependencies = [
  "core-foundation 0.10.1",
  "core-graphics 0.25.0",

@@ -27,28 +27,28 @@
       body.dragging #pet { cursor: grabbing; }
       body.peek #clock { display: none; }
       body.peek #pet { cursor: default; }
-      /* Pinned note bubble above the dog's head (ComNyang "fixed message"). */
+      /* Desktop text remains readable without ever painting a card or square. */
       #note {
         position: fixed; left: 50%; top: 6px; transform: translateX(-50%);
-        width: max-content; max-width: calc(100% - 24px); padding: 6px 11px;
-        font: 700 11px/1.35 -apple-system, "Segoe UI", system-ui, sans-serif;
-        color: #23324a; text-align: center;
-        background: rgba(255,250,226,.96); border: 2px solid #caa94e; border-radius: 999px;
-        box-shadow: 0 2px 0 rgba(0,0,0,.18);
+        width: max-content; max-width: calc(100% - 18px); padding: 5px 8px;
+        font: 800 12px/1.35 -apple-system, "Segoe UI", system-ui, sans-serif;
+        color: #fff8dc; text-align: center;
+        background: transparent; border: 0; border-radius: 0; box-shadow: none;
+        text-shadow:
+          -1px -1px 0 rgba(50,28,16,.96), 1px -1px 0 rgba(50,28,16,.96),
+          -1px 1px 0 rgba(50,28,16,.96), 1px 1px 0 rgba(50,28,16,.96),
+          0 2px 3px rgba(0,0,0,.55);
         pointer-events: none;
       }
-      #note::after {
-        content: ""; position: absolute; left: 50%; bottom: -7px;
-        width: 9px; height: 9px; transform: translateX(-50%) rotate(45deg);
-        background: rgba(255,250,226,.96); border-right: 2px solid #caa94e;
-        border-bottom: 2px solid #caa94e;
-      }
+      #note::after { display: none; }
       /* Pixel Pomodoro clock beside the dog. */
       #clock {
         position: fixed; right: 6px; bottom: 6px;
         font: 13px ui-monospace, Menlo, monospace; letter-spacing: 1px;
-        color: #fff; background: rgba(20,22,26,.82);
-        padding: 2px 6px; border-radius: 5px;
+        color: #fff8dc; background: transparent;
+        padding: 2px 5px; border-radius: 0;
+        text-shadow: -1px -1px 0 #2c1b13, 1px -1px 0 #2c1b13,
+          -1px 1px 0 #2c1b13, 1px 1px 0 #2c1b13, 0 2px 3px rgba(0,0,0,.6);
       }
       .hidden { display: none !important; }
 

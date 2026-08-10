@@ -3,7 +3,7 @@
 > Historical pre-alpha baseline. This document is retained to show where the
 > project began; it does not describe the current release candidate. See
 > [EVALUATION.md](EVALUATION.md) and [COMPETITIVE_REVIEW.md](COMPETITIVE_REVIEW.md)
-> for the verified rc.4 position.
+> for the current verified release-candidate position.
 
 Asked plainly: **how functional is MyPerro compared to the app you showed me?**
 

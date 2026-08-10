@@ -2,7 +2,7 @@
 
 ## Executive verdict
 
-MyPerro `0.9.0-rc.4` is a credible public release candidate and a good fit for
+MyPerro `0.9.0-rc.5` is a credible public release candidate and a good fit for
 a free, accountless public beta. It is no longer a prototype: the current
 Windows executable and installer build and run, the same revision produces
 Linux AppImage and Debian packages and reaches `Pet ready` in a native startup
@@ -27,7 +27,7 @@ as a stable public-release operation.
 | Check | Result | Evidence |
 |---|---:|---|
 | TypeScript | Pass | `tsc --noEmit` on Windows and Linux |
-| Frontend logic | Pass | 13 Vitest files, 176 tests on Windows and Linux |
+| Frontend logic | Pass | 14 Vitest files, 181 tests on Windows and Linux |
 | Interaction timing | Pass | explicit tests for 20-second requests, cooldown, initial anti-nag behavior, 60-second rest, and touch-to-wake |
 | Native privacy logic | Pass | 3 Rust tests, including no-keycode serialization, on Windows and Linux |
 | Production frontend | Pass | Vite 8.2.1 build and packaged CSP/asset smoke test |
@@ -35,12 +35,12 @@ as a stable public-release operation.
 | Sound design | Pass with human acceptance pending | tested bark/purr/yip, snack, slurp, happy, sleep/wake and chime recipes; volume persists and Settings includes a direct preview |
 | JavaScript audit | Pass | 0 known npm vulnerabilities |
 | RustSec audit | Reviewed | 0 classified vulnerabilities; 17 allowed upstream warnings |
-| Windows native runtime | Pass | responsive rc.4 executable, approximately 30 MB working set; transparent pet-only surface verified without a focus rectangle |
+| Windows native runtime | Pass | responsive release executable; transparent pet-only surface verified without a focus rectangle or message card |
 | Windows size control | Pass | accessibility tree exposes 65–200%; 150% produced a 288×288 pet window from the 192×192 base |
 | Windows Settings | Pass | free/accountless message, play-request controls, sound volume/preview, Wellbeing, actions, tabs and creator attribution visible |
 | Windows package | Pass | current x64 NSIS installer and SHA-256 manifest generated |
-| Linux native runtime | Pass | rc.4 reached `Pet ready` and remained alive after 8 seconds under Xvfb/DBus |
-| Linux packages | Pass | rc.4 x64 AppImage and `.deb`; Debian metadata identifies Sabin Raut |
+| Linux native runtime | Pass | prior release reached `Pet ready` and remained alive after 8 seconds under Xvfb/DBus; rc.5 CI packaging remains required |
+| Linux packages | Pass | x64 AppImage and `.deb`; Debian metadata identifies Sabin Raut |
 | SBOM/checksums | Pass | CycloneDX web SBOM and SHA-256 manifests generated |
 | macOS artifacts | Pass in CI | separate Apple Silicon and Intel DMGs, checksums and SBOMs built and uploaded; Developer ID signing/notarization and physical runtime acceptance remain external |
 
@@ -137,8 +137,8 @@ drawings and active-window physics, not another Settings redesign.
 
 | Platform | Verified here | Remaining acceptance |
 |---|---|---|
-| Windows 10/11 x64 | optimized rc.4 executable, NSIS, transparent pet-only runtime, single instance | Authenticode; clean-VM install/upgrade/uninstall; human audio acceptance and mixed-DPI matrix |
-| Linux x64 X11/XWayland | optimized rc.4 executable, AppImage, Debian package, DBus/Xvfb launch | real GNOME/KDE tray, transparency, audio, scaling, sleep/resume and global-input sessions |
+| Windows 10/11 x64 | optimized executable, NSIS, transparent pet-only runtime, single instance | Authenticode; clean-VM install/upgrade/uninstall; human audio acceptance and mixed-DPI matrix |
+| Linux x64 X11/XWayland | optimized executable, AppImage, Debian package, DBus/Xvfb launch | real GNOME/KDE tray, transparency, audio, scaling, sleep/resume and global-input sessions |
 | Linux native Wayland | UI can launch | global reactions are compositor-dependent and must remain labelled degraded |
 | macOS 12+ ARM64/Intel | separate ARM64 and Intel DMGs built in GitHub Actions | Accessibility flow, Developer ID signing, notarization, audio and physical hardware QA |
 
