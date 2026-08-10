@@ -42,7 +42,7 @@ as a stable public-release operation.
 | Linux native runtime | Pass | rc.4 reached `Pet ready` and remained alive after 8 seconds under Xvfb/DBus |
 | Linux packages | Pass | rc.4 x64 AppImage and `.deb`; Debian metadata identifies Sabin Raut |
 | SBOM/checksums | Pass | CycloneDX web SBOM and SHA-256 manifests generated |
-| macOS artifacts | Pending externally | CI has separate ARM64 and Intel jobs; a macOS runner and signing/notarization secrets are still required |
+| macOS artifacts | Pass in CI | separate Apple Silicon and Intel DMGs, checksums and SBOMs built and uploaded; Developer ID signing/notarization and physical runtime acceptance remain external |
 
 The Rust warnings are inherited primarily from Tauri's Linux GTK3/WebKitGTK
 stack. `RUSTSEC-2024-0429` is explicitly documented in `audit.toml`; MyPerro
@@ -140,26 +140,24 @@ drawings and active-window physics, not another Settings redesign.
 | Windows 10/11 x64 | optimized rc.4 executable, NSIS, transparent pet-only runtime, single instance | Authenticode; clean-VM install/upgrade/uninstall; human audio acceptance and mixed-DPI matrix |
 | Linux x64 X11/XWayland | optimized rc.4 executable, AppImage, Debian package, DBus/Xvfb launch | real GNOME/KDE tray, transparency, audio, scaling, sleep/resume and global-input sessions |
 | Linux native Wayland | UI can launch | global reactions are compositor-dependent and must remain labelled degraded |
-| macOS 12+ ARM64/Intel | shared code and separate CI jobs | build both DMGs, Accessibility flow, Developer ID signing, notarization, audio and hardware QA |
+| macOS 12+ ARM64/Intel | separate ARM64 and Intel DMGs built in GitHub Actions | Accessibility flow, Developer ID signing, notarization, audio and physical hardware QA |
 
 ## Remaining stable-release gates
 
-1. Merge the reviewed release-candidate pull request only after all four native
-   GitHub Actions build jobs pass.
-2. Supply a Windows code-signing certificate and Apple Developer ID/notarization
+1. Supply a Windows code-signing certificate and Apple Developer ID/notarization
    secrets, then build and verify signed artifacts in CI.
-3. Run the clean-machine matrix: Windows mixed DPI and sleep/wake; macOS Intel
+2. Run the clean-machine matrix: Windows mixed DPI and sleep/wake; macOS Intel
    and Apple Silicon; GNOME and KDE on X11/XWayland. Confirm bark/meow volume,
    transparent click-through, tray behavior and one-minute rest with a clock.
-4. Configure a real HTTPS update endpoint and Tauri updater signing key, test
+3. Configure a real HTTPS update endpoint and Tauri updater signing key, test
    rollback, then enable the updater. Do not ship a fake endpoint or key.
-5. Commission a frame-by-frame pass for typing, eating, drinking, tail arcs and
+4. Commission a frame-by-frame pass for typing, eating, drinking, tail arcs and
    pose transitions, with silhouette review at every supported scale.
-6. Add a signed/validated in-app companion-pack importer before advertising a
+5. Add a signed/validated in-app companion-pack importer before advertising a
    public community ecosystem.
-7. Decide whether crash reporting remains absent for maximum privacy or becomes
+6. Decide whether crash reporting remains absent for maximum privacy or becomes
    an explicit opt-in service; document retention before adding one.
-8. Pin CI actions to reviewed commit SHAs and produce a native Rust SBOM in
+7. Pin CI actions to reviewed commit SHAs and produce a native Rust SBOM in
    addition to the existing web CycloneDX report.
 
 ## Go/no-go

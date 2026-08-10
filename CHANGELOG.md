@@ -37,6 +37,8 @@ Versioning once it reaches 1.0.
 
 - TypeScript type checking, atlas validation, production build, and 176 unit
   tests across 13 test files.
+- Native NSIS, AppImage, Debian, Apple Silicon DMG, and Intel DMG packaging in
+  GitHub Actions, with checksums and a CycloneDX web SBOM for each platform.
 
 ## 0.9.0-rc.3 — 2026-08-10
 
