@@ -145,5 +145,13 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          mapfile -d '' files < <(find release-files -type f -print0)
-          gh release create "$GITHUB_REF_NAME" "${files[@]}" --draft --generate-notes --title "MyPerro $GITHUB_REF_NAME"
+          mkdir release-assets
+          find release-files -type f \( -name '*.dmg' -o -name '*.exe' -o -name '*.AppImage' -o -name '*.deb' \) \
+            -exec cp {} release-assets/ \;
+          first_sbom=$(find release-files -type f -name 'myperro-web.cdx.json' -print -quit)
+          cp "$first_sbom" release-assets/myperro-web.cdx.json
+          (cd release-assets && sha256sum -- * > SHA256SUMS.txt)
+          mapfile -d '' files < <(find release-assets -type f -print0)
+          gh release create "$GITHUB_REF_NAME" "${files[@]}" \
+            --repo "$GITHUB_REPOSITORY" --draft --prerelease --generate-notes \
+            --title "MyPerro $GITHUB_REF_NAME"
