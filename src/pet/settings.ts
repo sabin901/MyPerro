@@ -26,6 +26,8 @@ export interface Appearance {
   markingColor: string;   // hex
   collarColor: string;    // hex
   markingStyle: string;   // "classic" | "mask" | "patch" | "freckles"
+  scale: number;          // 0.65–2 desktop size multiplier
+  opacity: number;        // 0.5–1 visual opacity
 }
 
 export interface Settings {
@@ -43,6 +45,8 @@ export interface Settings {
   stretchEveryMinutes: number;
   waterEnabled: boolean;
   waterEveryMinutes: number;
+  playRequestEnabled: boolean;
+  playRequestMinutes: number;
 
   quietFrom: number | null;  // 0–23, or null for none
   quietTo: number | null;
@@ -50,14 +54,19 @@ export interface Settings {
   pomodoro: PomodoroConfig;
 
   soundEnabled: boolean;
+  soundVolume: number;
   reducedMotion: boolean;
   startAtLogin: boolean;
+  inputMonitoringEnabled: boolean;
+  notificationsEnabled: boolean;
+  onboardingComplete: boolean;
   peekMode: boolean;
+  alwaysOnTop: boolean;
 
   appearance: Appearance;
 }
 
-export const CURRENT_SCHEMA = 1;
+export const CURRENT_SCHEMA = 5;
 export const BUILT_IN_BREEDS = [
   "shiba-inu", "pomeranian", "husky", "german-shepherd", "dalmatian", "lhasa-apso",
   "calico-cat", "midnight-cat", "cream-tabby",
@@ -161,19 +170,28 @@ export const DEFAULT_SETTINGS: Settings = {
   stretchEveryMinutes: 50,
   waterEnabled: true,
   waterEveryMinutes: 40,
+  playRequestEnabled: true,
+  playRequestMinutes: 30,
   quietFrom: null,
   quietTo: null,
   pomodoro: DEFAULT_POMODORO,
   soundEnabled: true,
+  soundVolume: .8,
   reducedMotion: false,
   startAtLogin: false,
+  inputMonitoringEnabled: false,
+  notificationsEnabled: false,
+  onboardingComplete: false,
   peekMode: false,
+  alwaysOnTop: true,
   appearance: {
     breed: "shiba-inu",
     baseColor: BREED_PRESETS["shiba-inu"].baseColor,
     markingColor: BREED_PRESETS["shiba-inu"].markingColor,
     collarColor: BREED_PRESETS["shiba-inu"].collarColor,
     markingStyle: BREED_PRESETS["shiba-inu"].markingStyle,
+    scale: 1,
+    opacity: 1,
   },
 };
 
@@ -211,6 +229,8 @@ export function normaliseSettings(raw: unknown): Settings {
     stretchEveryMinutes: num(r.stretchEveryMinutes, d.stretchEveryMinutes, 1, 1440),
     waterEnabled: bool(r.waterEnabled, d.waterEnabled),
     waterEveryMinutes: num(r.waterEveryMinutes, d.waterEveryMinutes, 1, 1440),
+    playRequestEnabled: bool(r.playRequestEnabled, d.playRequestEnabled),
+    playRequestMinutes: num(r.playRequestMinutes, d.playRequestMinutes, 5, 240),
     quietFrom: hour(r.quietFrom),
     quietTo: hour(r.quietTo),
     pomodoro: {
@@ -220,15 +240,22 @@ export function normaliseSettings(raw: unknown): Settings {
       roundsBeforeLongBreak: num(pm.roundsBeforeLongBreak, d.pomodoro.roundsBeforeLongBreak, 1, 12),
     },
     soundEnabled: bool(r.soundEnabled, d.soundEnabled),
+    soundVolume: num(r.soundVolume, d.soundVolume, 0.1, 1),
     reducedMotion: bool(r.reducedMotion, d.reducedMotion),
     startAtLogin: bool(r.startAtLogin, d.startAtLogin),
+    inputMonitoringEnabled: bool(r.inputMonitoringEnabled, d.inputMonitoringEnabled),
+    notificationsEnabled: bool(r.notificationsEnabled, d.notificationsEnabled),
+    onboardingComplete: bool(r.onboardingComplete, d.onboardingComplete),
     peekMode: bool(r.peekMode, d.peekMode),
+    alwaysOnTop: bool(r.alwaysOnTop, d.alwaysOnTop),
     appearance: {
       breed: breedId(ap.breed, d.appearance.breed),
       baseColor: hex(ap.baseColor, d.appearance.baseColor),
       markingColor: hex(ap.markingColor, d.appearance.markingColor),
       collarColor: hex(ap.collarColor, d.appearance.collarColor),
       markingStyle: markingStyle(ap.markingStyle, d.appearance.markingStyle),
+      scale: num(ap.scale, d.appearance.scale, 0.65, 2),
+      opacity: num(ap.opacity, d.appearance.opacity, 0.5, 1),
     },
   };
 }

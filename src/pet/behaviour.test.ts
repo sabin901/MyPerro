@@ -98,9 +98,9 @@ describe("atlas contract", () => {
     expect(missing).toEqual([]);
   });
 
-  it("all atlas frames are exactly 96x96", () => {
+  it("all atlas frames match the declared runtime cell", () => {
     const bad = Object.entries(atlas.frames as Record<string, any>)
-      .filter(([, f]) => f.w !== 96 || f.h !== 96)
+      .filter(([, f]) => f.w !== atlas.canvas.width || f.h !== atlas.canvas.height)
       .map(([k]) => k);
     expect(bad).toEqual([]);
   });
@@ -108,8 +108,8 @@ describe("atlas contract", () => {
   it("frame rectangles sit on the grid and never overlap", () => {
     const seen = new Set<string>();
     for (const [name, f] of Object.entries(atlas.frames as Record<string, any>)) {
-      expect(f.x % 96, `${name}.x off grid`).toBe(0);
-      expect(f.y % 96, `${name}.y off grid`).toBe(0);
+      expect(f.x % atlas.canvas.width, `${name}.x off grid`).toBe(0);
+      expect(f.y % atlas.canvas.height, `${name}.y off grid`).toBe(0);
       const key = `${f.x},${f.y}`;
       expect(seen.has(key), `${name} overlaps another frame`).toBe(false);
       seen.add(key);

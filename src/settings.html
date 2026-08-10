@@ -2,35 +2,38 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>MyPerro — Settings</title>
     <style>
       :root {
         color-scheme: light;
         --ink: #3b281d;
         --muted: #7a5c42;
-        --paper: #f3dfb8;
-        --panel: #fff3cf;
+        --paper: #ead7b2;
+        --panel: #fff8df;
         --line: #8f6336;
         --red: #b9523b;
         --blue: #356b7d;
         --green: #557447;
+        --shadow: 0 12px 32px rgba(62,37,20,.12), 0 2px 5px rgba(62,37,20,.1);
       }
       * { box-sizing: border-box; }
       body {
-        margin: 0; padding: 18px 20px 82px;
-        font: 13px/1.55 -apple-system, "Segoe UI", system-ui, sans-serif;
+        margin: 0 auto; padding: 24px 26px 94px; max-width: 760px;
+        font: 16px/1.55 -apple-system, "Segoe UI", system-ui, sans-serif;
         color: var(--ink);
         background:
           linear-gradient(rgba(91, 58, 29, .05) 50%, transparent 50%) 0 0 / 100% 4px,
-          radial-gradient(circle at 20% 10%, rgba(255,255,255,.55), transparent 28%),
+          radial-gradient(circle at 16% 5%, rgba(255,255,255,.75), transparent 32%),
+          radial-gradient(circle at 88% 22%, rgba(196,105,65,.12), transparent 26%),
           var(--paper);
       }
       header {
         display: grid; grid-template-columns: 118px 1fr; gap: 14px;
         align-items: center; margin-bottom: 14px;
-        border: 2px solid var(--line); border-radius: 8px;
-        background: var(--panel); box-shadow: 4px 4px 0 rgba(59,40,29,.2);
-        padding: 10px 12px;
+        border: 2px solid var(--line); border-radius: 18px;
+        background: linear-gradient(135deg, #fff9e5, #ffe8b3); box-shadow: var(--shadow);
+        padding: 14px 16px;
       }
       .preview {
         display: grid; place-items: center;
@@ -46,12 +49,13 @@
         font: 700 20px/1.1 Georgia, "Times New Roman", serif;
         margin: 0 0 4px; letter-spacing: .04em; text-transform: uppercase;
       }
-      p.sub { margin: 0; color: var(--muted); font-size: 12px; }
-      form { display: grid; gap: 12px; }
+      p.sub { margin: 0; color: var(--muted); font-size: 14px; }
+      .free-line { margin: 5px 0 0; color: var(--green); font-size: 13px; font-weight: 800; }
+      form { display: grid; gap: 16px; }
       details {
-        border: 2px solid var(--line); border-radius: 8px; margin: 0;
+        border: 2px solid var(--line); border-radius: 14px; margin: 0;
         background: rgba(255,243,207,.82);
-        box-shadow: 3px 3px 0 rgba(59,40,29,.14);
+        box-shadow: var(--shadow);
         overflow: hidden;
       }
       summary {
@@ -63,30 +67,32 @@
       summary::-webkit-details-marker { display: none; }
       details .inside { padding: 12px 14px; }
       fieldset {
-        border: 2px solid var(--line); border-radius: 8px; margin: 0;
-        padding: 12px 14px; background: rgba(255,243,207,.82);
-        box-shadow: 3px 3px 0 rgba(59,40,29,.14);
+        border: 2px solid var(--line); border-radius: 14px; margin: 0;
+        padding: 16px 18px; background: rgba(255,248,223,.9);
+        box-shadow: var(--shadow);
       }
       legend {
         font: 700 11px/1 Georgia, "Times New Roman", serif;
         text-transform: uppercase; letter-spacing: .08em; color: #fff;
         background: var(--blue); border: 2px solid var(--line);
-        border-radius: 999px; padding: 4px 9px;
+        border-radius: 999px; padding: 6px 11px;
       }
       label { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 7px 0; }
       label span { flex: 1; }
       input[type="text"], input[type="number"], input[type="datetime-local"], select {
-        width: 138px; padding: 5px 7px; border-radius: 5px;
+        width: 150px; min-height: 44px; padding: 8px 9px; border-radius: 7px;
         border: 2px solid #9d7045; background: #fff9df; color: var(--ink);
         box-shadow: inset 2px 2px 0 rgba(59,40,29,.08);
       }
       input[type="text"].wide { width: 180px; }
       input[type="datetime-local"].wide { width: 180px; }
       input[type="color"] {
-        width: 38px; height: 28px; border: 2px solid #9d7045;
+        width: 44px; height: 44px; border: 2px solid #9d7045;
         background: #fff9df; padding: 2px; border-radius: 5px;
       }
-      input[type="checkbox"] { accent-color: var(--red); }
+      input[type="checkbox"] { width: 24px; height: 24px; accent-color: var(--red); }
+      input[type="range"] { width: 150px; min-height: 44px; accent-color: var(--red); cursor: pointer; }
+      output { min-width: 48px; color: var(--muted); font-variant-numeric: tabular-nums; }
       .row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
       .quick-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0 4px; }
       .breed-cards {
@@ -103,14 +109,14 @@
         background: #ffe09f; border-color: var(--red);
         box-shadow: inset 0 0 0 2px rgba(185,82,59,.18), 2px 2px 0 rgba(59,40,29,.14);
       }
-      .breed-card strong { display: block; font-size: 12px; }
-      .breed-card small { color: var(--muted); }
+      .breed-card strong { display: block; font-size: 14px; }
+      .breed-card small { color: var(--muted); font-size: 12px; }
       .breed-card em {
         display: inline-block; font-style: normal; font-size: 10px; line-height: 1;
         padding: 3px 5px; margin-bottom: 5px; border-radius: 999px;
         background: rgba(53,107,125,.14); color: var(--blue);
       }
-      .saved { font-size: 12px; color: var(--green); opacity: 0; transition: opacity .2s; }
+      .saved { font-size: 14px; color: var(--green); opacity: 0; transition: opacity .2s; }
       .saved.show { opacity: 1; }
       footer {
         position: fixed; left: 0; right: 0; bottom: 0;
@@ -118,29 +124,173 @@
         padding: 12px 20px; border-top: 2px solid var(--line);
         background: rgba(243,223,184,.96); backdrop-filter: blur(6px);
       }
+      #doneSettings { margin-left: auto; }
       button {
         background: var(--red); color: #fff7d2; border: 2px solid var(--line);
         border-radius: 7px; box-shadow: 3px 3px 0 rgba(59,40,29,.22);
-        padding: 8px 18px; font-size: 13px; font-weight: 800; cursor: pointer;
+        min-height: 44px; padding: 9px 18px; font-size: 14px; font-weight: 800; cursor: pointer;
       }
       button.secondary {
         background: #fff9df; color: var(--ink); font-weight: 700;
         padding: 6px 10px; box-shadow: 2px 2px 0 rgba(59,40,29,.14);
       }
       button:hover { transform: translate(1px, 1px); box-shadow: 2px 2px 0 rgba(59,40,29,.22); }
+      button:active { transform: translate(2px, 2px) scale(.98); box-shadow: 1px 1px 0 rgba(59,40,29,.22); }
+      button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible {
+        outline: 3px solid #1f6179; outline-offset: 2px;
+      }
+      button:disabled { cursor: wait; opacity: .55; transform: none; box-shadow: none; }
+      .care-status {
+        display: flex; align-items: center; justify-content: space-between; gap: 12px;
+        margin: 0 0 12px; padding: 10px 12px; border: 2px solid #9d7045;
+        border-radius: 7px; background: #fff9df;
+      }
+      .care-status strong { display: block; font: 700 15px/1.2 Georgia, serif; }
+      .care-status small { display: block; margin-top: 3px; color: var(--muted); }
+      .mood-badge { flex: none; padding: 5px 9px; border-radius: 999px; color: #fff; background: var(--green); font-weight: 800; }
+      .mood-badge[data-mood="okay"] { background: #8a6a2f; }
+      .mood-badge[data-mood="needs-care"] { background: var(--red); }
+      .needs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; }
+      .need { display: grid; gap: 4px; }
+      .need-label { display: flex; justify-content: space-between; font-weight: 700; }
+      .need-label output { color: var(--muted); font-variant-numeric: tabular-nums; }
+      .meter { height: 10px; overflow: hidden; border: 2px solid var(--line); border-radius: 999px; background: #d8c59e; }
+      .meter > span { display: block; height: 100%; width: 0; background: var(--green); transition: width .25s ease, background-color .25s ease; }
+      .meter > span.low { background: var(--red); }
+      .care-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 14px; }
+      .care-actions button { min-height: 44px; padding: 7px 4px; }
+      .care-feedback { min-height: 20px; margin: 9px 0 0; color: var(--green); font-weight: 700; text-align: center; }
+      .shortcut-intro { margin: 0 0 12px; color: var(--muted); font-size: 14px; }
+      .shortcut-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+      .shortcut-grid div { display: grid; place-items: center; gap: 5px; min-height: 64px; padding: 8px 4px; border: 2px solid #9d7045; border-radius: 9px; background: #fff9df; text-align: center; }
+      .shortcut-grid kbd { display: grid; place-items: center; width: 30px; height: 30px; color: #fff; background: var(--blue); border: 2px solid var(--line); border-radius: 7px; box-shadow: 0 2px 0 rgba(59,40,29,.2); font: 800 16px/1 ui-monospace, monospace; }
+      .shortcut-grid span { color: var(--muted); font-size: 12px; font-weight: 800; }
+      .showcase-intro { margin: 0 0 10px; color: var(--muted); font-size: 14px; }
+      .showcase-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+      .showcase-grid button { min-height: 44px; padding: 7px 5px; font-size: 13px; }
+      .showcase-grid .tour { grid-column: 1 / -1; background: var(--red); color: #fff7d2; }
+      .settings-nav {
+        position: sticky; top: 8px; z-index: 20;
+        display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px;
+        margin: 0 0 16px; padding: 6px; border: 2px solid var(--line);
+        border-radius: 14px; background: rgba(255,248,223,.94);
+        box-shadow: var(--shadow); backdrop-filter: blur(12px);
+      }
+      .settings-nav button {
+        min-height: 44px; padding: 7px 5px; color: var(--muted); background: transparent;
+        border-color: transparent; box-shadow: none;
+      }
+      .settings-nav button[aria-selected="true"] {
+        color: #fff; background: var(--blue); border-color: var(--line);
+        box-shadow: 0 3px 0 rgba(59,40,29,.2);
+      }
+      [data-pane].pane-hidden { display: none; }
+      [data-pane]:not(.pane-hidden) { animation: pane-in .2s ease-out both; }
+      @keyframes pane-in { from { opacity: 0; transform: translateY(5px); } }
+      .save-hint { color: var(--muted); font-size: 14px; }
+      .saved { opacity: 1; }
+      .saved.saving { color: var(--muted); }
+      .saved.error { color: var(--red); }
+      .creator-line { margin-top: 3px; color: var(--blue); font-weight: 800; letter-spacing: .02em; }
+      .about-card { display: grid; gap: 12px; }
+      .about-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+      .about-heading strong { font: 700 18px/1.2 Georgia, "Times New Roman", serif; }
+      .version { color: var(--muted); font-variant-numeric: tabular-nums; }
+      .about-copy { margin: 0; color: var(--muted); }
+      .credit { margin: 0; padding: 10px 12px; border: 2px solid #9d7045; border-radius: 7px; background: #fff0be; }
+      .diagnostic {
+        display: grid; grid-template-columns: 12px 1fr; gap: 4px 9px; align-items: center;
+        padding: 11px 12px; border: 2px solid #9d7045; border-radius: 7px; background: #fff9df;
+      }
+      .diagnostic-dot { width: 10px; height: 10px; border-radius: 50%; background: #9a7b52; box-shadow: 0 0 0 3px rgba(154,123,82,.16); }
+      .diagnostic[data-status="active"] .diagnostic-dot { background: var(--green); box-shadow: 0 0 0 3px rgba(85,116,71,.16); }
+      .diagnostic[data-status="unavailable"] .diagnostic-dot { background: var(--red); box-shadow: 0 0 0 3px rgba(185,82,59,.16); }
+      .diagnostic strong { line-height: 1.2; }
+      .diagnostic small { grid-column: 2; color: var(--muted); }
+      .platform-note { margin: 0; color: var(--muted); font-size: 14px; }
+      dialog {
+        width: min(520px, calc(100vw - 32px)); padding: 0; overflow: hidden;
+        color: var(--ink); background: var(--panel); border: 2px solid var(--line);
+        border-radius: 18px; box-shadow: 0 24px 80px rgba(35,22,14,.38);
+      }
+      dialog::backdrop { background: rgba(42,29,20,.55); backdrop-filter: blur(5px); }
+      .onboarding-head { padding: 22px 24px 14px; background: linear-gradient(135deg, #fff9e5, #ffe4a3); border-bottom: 2px solid var(--line); }
+      .onboarding-head h2 { margin: 0 0 6px; font: 700 24px/1.2 Georgia, serif; }
+      .onboarding-head p, .onboarding-body p { margin: 0; color: var(--muted); }
+      .onboarding-body { display: grid; gap: 16px; padding: 20px 24px 24px; }
+      .privacy-points { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+      .privacy-points li { padding: 10px 12px; border: 2px solid #b68a59; border-radius: 9px; background: #fff9df; }
+      .dialog-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+      .dialog-actions button { flex: 1 1 190px; }
+      .diagnostic-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+      @media (max-width: 430px) {
+        body { padding-inline: 12px; }
+        header { grid-template-columns: 88px 1fr; }
+        .preview { width: 80px; height: 80px; }
+        #breedPreview { width: 76px; height: 76px; }
+        .breed-cards, .care-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .shortcut-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .needs-grid { grid-template-columns: 1fr; }
+        .settings-nav { grid-template-columns: repeat(2, minmax(0, 1fr)); top: 4px; }
+        .showcase-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        footer { flex-wrap: wrap; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+      }
     </style>
   </head>
   <body>
+    <dialog id="onboardingDialog" aria-labelledby="onboardingTitle">
+      <div class="onboarding-head">
+        <h2 id="onboardingTitle">Meet your private desktop companion</h2>
+        <p>MyPerro can react to your activity without reading what you type.</p>
+      </div>
+      <div class="onboarding-body">
+        <ul class="privacy-points">
+          <li><strong>Counts, never content.</strong><br />Only activity totals and pointer movement are processed in memory.</li>
+          <li><strong>Free and local.</strong><br />No account, sign-up, subscription or cloud service is required.</li>
+          <li><strong>Only your pet stays on the desktop.</strong><br />Click the pet, then use F, W, P, R or S. There are no overlay buttons.</li>
+          <li><strong>You stay in control.</strong><br />Input reactions, notifications and startup can be disabled at any time.</li>
+        </ul>
+        <p id="onboardingPlatform">Your operating system may show an accessibility permission prompt.</p>
+        <div class="dialog-actions">
+          <button type="button" id="enableReactions">Enable private reactions</button>
+          <button class="secondary" type="button" id="skipReactions">Continue without reactions</button>
+        </div>
+      </div>
+    </dialog>
     <header>
       <div class="preview"><canvas id="breedPreview" width="96" height="96"></canvas></div>
       <div>
         <h1>MyPerro</h1>
         <p class="sub">A tiny vintage control room for your desktop companion.</p>
+        <p class="sub creator-line">Created by Sabin Raut</p>
+        <p class="free-line">Free forever · no account · no subscription · local only</p>
       </div>
     </header>
 
+    <nav class="settings-nav" role="tablist" aria-label="Settings sections">
+      <button type="button" id="tab-home" role="tab" data-tab="home" aria-selected="true">Home</button>
+      <button type="button" id="tab-routine" role="tab" data-tab="routine" aria-selected="false">Routines</button>
+      <button type="button" id="tab-look" role="tab" data-tab="look" aria-selected="false">Companion</button>
+      <button type="button" id="tab-app" role="tab" data-tab="app" aria-selected="false">App</button>
+    </nav>
+
     <form id="form">
-      <fieldset>
+      <fieldset data-pane="home">
+        <legend>Pet-only controls</legend>
+        <p class="shortcut-intro">Click or pet your companion to focus it, then press the action’s first letter. Right-click also opens Settings.</p>
+        <div class="shortcut-grid" aria-label="Desktop pet keyboard shortcuts">
+          <div><kbd>F</kbd><span>Feed</span></div>
+          <div><kbd>W</kbd><span>Water</span></div>
+          <div><kbd>P</kbd><span>Play</span></div>
+          <div><kbd>R</kbd><span>Rest</span></div>
+          <div><kbd>S</kbd><span>Settings</span></div>
+        </div>
+      </fieldset>
+
+      <fieldset data-pane="home">
         <legend>Names</legend>
         <label><span>Your name (used in reminders)</span>
           <input type="text" id="ownerName" class="wide" maxlength="40" placeholder="optional" /></label>
@@ -150,7 +300,52 @@
           <input type="text" id="pinnedNote" class="wide" maxlength="120" placeholder="empty = hidden" /></label>
       </fieldset>
 
-      <fieldset>
+      <fieldset data-pane="home">
+        <legend>Wellbeing</legend>
+        <div class="care-status">
+          <div><strong id="moodTitle">Getting settled…</strong><small id="moodMessage">Checking companion wellbeing.</small></div>
+          <span class="mood-badge" id="moodBadge">—</span>
+        </div>
+        <div class="needs-grid" aria-label="Companion wellbeing">
+          <div class="need"><div class="need-label"><span>Full</span><output id="hungerValue">—</output></div><div class="meter" role="progressbar" aria-label="Fullness" aria-valuemin="0" aria-valuemax="100"><span id="hungerMeter"></span></div></div>
+          <div class="need"><div class="need-label"><span>Hydrated</span><output id="thirstValue">—</output></div><div class="meter" role="progressbar" aria-label="Hydration" aria-valuemin="0" aria-valuemax="100"><span id="thirstMeter"></span></div></div>
+          <div class="need"><div class="need-label"><span>Happy</span><output id="happinessValue">—</output></div><div class="meter" role="progressbar" aria-label="Happiness" aria-valuemin="0" aria-valuemax="100"><span id="happinessMeter"></span></div></div>
+          <div class="need"><div class="need-label"><span>Rested</span><output id="energyValue">—</output></div><div class="meter" role="progressbar" aria-label="Energy" aria-valuemin="0" aria-valuemax="100"><span id="energyMeter"></span></div></div>
+        </div>
+        <div class="care-actions" aria-label="Companion actions">
+          <button class="secondary" type="button" data-care="feed" aria-label="Give your companion food">Feed</button>
+          <button class="secondary" type="button" data-care="water" aria-label="Give your companion fresh water">Water</button>
+          <button class="secondary" type="button" data-care="play" aria-label="Play with your companion">Play</button>
+          <button class="secondary" type="button" data-care="rest" aria-label="Let your companion rest">Rest</button>
+        </div>
+        <p class="care-feedback" id="careFeedback" aria-live="polite"></p>
+      </fieldset>
+
+      <details open data-pane="home">
+        <summary>Animation Showcase</summary>
+        <div class="inside">
+          <p class="showcase-intro">Preview every signature reaction on your desktop companion.</p>
+          <div class="showcase-grid">
+            <button class="tour" type="button" data-preview="all">Play the complete animation tour</button>
+            <button class="secondary" type="button" data-preview="look">Eye follow</button>
+            <button class="secondary" type="button" data-preview="drag">Drag wobble</button>
+            <button class="secondary" type="button" data-preview="hunt">Mouse hunt</button>
+            <button class="secondary" type="button" data-preview="pet">Head pats</button>
+            <button class="secondary" type="button" data-preview="typing">Typing</button>
+            <button class="secondary" type="button" data-preview="overheat">Overheat</button>
+            <button class="secondary" type="button" data-preview="stretch">Stretch</button>
+            <button class="secondary" type="button" data-preview="drink">Drink</button>
+            <button class="secondary" type="button" data-preview="scroll">Scroll paper</button>
+            <button class="secondary" type="button" data-preview="thinking">AI thinking</button>
+            <button class="secondary" type="button" data-preview="done">Agent done</button>
+            <button class="secondary" type="button" data-preview="focus">Focus timer</button>
+            <button class="secondary" type="button" data-preview="reminder">Reminder</button>
+            <button class="secondary" type="button" data-preview="sleep">Sleep</button>
+          </div>
+        </div>
+      </details>
+
+      <fieldset data-pane="routine">
         <legend>Reminders</legend>
         <div class="quick-row">
           <button class="secondary" type="button" id="gentlePreset">Gentle</button>
@@ -163,6 +358,9 @@
         <label><span>Water break</span>
           <span class="row"><input type="checkbox" id="waterEnabled" />
           every <input type="number" id="waterEveryMinutes" min="1" max="1440" style="width:60px" /> min</span></label>
+        <label><span>Ask to play</span>
+          <span class="row"><input type="checkbox" id="playRequestEnabled" />
+          after <input type="number" id="playRequestMinutes" min="5" max="240" style="width:68px" /> quiet min</span></label>
         <label><span>Message reminder</span>
           <span class="row"><input type="checkbox" id="messageEnabled" />
           <input type="datetime-local" id="messageAt" class="wide" /></span></label>
@@ -173,7 +371,7 @@
           to <input type="number" id="quietTo" min="0" max="23" style="width:52px" placeholder="–" /></span></label>
       </fieldset>
 
-      <details>
+      <details data-pane="routine">
         <summary>Focus Timer</summary>
         <div class="inside">
           <div class="quick-row">
@@ -187,7 +385,7 @@
         </div>
       </details>
 
-      <fieldset>
+      <fieldset data-pane="look">
         <legend>Appearance</legend>
         <div class="breed-cards" id="breedCards"></div>
         <div class="quick-row">
@@ -206,6 +404,12 @@
             <option value="midnight-cat">Midnight Cat</option>
             <option value="cream-tabby">Cream Tabby</option>
           </select></label>
+        <label><span>Desktop size</span>
+          <span class="row"><input type="range" id="petScale" min="65" max="200" step="5" />
+          <output id="petScaleValue">100%</output></span></label>
+        <label><span>Pet opacity</span>
+          <span class="row"><input type="range" id="petOpacity" min="50" max="100" step="5" />
+          <output id="petOpacityValue">100%</output></span></label>
         <label><span>Base colour</span><input type="color" id="baseColor" /></label>
         <label><span>Markings</span><input type="color" id="markingColor" /></label>
         <label><span>Marking style</span>
@@ -218,17 +422,45 @@
         <label><span>Collar</span><input type="color" id="collarColor" /></label>
       </fieldset>
 
-      <fieldset>
+      <fieldset data-pane="app">
         <legend>General</legend>
         <label><span>Sound</span><input type="checkbox" id="soundEnabled" /></label>
+        <label><span>Cute sound volume</span>
+          <span class="row"><input type="range" id="soundVolume" min="10" max="100" step="5" />
+          <output id="soundVolumeValue">80%</output></span></label>
+        <div class="quick-row"><button class="secondary" type="button" id="testSound">Hear a happy sound</button></div>
+        <label><span>Private typing and pointer reactions</span><input type="checkbox" id="inputMonitoringEnabled" /></label>
+        <label><span>Native reminder notifications</span><input type="checkbox" id="notificationsEnabled" /></label>
         <label><span>Peek mode</span><input type="checkbox" id="peekMode" /></label>
+        <label><span>Stay above other windows</span><input type="checkbox" id="alwaysOnTop" /></label>
         <label><span>Reduced motion (calmer animations)</span><input type="checkbox" id="reducedMotion" /></label>
         <label><span>Start when I log in</span><input type="checkbox" id="startAtLogin" /></label>
       </fieldset>
 
+      <fieldset data-pane="app">
+        <legend>About &amp; compatibility</legend>
+        <div class="about-card">
+          <div class="about-heading"><strong>MyPerro</strong><span class="version" id="appVersion">Version…</span></div>
+          <p class="about-copy">A free, privacy-first virtual pet. No account, sign-up, subscription or telemetry.</p>
+          <p class="credit"><strong>Original creator: Sabin Raut</strong><br /><small>Copyright © 2026 Sabin Raut · MIT licensed</small></p>
+          <div class="diagnostic" id="inputDiagnostic" data-status="starting" role="status" aria-live="polite">
+            <span class="diagnostic-dot" aria-hidden="true"></span>
+            <strong id="inputStatus">Checking input reactions</strong>
+            <small id="inputGuidance">Move the pointer or press a key to complete the check.</small>
+          </div>
+          <p class="platform-note" id="platformNote">Detecting this platform…</p>
+          <div class="diagnostic-actions">
+            <button class="secondary" type="button" id="exportDiagnostics">Download diagnostics</button>
+            <button class="secondary" type="button" id="replayOnboarding">Privacy tour</button>
+          </div>
+        </div>
+      </fieldset>
+
       <footer>
-        <button type="submit">Save</button>
-        <span class="saved" id="saved">Saved ✓</span>
+        <button type="submit">Save now</button>
+        <span class="saved" id="saved" role="status">All changes saved</span>
+        <span class="save-hint">Changes save automatically</span>
+        <button class="secondary" type="button" id="doneSettings">Done</button>
       </footer>
     </form>
 

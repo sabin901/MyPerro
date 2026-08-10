@@ -1,8 +1,10 @@
 name: CI
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
+    tags: ["v*"]
   pull_request:
 
 jobs:
@@ -11,34 +13,70 @@ jobs:
     name: Typecheck & test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 20
           cache: npm
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
+      - run: npm run build
+      - run: npm run validate:packs
+      - run: npm run smoke:dist
+      - run: npm audit --audit-level=high
+      - name: Install Linux native test dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+      - run: cargo test --manifest-path src-tauri/Cargo.toml
+
+  security:
+    name: Rust dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: rustsec/audit-check@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          working-directory: src-tauri
+          # Mirrors audit.toml: glib 0.18 is inherited from Tauri's GTK stack,
+          # and MyPerro does not call the affected VariantStrIter API.
+          ignore: RUSTSEC-2024-0429
 
   # Slow lane: prove it actually builds a native app on all three platforms.
   build:
     name: Build (${{ matrix.os }})
-    needs: test
+    needs: [test, security]
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        include:
+          - os: macos-15
+            bundle: dmg
+            artifact: macos-apple-silicon-dmg
+          - os: macos-15-intel
+            bundle: dmg
+            artifact: macos-intel-dmg
+          - os: windows-latest
+            bundle: nsis
+            artifact: windows-nsis
+          - os: ubuntu-22.04
+            bundle: appimage,deb
+            artifact: linux-packages
     runs-on: ${{ matrix.os }}
+    env:
+      HAS_APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE != '' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install Linux build deps
-        if: matrix.os == 'ubuntu-latest'
+        if: startsWith(matrix.os, 'ubuntu-')
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 20
           cache: npm
@@ -46,9 +84,63 @@ jobs:
       - uses: swatinem/rust-cache@v2
         with:
           workspaces: src-tauri
+          # Never reuse native target binaries across different runner images;
+          # Ubuntu 24 build scripts cannot execute on the Ubuntu 22 package job.
+          prefix-key: v1-rust-${{ matrix.os }}
+          cache-targets: false
 
       - run: npm ci
-      - name: Generate placeholder icons
-        run: npx tauri icon assets/reference/shiba_concept.png || echo "provide icons before release"
-      - name: Build
-        run: npm run release
+      - name: Build Windows or Linux package
+        if: ${{ !startsWith(matrix.os, 'macos-') }}
+        run: npm run release -- --bundles ${{ matrix.bundle }}
+      - name: Build ad-hoc signed macOS package
+        if: ${{ startsWith(matrix.os, 'macos-') && env.HAS_APPLE_CERTIFICATE != 'true' }}
+        run: npm run release -- --bundles ${{ matrix.bundle }}
+        env:
+          APPLE_SIGNING_IDENTITY: '-'
+      - name: Build signed and notarized macOS package
+        if: ${{ startsWith(matrix.os, 'macos-') && env.HAS_APPLE_CERTIFICATE == 'true' }}
+        run: npm run release -- --bundles ${{ matrix.bundle }}
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      - name: Generate checksums and web SBOM
+        run: |
+          npm run checksums
+          npm run sbom
+      - name: Upload installer
+        uses: actions/upload-artifact@v7
+        with:
+          name: myperro-${{ matrix.artifact }}
+          path: src-tauri/target/release/bundle/**
+          if-no-files-found: error
+          retention-days: 30
+      - name: Upload software bill of materials
+        uses: actions/upload-artifact@v7
+        with:
+          name: myperro-${{ matrix.artifact }}-sbom
+          path: myperro-web.cdx.json
+          if-no-files-found: error
+          retention-days: 30
+
+  publish-draft:
+    name: Prepare draft GitHub release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          path: release-files
+      - name: Create draft release with every platform artifact
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mapfile -d '' files < <(find release-files -type f -print0)
+          gh release create "$GITHUB_REF_NAME" "${files[@]}" --draft --generate-notes --title "MyPerro $GITHUB_REF_NAME"

@@ -43,7 +43,7 @@ npm run validate-pack path/to/your/pack
 The validator will list exactly what's wrong if anything is. Packs must:
 - declare a licence,
 - include every required animation,
-- be original work (no traced or AI-generated art),
+- be original work with a clear licence and disclose any generative tools used,
 - use a transparent atlas.
 
 ## Reporting bugs

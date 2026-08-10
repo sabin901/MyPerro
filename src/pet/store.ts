@@ -12,6 +12,7 @@ import { emit } from "@tauri-apps/api/event";
 import { normaliseSettings, type Settings } from "./settings";
 
 const FALLBACK_KEY = "myperro.settings.v1";
+const isNative = () => typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
 
 function hasLocalStorage(): boolean {
   try {
@@ -44,7 +45,8 @@ export async function loadSettings(): Promise<Settings> {
   try {
     const raw = await invoke<unknown>("load_settings");
     return normaliseSettings(raw);
-  } catch {
+  } catch (error) {
+    if (isNative()) throw error;
     return loadFallback();
   }
 }
@@ -53,7 +55,8 @@ export async function saveSettings(settings: Settings): Promise<Settings> {
   const clean = normaliseSettings(settings);
   try {
     await invoke("save_settings", { settings: clean });
-  } catch {
+  } catch (error) {
+    if (isNative()) throw error;
     const saved = saveFallback(clean);
     await emit("settings-updated", saved).catch(() => {});
     return saved;

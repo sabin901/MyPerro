@@ -21,6 +21,11 @@ const FRAMES = [
   "tail_wag", "drag", "shake", "land", "stretch", "drink",
   "focus_sit", "deliver_note", "bark", "side_eye", "scratch", "zoomies",
   "paper_unroll",
+  // Alternate cels turn the most visible reactions into real animations rather
+  // than a static drawing translated by the renderer.
+  "type_paw_alt", "type_intense_alt", "pet_happy_alt", "tail_wag_alt",
+  "run_alt", "paper_unroll_alt", "drink_alt", "sleep_alt",
+  "beg", "eat", "eat_alt",
 ];
 
 const BREEDS = [
@@ -167,6 +172,52 @@ function drawStar(g, x, y, c) {
   g.rect(x + 2, y + 2, 4, 4, c);
 }
 
+function drawAlternateCel(g, ox, oy, b, pose) {
+  const o = color(b.outline), mid = color(b.body), light = color(b.light);
+  if (pose === "type_paw" || pose === "type_intense") {
+    // Swap the leading paw and illuminate alternating keyboard clusters.
+    g.ellipse(ox + 39, oy + 72, 7, 6, o);
+    g.ellipse(ox + 39, oy + 71, 5, 4, light);
+    g.rect(ox + 48, oy + 78, 5, 2, pose === "type_intense" ? common.gold : common.blue);
+    g.rect(ox + 58, oy + 78, 5, 2, pose === "type_intense" ? common.red : common.gold);
+    if (pose === "type_intense") {
+      g.ellipse(ox + 63, oy + 20, 4, 6, common.steam);
+      g.ellipse(ox + 70, oy + 13, 3, 4, common.steam);
+    }
+  } else if (pose === "pet_happy") {
+    drawHeart(g, ox + 18, oy + 18, common.blush);
+    drawHeart(g, ox + 81, oy + 27, common.blush);
+  } else if (pose === "tail_wag") {
+    g.line(ox + 11, oy + 34, ox + 24, oy + 39, common.gold, 2);
+    g.line(ox + 9, oy + 45, ox + 23, oy + 46, common.gold, 2);
+  } else if (pose === "run") {
+    g.ellipse(ox + 20, oy + 80, 8, 3, common.steam);
+    g.line(ox + 5, oy + 50, ox + 20, oy + 50, common.steam, 2);
+  } else if (pose === "paper_unroll") {
+    g.rect(ox + 24, oy + 75, 16, 8, common.paper);
+    g.line(ox + 27, oy + 80, ox + 38, oy + 80, shade(b.mark, 0.82), 1);
+  } else if (pose === "drink") {
+    g.rect(ox + 78, oy + 65, 2, 3, common.water);
+    g.rect(ox + 82, oy + 61, 2, 2, common.water);
+  } else if (pose === "sleep") {
+    g.rect(ox + 68, oy + 22, 7, 2, common.blue);
+    g.rect(ox + 77, oy + 16, 6, 2, common.blue);
+  } else if (pose === "eat") {
+    g.rect(ox + 38, oy + 75, 4, 3, common.gold);
+    g.rect(ox + 47, oy + 73, 4, 3, common.gold);
+  }
+}
+
+function drawCatCareCel(g, ox, oy, b, pose) {
+  if (pose === "eat") {
+    g.rect(ox + 34, oy + 75, 28, 7, common.red);
+    g.rect(ox + 37, oy + 71, 22, 6, common.red);
+    for (const x of [40, 47, 54]) g.rect(ox + x, oy + 72, 4, 3, common.gold);
+  } else if (pose === "beg") {
+    drawHeart(g, ox + 78, oy + 21, common.blush);
+  }
+}
+
 function drawCharmAccents(g, ox, oy, b, name) {
   const sparkle = shade(b.light, 1.2);
   if (["pet_happy", "happy_jump", "tail_wag"].includes(name)) {
@@ -297,6 +348,16 @@ function drawDog(g, ox, oy, b, name) {
     g.rect(ox + 58, oy + 75, 23, 5, common.blue);
     g.rect(ox + 61, oy + 70, 17, 7, common.blue);
     g.rect(ox + 63, oy + 72, 13, 2, common.water);
+  }
+  if (name === "eat") {
+    g.rect(ox + 34, oy + 75, 28, 7, common.red);
+    g.rect(ox + 37, oy + 71, 22, 6, common.red);
+    for (const x of [40, 47, 54]) g.rect(ox + x, oy + 72, 4, 3, common.gold);
+  }
+  if (name === "beg") {
+    drawHeart(g, ox + 78, oy + 21, common.blush);
+    g.ellipse(ox + 76, oy + 62, 6, 7, o);
+    g.ellipse(ox + 76, oy + 61, 4, 5, light);
   }
   if (name === "paper_unroll") {
     g.ellipse(ox + 72, oy + 73, 7, 5, o);
@@ -615,8 +676,13 @@ function generateBreed(breed) {
     const x = (index % COLS) * CELL;
     const y = Math.floor(index / COLS) * CELL;
     meta.frames[name] = { x, y, w: CELL, h: CELL, index };
-    if (breed.species === "cat") drawCat(g, x, y, breed, name);
-    else drawDog(g, x, y, breed, name);
+    const alternate = name.endsWith("_alt");
+    const pose = alternate ? name.slice(0, -4) : name;
+    if (breed.species === "cat") {
+      drawCat(g, x, y, breed, pose);
+      drawCatCareCel(g, x, y, breed, pose);
+    } else drawDog(g, x, y, breed, pose);
+    if (alternate) drawAlternateCel(g, x, y, breed, pose);
   });
 
   const dir = `art/exported/${breed.id}`;

@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "MyPerro",
-  "version": "0.1.0",
-  "identifier": "dev.myperro.desktop",
+  "version": "0.9.0-rc.4",
+  "identifier": "com.sabinraut.myperro",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:5173",
@@ -12,6 +12,7 @@
   "app": {
     "withGlobalTauri": false,
     "macOSPrivateApi": true,
+    "enableGTKAppId": true,
     "windows": [
       {
         "label": "pet",
@@ -27,15 +28,33 @@
         "skipTaskbar": true,
         "focus": false,
         "center": true
+      },
+      {
+        "label": "settings",
+        "url": "settings.html",
+        "title": "MyPerro — Settings",
+        "width": 560,
+        "height": 760,
+        "minWidth": 420,
+        "minHeight": 520,
+        "resizable": true,
+        "visible": false,
+        "center": true
       }
     ],
     "security": {
-      "csp": "default-src 'self'; connect-src ipc: http://ipc.localhost; img-src 'self' data: asset: http://asset.localhost; style-src 'self' 'unsafe-inline'"
+      "csp": "default-src 'self'; connect-src 'self' ipc: http://ipc.localhost; img-src 'self' data: asset: http://asset.localhost; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
     }
   },
   "bundle": {
     "active": true,
     "targets": ["dmg", "nsis", "appimage", "deb"],
+    "publisher": "Sabin Raut",
+    "copyright": "Copyright © 2026 Sabin Raut",
+    "licenseFile": "../LICENSE",
+    "category": "Productivity",
+    "shortDescription": "A private virtual pet that reacts to your desktop.",
+    "longDescription": "MyPerro is a privacy-first virtual desktop companion with animated input reactions, wellbeing care, reminders, focus tools, and nine built-in dog and cat characters.",
     "icon": ["icons/32x32.png", "icons/128x128.png", "icons/icon.icns", "icons/icon.ico"],
     "macOS": {
       "minimumSystemVersion": "12.0"

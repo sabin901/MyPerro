@@ -11,6 +11,8 @@
 
 import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
+import { createHash } from "node:crypto";
+import { PNG } from "pngjs";
 
 // Inline the required-animation list and rules by importing the compiled logic
 // would need a build; instead we re-run validation through a tiny dynamic import
@@ -43,10 +45,44 @@ let atlas;
 const atlasPath = join(dir, "atlas.png");
 if (existsSync(atlasPath)) {
   const buf = readFileSync(atlasPath);
+  const png = PNG.sync.read(buf);
+  const frames = manifest.frames && typeof manifest.frames === "object"
+    ? Object.values(manifest.frames)
+    : [];
+  let boundaryPixels = 0;
+  let opaqueBoundaryPixels = 0;
+  const visualHashes = new Set();
+  let maxFrameOpaqueRatio = 0;
+  for (const frame of frames) {
+    if (!frame || !Number.isInteger(frame.x) || !Number.isInteger(frame.y) ||
+        !Number.isInteger(frame.w) || !Number.isInteger(frame.h)) continue;
+    const hash = createHash("sha256");
+    let framePixels = 0;
+    let opaqueFramePixels = 0;
+    for (let y = 0; y < frame.h; y++) {
+      for (let x = 0; x < frame.w; x++) {
+        const px = frame.x + x, py = frame.y + y;
+        if (px < 0 || py < 0 || px >= png.width || py >= png.height) continue;
+        const offset = (py * png.width + px) * 4;
+        framePixels++;
+        if (png.data[offset + 3] > 8) opaqueFramePixels++;
+        hash.update(png.data.subarray(offset, offset + 4));
+        if (x < 2 || y < 2 || x >= frame.w - 2 || y >= frame.h - 2) {
+          boundaryPixels++;
+          if (png.data[offset + 3] > 8) opaqueBoundaryPixels++;
+        }
+      }
+    }
+    if (framePixels > 0) maxFrameOpaqueRatio = Math.max(maxFrameOpaqueRatio, opaqueFramePixels / framePixels);
+    visualHashes.add(hash.digest("hex"));
+  }
   atlas = {
-    width: buf.readUInt32BE(16),
-    height: buf.readUInt32BE(20),
-    hasAlpha: buf[25] === 6 || buf[25] === 4, // 6=RGBA, 4=grey+alpha
+    width: png.width,
+    height: png.height,
+    hasAlpha: png.alpha,
+    boundaryOpaqueRatio: boundaryPixels === 0 ? 0 : opaqueBoundaryPixels / boundaryPixels,
+    uniqueVisualFrameRatio: frames.length === 0 ? 1 : visualHashes.size / frames.length,
+    maxFrameOpaqueRatio,
   };
 }
 
