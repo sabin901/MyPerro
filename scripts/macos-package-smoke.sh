@@ -24,7 +24,7 @@ cleanup() {
 }
 trap cleanup EXIT
 
-hdiutil attach "$dmg" -acceptlicense -nobrowse -readonly -mountpoint "$mount_point"
+printf 'Y\n' | hdiutil attach "$dmg" -nobrowse -readonly -mountpoint "$mount_point"
 app="$mount_point/MyPerro.app"
 binary="$app/Contents/MacOS/myperro"
 
