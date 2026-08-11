@@ -15,11 +15,12 @@ focused first-letter, right-click, and tray interactions because they are core
 companion behaviors.
 
 It is not yet an unconditional stable public release. The remaining hard gates
-are publisher signing, a notarized macOS build, and physical clean-machine QA.
+are publisher signing, a notarized macOS build, signed-update rehearsal, and
+physical clean-machine QA.
 Those require credentials and hardware outside this workspace and cannot be
 honestly replaced by source-level checks.
 
-**Readiness:** 9.0/10 as a product, 8.9/10 as a release candidate, and 7.9/10
+**Readiness:** 9.2/10 as a product, 9.1/10 as a release candidate, and 8.4/10
 as a stable public-release operation.
 
 ## Acceptance evidence
@@ -29,9 +30,9 @@ as a stable public-release operation.
 | TypeScript | Pass | `tsc --noEmit` on Windows and Linux |
 | Frontend logic | Pass | 14 Vitest files, 181 tests on Windows and Linux |
 | Interaction timing | Pass | explicit tests for 20-second requests, cooldown, initial anti-nag behavior, 60-second rest, and touch-to-wake |
-| Native privacy logic | Pass | 3 Rust tests, including no-keycode serialization, on Windows and Linux |
+| Native privacy logic | Pass | 6 Rust tests, including no-keycode serialization and coarse media classification, on Windows |
 | Production frontend | Pass | Vite 8.2.1 build and packaged CSP/asset smoke test |
-| Companion art | Pass | all 9 premium packs; boundary-alpha, frame-density and frame-uniqueness validation; Midnight Cat square removed |
+| Companion art | Pass | all 9 premium packs; semantic source-pose, boundary-alpha, frame-density and frame-uniqueness validation; generic eye artifacts and Husky idle bowls removed |
 | Sound design | Pass with human acceptance pending | tested bark/purr/yip, snack, slurp, happy, sleep/wake and chime recipes; volume persists and Settings includes a direct preview |
 | JavaScript audit | Pass | 0 known npm vulnerabilities |
 | RustSec audit | Reviewed | 0 classified vulnerabilities; 17 allowed upstream warnings |
@@ -53,8 +54,9 @@ debt and must be revisited when the desktop stack migrates.
 
 - The desktop window contains no visible buttons, gear, or action dock. Only
   the pet remains, plus temporary speech and an active focus timer when needed.
-- After clicking the companion, first-letter controls are F Feed, W Water,
-  P Play, R Rest, and S Settings. They are deliberately scoped to the focused
+- After clicking the companion, controls are F Feed, W Water, P Play, R Rest,
+  N Peek, H Headphones, D Dance, T Typing, B Bark/meow, J Jump, and S Settings.
+  They are deliberately scoped to the focused
   pet window so MyPerro never steals ordinary typing from other applications.
 - Right-click and the tray remain mouse-only/accessibility fallback paths.
 - “Ask to play” is optional and configurable from 5 to 240 quiet minutes; the
@@ -92,6 +94,11 @@ debt and must be revisited when the desktop stack migrates.
 - Nine dog and cat characters share one validated native-resolution atlas
   pipeline with addressable typing, tail, walking, running, eating, drinking,
   sleeping, petting, jumping, and celebration frames.
+- Foreground media awareness returns only `none`, `music`, or `video`; known
+  music players add headphones and known video apps/browser pages activate
+  peek mode. No audio, title, URL, process path, or media content is serialized.
+- Signed updater artifacts, a static GitHub `latest.json`, periodic availability
+  checks, user-confirmed installation and restart are wired for all platforms.
 - Release automation covers native builds, tests, dependency audits, pack
   validation, packaged-asset checks, SBOMs, checksums, and artifact upload. A
   previously skipped Linux dependency step is fixed, and macOS is split into
@@ -104,14 +111,14 @@ debt and must be revisited when the desktop stack migrates.
 | Area | Score | Honest assessment |
 |---|---:|---|
 | Core virtual-pet loop | 9.0 | Play requests, interruptible rest, persistent wellbeing and kind offline caps create attachment without punishing absence. Long-term progression and learned tricks remain shallow. |
-| Reactive behavior | 9.0 | Cursor attention, drag, shake, pet, typing, scrolling, wander, sleep, reminders, requests and agent states are broad. Active-window perching and automatic video awareness remain absent. |
+| Reactive behavior | 9.3 | Cursor attention, drag, shake, pet, typing, scrolling, wander, sleep, reminders, requests, media headphones, video peek and agent states are broad. Arbitrary-window perching and universal system-audio-session detection remain absent. |
 | Feature discoverability | 9.1 | The desktop is cleaner but less self-explanatory. First-run guidance, Settings shortcut cards, accessibility metadata, right-click and tray labels compensate without permanent controls. |
-| Character art | 8.3 | Clean, transparent and consistent across nine companions; neutral poses are now prop-free and density-checked. It still uses fewer principal poses than bespoke commercial frame-by-frame production. |
+| Character art | 8.7 | Clean, transparent and semantically mapped across nine companions; neutral poses are prop-free and generic pupil artifacts are removed. It still uses fewer principal drawings than bespoke commercial frame-by-frame production. |
 | Motion quality | 8.5 | Anticipation/impact/recovery, a post-feed dance, post-water shake, eye follow and micro-motion read well. Live2D deformation and hand-authored transition continuity would be smoother. |
 | Settings/accessibility | 9.0 | Clear information architecture, native keyboard tabs, auto-save status, range controls, reduced motion and large targets. Screen-reader/high-contrast audits still need real OS coverage. |
 | Privacy/security | 9.3 | Local-only, narrow capabilities, restrictive CSP, consent, no account and no telemetry are excellent. Unsigned global-input software will still attract antivirus scrutiny. |
 | Cross-platform engineering | 8.9 | One Tauri codebase, verified Windows/Linux packages, dual-architecture macOS CI. Native Wayland input is compositor-limited and macOS runtime acceptance is external. |
-| Release operations | 7.5 | CI, reproducible Linux builder, runbook, SBOM, checksums and rollback guidance exist. Signing, notarization, updater hosting and clean-machine evidence remain unresolved. |
+| Release operations | 8.5 | CI, updater signatures/manifests, optional publisher signing, runbook, SBOM, checksums and rollback guidance exist. Actual publisher credentials and clean-machine update evidence remain unresolved. |
 | Ecosystem | 6.2 | Validators and documentation exist, but there is no in-app pack importer, creator studio, or moderated catalog. |
 
 ## Competitive position
@@ -149,8 +156,8 @@ drawings and active-window physics, not another Settings redesign.
 2. Run the clean-machine matrix: Windows mixed DPI and sleep/wake; macOS Intel
    and Apple Silicon; GNOME and KDE on X11/XWayland. Confirm bark/meow volume,
    transparent click-through, tray behavior and one-minute rest with a clock.
-3. Configure a real HTTPS update endpoint and Tauri updater signing key, test
-   rollback, then enable the updater. Do not ship a fake endpoint or key.
+3. Back up the updater private key, add it to GitHub Actions secrets, publish a
+   signed rehearsal release, and prove upgrade plus rollback on every platform.
 4. Commission a frame-by-frame pass for typing, eating, drinking, tail arcs and
    pose transitions, with silhouette review at every supported scale.
 5. Add a signed/validated in-app companion-pack importer before advertising a

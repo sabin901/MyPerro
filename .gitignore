@@ -6,6 +6,8 @@ target/
 .DS_Store
 *.log
 *.cdx.json
+__pycache__/
+*.pyc
 .env
 .env.local
 release-artifacts/

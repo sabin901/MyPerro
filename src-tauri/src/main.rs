@@ -2,6 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod agent_status;
+mod desktop_context;
 mod input;
 mod settings_store;
 
@@ -180,6 +181,8 @@ fn main() {
                 .build(),
         )
         .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_autostart::init(
             MacosLauncher::LaunchAgent,
             None,
@@ -196,6 +199,7 @@ fn main() {
             enable_input_monitoring,
             disable_input_monitoring,
             diagnostic_report,
+            desktop_context::desktop_context,
             agent_status::load_agent_status,
             agent_status::clear_agent_status,
             settings_store::load_settings,
@@ -211,7 +215,7 @@ fn main() {
             let tour = MenuItem::with_id(app, "tour", "Play animation tour", true, None::<&str>)?;
             let focus = MenuItem::with_id(app, "focus", "Start / stop focus", true, None::<&str>)?;
             let quiet = MenuItem::with_id(app, "quiet", "Quiet mode", true, None::<&str>)?;
-            let peek = MenuItem::with_id(app, "peek", "Toggle peek mode", true, None::<&str>)?;
+            let peek = MenuItem::with_id(app, "peek", "Toggle peek mode (N)", true, None::<&str>)?;
             let settings = MenuItem::with_id(app, "settings", "Settings… (S)", true, None::<&str>)?;
             let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
             let menu = Menu::with_items(

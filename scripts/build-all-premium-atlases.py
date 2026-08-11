@@ -10,10 +10,13 @@ ROOT = Path(__file__).resolve().parent.parent
 for companion in sorted((ROOT / "art" / "premium").iterdir()):
     if not companion.is_dir():
         continue
+    source = companion / "source-v3.png"
+    if not source.exists():
+        source = companion / "source.png"
     run([
         sys.executable,
         str(ROOT / "scripts" / "build-premium-atlas.py"),
-        str(companion / "source.png"),
+        str(source),
         str(ROOT / "art" / "exported" / companion.name),
     ], check=True)
     print(f"rebuilt {companion.name}")

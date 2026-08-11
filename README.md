@@ -14,8 +14,9 @@ macOS · Windows · Linux (X11/XWayland) · MIT licensed · free forever · no t
 - Pixel puppy overlay with transparent click-through hit testing.
 - Persistent virtual-pet wellbeing: fullness, hydration, happiness, and energy.
 - Pet-only desktop surface with no overlay buttons or action dock.
-- First-letter controls after clicking the pet: `F` Feed, `W` Water, `P` Play,
-  `R` Rest, and `S` Settings. Right-click and tray controls remain available.
+- Focused-pet controls: `F` Feed, `W` Water, `P` Play, `R` Rest, `N` Peek,
+  `H` Headphones, `D` Dance, `T` Typing, `B` Bark/meow, `J` Jump, and `S`
+  Settings. They never register as system-wide letter shortcuts.
 - Native-resolution premium atlas support shared by Windows, macOS, and Linux builds.
 - First-run privacy tour before input reactions are enabled, native reminders,
   rotating local logs, and a privacy-safe diagnostic export.
@@ -31,6 +32,11 @@ macOS · Windows · Linux (X11/XWayland) · MIT licensed · free forever · no t
 - Cursor chase, eye follow, petting, dragging, shaking, scrolling, typing, hard
   typing, continuous free roaming, playful rolling, idle micro-motions, sleeping,
   waking, stretch, water, notes, and Pomodoro reactions.
+- Privacy-safe foreground media reactions: headphones for known music players
+  and edge-peek behavior for known video players/browser video pages. Only the
+  coarse `none`/`music`/`video` result reaches the UI; titles, URLs and audio do not.
+- Cryptographically signed in-app updates from the official GitHub release
+  channel, with a manual Check for updates action in Settings.
 - Task-based, auto-saving settings for names, reminders, scheduled messages,
   quiet hours, Pomodoro, breed, 65–200% size, opacity, colours, markings, sound
   volume and preview, reduced motion, always-on-top, start at login, and peek mode.

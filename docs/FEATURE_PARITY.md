@@ -7,7 +7,7 @@ Legend: ✅ built & verified locally · 🎨 prototype art exists, final animati
 | # | ComNyang | MyPerro equivalent | Status |
 |---|---|---|---|
 | 1 | Your cat's pattern (custom mapping) | Fur colour + marking mask, "match your real dog" | ✅ six breeds + runtime fur/marking/collar recolour; full mask painter is post-beta |
-| 2 | Eye follow | Puppy pupils track cursor | ✅ renderer-level eye follow |
+| 2 | Eye follow | Puppy attention follows cursor | ✅ pointer-facing posture; source-authored premium eyes are preserved instead of drawing generic square pupils |
 | 3 | Mochi drag (stretch + shake wobble) | Pick up, dangle, shake-wobble | ✅ detector + dangling cel + squash/stretch/rotation |
 | 4 | Mouse hunt | Chase a fast cursor | ✅ sustained chase + alternate run cel + speed/dust effects |
 | 5 | Purring pets | Head rub → happy + tail wag | ✅ stroke detector + alternating happy cel + floating hearts + sound |
@@ -23,11 +23,12 @@ Legend: ✅ built & verified locally · 🎨 prototype art exists, final animati
 | 15 | Fixed message | Pinned note above the head | ✅ settings + live update |
 | 16 | Tell your name | Uses your name in reminders | ✅ settings + personalization |
 | 17 | Multi-device license | — (free & open source, no license) | n/a by design |
-| 18 | Peek mode | Peek from screen edge and stay out of the way | ✅ manual settings + tray toggle; video/fullscreen auto-detection is post-beta |
+| 18 | Peek mode | Peek from screen edge and stay out of the way | ✅ persistent `N`/Settings/tray toggle + privacy-safe automatic known-video-app detection |
 
 **Extra life:** MyPerro adds autonomous idle motions — blink, tail wag, look-up,
 scratch, yawn and sit-side variety — plus animated sleep glyphs and state-specific
-particles, so the dog does not freeze when the user is quiet.
+particles, music-player headphones, and video-aware edge peeking, so the dog does
+not freeze when the user is quiet.
 
 **Current state:** MyPerro matches the 18 public ComNyang behaviours in original
 companion form, except #17, which is intentionally not a product feature because

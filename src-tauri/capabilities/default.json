@@ -17,6 +17,8 @@
     "core:event:default",
     "core:app:default",
     "notification:default",
+    "updater:default",
+    "process:allow-restart",
     "log:default",
     "window-state:default"
   ]

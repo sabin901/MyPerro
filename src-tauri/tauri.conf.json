@@ -48,6 +48,7 @@
   },
   "bundle": {
     "active": true,
+    "createUpdaterArtifacts": true,
     "targets": ["dmg", "nsis", "appimage", "deb"],
     "publisher": "Sabin Raut",
     "copyright": "Copyright © 2026 Sabin Raut",
@@ -58,6 +59,17 @@
     "icon": ["icons/32x32.png", "icons/128x128.png", "icons/icon.icns", "icons/icon.ico"],
     "macOS": {
       "minimumSystemVersion": "12.0"
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEQwMTM5QURENTgwRjk0MUQKUldRZGxBOVkzWm9UMExVYU1YTm8zVDN2UWxPcEQ2Vzh3amxqTVdmMU1MUHJ0dGFjdHJ3VGpjV0oK",
+      "endpoints": [
+        "https://github.com/sabin901/MyPerro/releases/latest/download/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
     }
   }
 }

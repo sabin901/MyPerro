@@ -286,6 +286,12 @@
           <div><kbd>W</kbd><span>Water</span></div>
           <div><kbd>P</kbd><span>Play</span></div>
           <div><kbd>R</kbd><span>Rest</span></div>
+          <div><kbd>N</kbd><span>Peek</span></div>
+          <div><kbd>H</kbd><span>Headphones</span></div>
+          <div><kbd>D</kbd><span>Dance</span></div>
+          <div><kbd>T</kbd><span>Typing</span></div>
+          <div><kbd>B</kbd><span>Bark / meow</span></div>
+          <div><kbd>J</kbd><span>Jump</span></div>
           <div><kbd>S</kbd><span>Settings</span></div>
         </div>
       </fieldset>
@@ -431,7 +437,8 @@
         <div class="quick-row"><button class="secondary" type="button" id="testSound">Hear a happy sound</button></div>
         <label><span>Private typing and pointer reactions</span><input type="checkbox" id="inputMonitoringEnabled" /></label>
         <label><span>Native reminder notifications</span><input type="checkbox" id="notificationsEnabled" /></label>
-        <label><span>Peek mode</span><input type="checkbox" id="peekMode" /></label>
+        <label><span>Keep peek mode on (N toggles)</span><input type="checkbox" id="peekMode" /></label>
+        <p class="platform-note">Music and video reactions classify only the foreground app on this device. Titles, URLs, audio, and media content are never stored or sent anywhere.</p>
         <label><span>Stay above other windows</span><input type="checkbox" id="alwaysOnTop" /></label>
         <label><span>Reduced motion (calmer animations)</span><input type="checkbox" id="reducedMotion" /></label>
         <label><span>Start when I log in</span><input type="checkbox" id="startAtLogin" /></label>
@@ -450,9 +457,11 @@
           </div>
           <p class="platform-note" id="platformNote">Detecting this platform…</p>
           <div class="diagnostic-actions">
+            <button class="secondary" type="button" id="checkUpdates">Check for updates</button>
             <button class="secondary" type="button" id="exportDiagnostics">Download diagnostics</button>
             <button class="secondary" type="button" id="replayOnboarding">Privacy tour</button>
           </div>
+          <p class="platform-note" id="updateStatus" role="status" aria-live="polite">Updates are cryptographically verified before installation.</p>
         </div>
       </fieldset>
 
