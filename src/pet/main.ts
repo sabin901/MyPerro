@@ -35,11 +35,11 @@ import {
   makeRepeating, startPomodoro, stopPomodoro, pollScheduler,
   type SchedulerState,
 } from "./scheduler";
-import { idleLifeFrame } from "./idleLife";
+import { resolvePresentation, shouldInterruptPlay } from "./director";
 import { attentionMove } from "./attention";
 import { animatedCel } from "./animation";
 import {
-  isRoamRolling, planRoam, roamPosition, roamProgress, rollProgress,
+  isRoamRolling, planRoam, roamPhase, roamPosition, rollProgress,
   type RoamPlan,
 } from "./roaming";
 import {
@@ -90,7 +90,7 @@ interface AgentStatusFile {
   updatedAt?: number;
 }
 
-type DesktopMediaKind = "none" | "music" | "video";
+type DesktopMediaKind = "none" | "video";
 interface DesktopContext { media: DesktopMediaKind }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -145,7 +145,6 @@ let mediaPeekMode = false;
 let mediaMode: DesktopMediaKind = "none";
 let mediaCandidate: DesktopMediaKind = "none";
 let mediaCandidateCount = 0;
-let headphonesPreviewUntil = 0;
 let quietMode = false;
 let beforePeekPosition: { x: number; y: number } | null = null;
 let lastAutoWanderAt = 0;
@@ -154,6 +153,7 @@ let wanderUntil = 0;
 let playUntil = 0;
 let activeRoam: RoamPlan | null = null;
 let roamMovePending = false;
+let roamInputGraceUntil = 0;
 let careUntil = 0;
 let careFrame = "idle";
 let careFrameStartedAt = 0;
@@ -250,7 +250,6 @@ async function boot() {
     toggleQuietMode();
   });
   await listen("play-toggle", () => {
-    triggerPlay();
     handleCare("play");
   });
   await listen<CareAction>("care-action", e => handleCare(e.payload));
@@ -289,6 +288,13 @@ function handleCare(action: CareAction) {
     broadcastNeeds();
     return;
   }
+  if (action === "play") {
+    triggerPlay();
+    lastNeedRequest = "";
+    flashNote(cat ? "Purr purr!" : "Woof woof!", 2400);
+    broadcastNeeds();
+    return;
+  }
   const now = performance.now();
   const firstStageMs = action === "feed" ? 1900 : action === "water" ? 2100 : 3200;
   showCareFrame(action === "feed" ? "eat" : action === "water" ? "drink" :
@@ -309,12 +315,18 @@ function handleCare(action: CareAction) {
 }
 
 function showCareFrame(frame: string, durationMs: number, now = performance.now()) {
+  playUntil = Math.min(playUntil, now);
+  roamInputGraceUntil = 0;
+  cancelRoam(now);
   careFrame = frame;
   careFrameStartedAt = now;
   careUntil = now + durationMs;
 }
 
 function showCareFrameUntil(frame: string, until: number) {
+  playUntil = Math.min(playUntil, performance.now());
+  roamInputGraceUntil = 0;
+  cancelRoam();
   careFrame = frame;
   careFrameStartedAt = performance.now();
   careUntil = until;
@@ -456,14 +468,10 @@ function wirePetOnlyControls() {
     switch (shortcut) {
       case "settings": void invoke("open_settings"); break;
       case "peek": void togglePeekMode(); break;
-      case "play": triggerPlay(); handleCare("play"); break;
+      case "play": handleCare("play"); break;
       case "feed": handleCare("feed"); break;
       case "water": handleCare("water"); break;
       case "rest": handleCare("rest"); break;
-      case "headphones":
-        headphonesPreviewUntil = performance.now() + MESSAGE_DURATION_MS;
-        showCareFrame("tail_wag", 3200);
-        break;
       case "dance":
         showCareFrame(reducedMotion ? "tail_wag" : "happy_jump", 5200);
         playSound("happy");
@@ -496,7 +504,7 @@ const PREVIEW_FRAMES: Record<string, { frame: string; message: string; duration?
   stretch: { frame: "stretch", message: "Time to stretch together." },
   drink: { frame: "drink", message: "Fresh water break." },
   scroll: { frame: "paper_unroll", message: "Your scrolling unrolls a tiny paper trail." },
-  thinking: { frame: "head_tilt", message: "Thinking alongside your AI agent." },
+  thinking: { frame: "head_tilt", message: "Thinking alongside your task." },
   done: { frame: "happy_jump", message: "Task complete—celebration jump!" },
   focus: { frame: "focus_sit", message: "Focus mode keeps a tiny timer nearby." },
   reminder: { frame: "deliver_note", message: "A reminder arrives right on time." },
@@ -789,7 +797,12 @@ function onActivity(a: Activity) {
 
   currentFrame = out.frame;
   mode = out.mode;
-  if (activeRoam && out.mode !== "idle" && now >= playUntil) cancelRoam(now);
+  if (shouldInterruptPlay(out.mode, now, roamInputGraceUntil) && (activeRoam || now < playUntil)) {
+    playUntil = now;
+    cancelRoam(now);
+  } else if (activeRoam && out.mode !== "idle" && now >= roamInputGraceUntil) {
+    cancelRoam(now);
+  }
 
   // One-shot signals are consumed once the engine has seen them.
   if (out.changed && out.state === "reminder") pendingReminder = null;
@@ -907,7 +920,7 @@ async function togglePeekMode() {
 
 /**
  * Locally classify the foreground application. Rust intentionally returns no
- * process path, window title, URL, or audio data—only none/music/video. Two
+ * process path, window title, URL, or audio data—only none/video. Two
  * matching polls provide hysteresis when the user briefly focuses MyPerro.
  */
 async function pollDesktopContext() {
@@ -947,8 +960,11 @@ function toggleQuietMode() {
 }
 
 function triggerPlay() {
-  playUntil = performance.now() + 9000;
+  const now = performance.now();
+  careUntil = now;
+  playUntil = now + 9000;
   wanderUntil = playUntil;
+  roamInputGraceUntil = now + 900;
   void startRoam(true);
 }
 
@@ -1032,7 +1048,7 @@ async function autoWander() {
   const now = performance.now();
   const idleFor = lastActivity?.idle_ms ?? now;
   if (
-    reducedMotion || dragging || peekMode || performance.now() < restUntil || activeRoam ||
+    reducedMotion || dragging || peekMode || now < restUntil || now < careUntil || activeRoam ||
     mode !== "idle" || idleFor < 8_000 || now - lastAutoWanderAt < 5_000
   ) return;
 
@@ -1040,7 +1056,8 @@ async function autoWander() {
 }
 
 async function startRoam(playful: boolean) {
-  if (reducedMotion || dragging || peekMode || performance.now() < restUntil) return;
+  const requestAt = performance.now();
+  if (reducedMotion || dragging || peekMode || requestAt < restUntil || (!playful && requestAt < careUntil)) return;
 
   const monitor = await currentMonitor().catch(() => null);
   if (!monitor) return;
@@ -1084,7 +1101,7 @@ async function tickRoaming() {
   } finally {
     roamMovePending = false;
   }
-  if (roamProgress(plan, now) >= 1) {
+  if (roamPhase(plan, now) === "complete") {
     activeRoam = null;
     if (now < playUntil) setTimeout(() => { void startRoam(true); }, 260);
   }
@@ -1109,7 +1126,7 @@ async function followCursorAttention(a: Activity, now: number) {
     now,
     lastMovedAt: lastAttentionMoveAt,
     reducedMotion,
-    disabled: dragging || peekMode || degraded || activeRoam !== null || performance.now() < playUntil || performance.now() < restUntil,
+    disabled: dragging || peekMode || degraded || activeRoam !== null || performance.now() < playUntil || performance.now() < restUntil || performance.now() < careUntil,
   });
   if (!move) return;
   viewport = { ...viewport, winX: move.next.x, winY: move.next.y };
@@ -1210,30 +1227,19 @@ function loop(now: number) {
 
 function draw() {
   const now = performance.now();
-  visibleFrame = idleLifeFrame({
-    frame: currentFrame,
-    mode,
+  const presentation = resolvePresentation({
     now,
+    engineFrame: currentFrame,
+    engineMode: mode,
     lastActivityAt: lastUserActivityAt,
     availableFrames: available,
     reducedMotion,
+    pose: now < careUntil ? { frame: careFrame, startedAt: careFrameStartedAt, until: careUntil } : null,
+    roam: activeRoam,
+    playUntil,
+    attentionWalkUntil: wanderUntil,
   });
-  if (now < wanderUntil) {
-    visibleFrame = activeRoam?.gait === "run" && available.has("run")
-      ? "run"
-      : available.has("walk_a") ? "walk_a" : visibleFrame;
-  }
-  if (now < playUntil && !activeRoam) {
-    visibleFrame = available.has("zoomies") ? "zoomies" : visibleFrame;
-  }
-  if (isRoamRolling(activeRoam, now)) {
-    visibleFrame = available.has("play") ? "play" : available.has("pet_happy") ? "pet_happy" : visibleFrame;
-  }
-  const showingCare = now < careUntil;
-  if (showingCare) {
-    visibleFrame = available.has(careFrame) ? careFrame : visibleFrame;
-  }
-  visibleFrame = animatedCel(visibleFrame, showingCare ? now - careFrameStartedAt : now, available);
+  visibleFrame = animatedCel(presentation.frame, presentation.elapsedMs, available);
   const f = atlas.frames[visibleFrame] ?? atlas.frames[currentFrame] ?? atlas.frames["idle"];
   if (!f) return;
   const offset = motionOffset(now);
@@ -1283,16 +1289,7 @@ function drawSpriteCel(f: Frame, offset: { x: number; y: number }, now: number) 
 }
 
 function drawStateEffects(now: number) {
-  const headphones = mediaMode === "music" || now < headphonesPreviewUntil;
-  if (reducedMotion) {
-    if (headphones) {
-      ctx.save();
-      ctx.scale(canvas.width / 96, canvas.height / 96);
-      drawHeadphones();
-      ctx.restore();
-    }
-    return;
-  }
+  if (reducedMotion) return;
   const frame = visibleFrame.replace(/_alt$/, "");
   const t = now / 1000;
   ctx.save();
@@ -1349,34 +1346,6 @@ function drawStateEffects(now: number) {
     ctx.strokeStyle = "#f4c94f"; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.arc(83, 45, 7 + (t * 8) % 5, -0.7, 0.7); ctx.stroke();
   }
-  if (headphones) drawHeadphones();
-  ctx.restore();
-}
-
-/** Code-native headphones stay crisp and consistent across every pet pack. */
-function drawHeadphones() {
-  ctx.save();
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-  ctx.strokeStyle = "#312941";
-  ctx.lineWidth = 5;
-  ctx.beginPath();
-  ctx.arc(48, 34, 20, Math.PI, 0);
-  ctx.stroke();
-  ctx.strokeStyle = "#72c8e8";
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.arc(48, 34, 20, Math.PI, 0);
-  ctx.stroke();
-  ctx.fillStyle = "#312941";
-  ctx.fillRect(24, 34, 9, 18);
-  ctx.fillRect(63, 34, 9, 18);
-  ctx.fillStyle = "#72c8e8";
-  ctx.fillRect(27, 37, 4, 12);
-  ctx.fillRect(65, 37, 4, 12);
-  ctx.fillStyle = "rgba(255,227,123,.92)";
-  ctx.fillRect(20, 25, 2, 5); ctx.fillRect(18, 27, 6, 2);
-  ctx.fillRect(75, 20, 2, 5); ctx.fillRect(73, 22, 6, 2);
   ctx.restore();
 }
 

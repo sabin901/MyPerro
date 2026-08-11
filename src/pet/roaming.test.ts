@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isRoamRolling, planRoam, roamPosition, roamProgress, rollProgress, type RoamPlan } from "./roaming";
+import { isRoamRolling, planRoam, roamPhase, roamPosition, roamProgress, rollProgress, type RoamPlan } from "./roaming";
 import type { Viewport } from "./coords";
 
 const viewport: Viewport = { winX: 100, winY: 100, scaleFactor: 1, displayScale: 2, cell: 96 };
@@ -18,12 +18,22 @@ describe("desktop roaming", () => {
   it("moves continuously from start to destination", () => {
     const plan: RoamPlan = {
       start: { x: 0, y: 100 }, target: { x: 400, y: 300 }, startedAt: 1000,
-      durationMs: 4000, gait: "walk", rollFrom: 2, rollTo: 2,
+      durationMs: 5000, anticipationMs: 500, settleMs: 500,
+      gait: "walk", playful: false, rollFrom: 2, rollTo: 2,
     };
     expect(roamPosition(plan, 1000)).toEqual(plan.start);
-    expect(roamPosition(plan, 3000)).toEqual({ x: 200, y: 200 });
-    expect(roamPosition(plan, 5000)).toEqual(plan.target);
+    expect(roamPosition(plan, 3500)).toEqual({ x: 200, y: 200 });
+    expect(roamPosition(plan, 5500)).toEqual(plan.target);
     expect(roamProgress(plan, 6000)).toBe(1);
+  });
+
+  it("holds still to anticipate before travel and settle after arrival", () => {
+    const plan = planRoam({ viewport, monitor, now: 1000, horizontalSeed: .8, verticalSeed: .2, playful: false })!;
+    expect(roamPhase(plan, 1100)).toBe("anticipate");
+    expect(roamPosition(plan, 1100)).toEqual(plan.start);
+    expect(roamPhase(plan, plan.startedAt + plan.durationMs - 100)).toBe("settle");
+    expect(roamPosition(plan, plan.startedAt + plan.durationMs - 100)).toEqual(plan.target);
+    expect(roamPhase(plan, plan.startedAt + plan.durationMs)).toBe("complete");
   });
 
   it("gives playful trips a bounded roll phase", () => {
