@@ -8,7 +8,7 @@ describe("pet-only keyboard shortcuts", () => {
     expect(petShortcutForKey({ key: "p" })).toBe("play");
     expect(petShortcutForKey({ key: "R" })).toBe("rest");
     expect(petShortcutForKey({ key: "n" })).toBe("peek");
-    expect(petShortcutForKey({ key: "H" })).toBe("headphones");
+    expect(petShortcutForKey({ key: "H" })).toBeNull();
     expect(petShortcutForKey({ key: "d" })).toBe("dance");
     expect(petShortcutForKey({ key: "T" })).toBe("typing");
     expect(petShortcutForKey({ key: "b" })).toBe("bark");

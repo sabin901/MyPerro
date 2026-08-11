@@ -1,11 +1,11 @@
-const RELEASE_TAG = "v0.9.0-rc.7";
+const RELEASE_TAG = "v0.9.0-rc.8";
 const RELEASE_ROOT = `https://github.com/sabin901/MyPerro/releases/download/${RELEASE_TAG}`;
 const DOWNLOADS = {
-  windows: `${RELEASE_ROOT}/MyPerro_0.9.0-rc.7_x64-setup.exe`,
-  "mac-arm": `${RELEASE_ROOT}/MyPerro_0.9.0-rc.7_aarch64.dmg`,
-  "mac-intel": `${RELEASE_ROOT}/MyPerro_0.9.0-rc.7_x64.dmg`,
-  "linux-appimage": `${RELEASE_ROOT}/MyPerro_0.9.0-rc.7_amd64.AppImage`,
-  "linux-deb": `${RELEASE_ROOT}/MyPerro_0.9.0-rc.7_amd64.deb`,
+  windows: `${RELEASE_ROOT}/MyPerro_0.9.0-rc.8_x64-setup.exe`,
+  "mac-arm": `${RELEASE_ROOT}/MyPerro_0.9.0-rc.8_aarch64.dmg`,
+  "mac-intel": `${RELEASE_ROOT}/MyPerro_0.9.0-rc.8_x64.dmg`,
+  "linux-appimage": `${RELEASE_ROOT}/MyPerro_0.9.0-rc.8_amd64.AppImage`,
+  "linux-deb": `${RELEASE_ROOT}/MyPerro_0.9.0-rc.8_amd64.deb`,
 };
 
 const companions = [
@@ -58,12 +58,6 @@ const platform = currentPlatform();
 if (platform) {
   const card = document.querySelector(`[data-platform="${platform}"]`);
   card?.classList.add("is-device");
-  if (card && !card.querySelector(".recommended-label")) {
-    const label = document.createElement("span");
-    label.className = "recommended-label";
-    label.textContent = "Recommended for this device";
-    card.prepend(label);
-  }
   const hero = document.querySelector("#heroDownload");
   const preferredAsset = platform === "linux" ? "linux-appimage" : platform;
   if (hero && DOWNLOADS[preferredAsset]) {
@@ -84,11 +78,11 @@ let demo = "roam";
 let demoStarted = performance.now();
 
 const demos = {
-  roam: { frames: ["walk_a", "walk_b", "walk_a", "tail_wag"], frameMs: 180, note: "Going for a little walk…" },
-  type: { frames: ["type_paw", "type_paw_alt", "type_intense", "type_intense_alt"], frameMs: 135, note: "Tiny paws are helping." },
-  snack: { frames: ["eat", "eat_alt", "eat", "happy_jump", "land", "tail_wag"], frameMs: 220, note: "Nom nom! That was delicious." },
-  roll: { frames: ["play", "pet_happy", "play", "land"], frameMs: 150, note: "Play time means one dramatic roll." },
-  sleep: { frames: ["lie_down", "sleep", "sleep_alt", "sleep"], frameMs: 700, note: "A one-minute nap, unless you wake me." },
+  roam: { frames: ["head_tilt", "walk_a", "walk_b", "walk_a", "sit_side"], frameMs: 220, note: "A quiet walk across the desktop." },
+  type: { frames: ["type_paw", "type_paw_alt", "type_intense", "type_intense_alt"], frameMs: 135, note: "Keeping company while you work." },
+  snack: { frames: ["eat", "eat_alt", "eat", "happy_jump", "land", "tail_wag"], frameMs: 220, note: "Dinner, followed by a small celebration." },
+  roll: { frames: ["head_tilt", "play", "pet_happy", "play", "land", "tail_wag"], frameMs: 170, note: "A run, a tumble, and a tidy landing." },
+  sleep: { frames: ["lie_down", "sleep", "sleep_alt", "sleep"], frameMs: 700, note: "One minute of rest, unless gently woken." },
 };
 
 for (const button of document.querySelectorAll("[data-demo]")) {

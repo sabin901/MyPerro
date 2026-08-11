@@ -12,7 +12,10 @@ export interface RoamPlan {
   target: Vec2;
   startedAt: number;
   durationMs: number;
+  anticipationMs: number;
+  settleMs: number;
   gait: "walk" | "run";
+  playful: boolean;
   /** Normalized portion of a playful trip spent rolling. */
   rollFrom: number;
   rollTo: number;
@@ -28,6 +31,8 @@ export interface PlanRoamArgs {
 }
 
 const MARGIN = 18;
+const ANTICIPATION_MS = 420;
+const SETTLE_MS = 560;
 
 /**
  * Pick a natural desktop-pet destination. Most trips stay in the lower half of
@@ -55,19 +60,34 @@ export function planRoam(args: PlanRoamArgs): RoamPlan | null {
   if (distance < 36) return null;
 
   const speed = args.playful ? 155 : 78;
+  const travelMs = Math.max(args.playful ? 1700 : 2600, Math.min(10_000, distance / speed * 1000));
   return {
     start,
     target,
     startedAt: args.now,
-    durationMs: Math.max(args.playful ? 1700 : 2600, Math.min(10_000, distance / speed * 1000)),
+    durationMs: ANTICIPATION_MS + travelMs + SETTLE_MS,
+    anticipationMs: ANTICIPATION_MS,
+    settleMs: SETTLE_MS,
     gait: args.playful || distance > 620 ? "run" : "walk",
+    playful: args.playful,
     rollFrom: args.playful ? .38 : 2,
     rollTo: args.playful ? .64 : 2,
   };
 }
 
 export function roamProgress(plan: RoamPlan, now: number): number {
-  return clamp01((now - plan.startedAt) / plan.durationMs);
+  const travelMs = Math.max(1, plan.durationMs - plan.anticipationMs - plan.settleMs);
+  return clamp01((now - plan.startedAt - plan.anticipationMs) / travelMs);
+}
+
+export type RoamPhase = "anticipate" | "travel" | "settle" | "complete";
+
+export function roamPhase(plan: RoamPlan, now: number): RoamPhase {
+  const elapsed = now - plan.startedAt;
+  if (elapsed < plan.anticipationMs) return "anticipate";
+  if (elapsed < plan.durationMs - plan.settleMs) return "travel";
+  if (elapsed < plan.durationMs) return "settle";
+  return "complete";
 }
 
 /** Smooth acceleration/deceleration keeps OS-window movement from teleporting. */
@@ -81,7 +101,7 @@ export function roamPosition(plan: RoamPlan, now: number): Vec2 {
 }
 
 export function isRoamRolling(plan: RoamPlan | null, now: number): boolean {
-  if (!plan) return false;
+  if (!plan || roamPhase(plan, now) !== "travel") return false;
   const p = roamProgress(plan, now);
   return p >= plan.rollFrom && p <= plan.rollTo;
 }

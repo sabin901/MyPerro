@@ -27,7 +27,7 @@ Legend: ✅ built & verified locally · 🎨 prototype art exists, final animati
 
 **Extra life:** MyPerro adds autonomous idle motions — blink, tail wag, look-up,
 scratch, yawn and sit-side variety — plus animated sleep glyphs and state-specific
-particles, music-player headphones, and video-aware edge peeking, so the dog does
+particles and video-aware edge peeking, so the dog does
 not freeze when the user is quiet.
 
 **Current state:** MyPerro matches the 18 public ComNyang behaviours in original

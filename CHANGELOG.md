@@ -3,6 +3,31 @@
 All notable MyPerro changes are documented here. The project follows Semantic
 Versioning once it reaches 1.0.
 
+## 0.9.0-rc.8 — 2026-08-11
+
+### Changed
+
+- Replaced competing presentation overrides with one tested behaviour director.
+- Added anticipate, travel, and settle phases to desktop roaming so movement
+  begins and ends as a coherent action.
+- Care, rest, previews, and direct interaction now stop native roaming; pets no
+  longer eat, drink, or pose while sliding across the screen.
+- Play protects only its starting input, then yields cleanly to genuine typing,
+  dragging, care, and other direct user activity.
+- Removed the headphone shortcut, artwork overlay, foreground music-player
+  classification, settings entry, accessibility metadata, and documentation.
+- Rebuilt the public website as a restrained vintage editorial download page,
+  with human-written copy, clearer platform rows, and no decorative emoji,
+  synthetic badges, fake browser chrome, or generic card-wall layout.
+
+### Verification
+
+- Added a presentation conflict matrix and roaming phase regression tests.
+- Verified desktop and mobile website layouts, interaction states, overflow,
+  console output, TypeScript, Vitest, and Rust media classification locally.
+- Built rc.8 packages on Windows, Ubuntu, Apple Silicon macOS, and Intel macOS;
+  both mounted Mac applications launched to frontend readiness in CI.
+
 ## 0.9.0-rc.7 — 2026-08-11
 
 ### Changed
@@ -40,8 +65,8 @@ Versioning once it reaches 1.0.
 
 ### Added
 
-- Privacy-safe foreground media reactions: headphones for known music players
-  and peek behavior for known video players, plus manual N and H shortcuts.
+- Privacy-safe foreground media reactions for supported video players, plus a
+  manual N shortcut.
 - Cryptographically signed updater bundles and manifests for Windows, macOS
   Apple Silicon, macOS Intel, AppImage, and Debian packages.
 - Packaged-DMG startup verification on both supported Mac architectures.

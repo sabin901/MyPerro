@@ -2,7 +2,7 @@
 
 ## Executive verdict
 
-MyPerro `0.9.0-rc.7` is a credible public release candidate and a good fit for
+MyPerro `0.9.0-rc.8` is a credible public release candidate and a good fit for
 a free, accountless public beta. It is no longer a prototype: the current
 Windows executable and installer build and run, the same revision produces
 Linux AppImage and Debian packages and reaches `Pet ready` in a native startup
@@ -28,9 +28,9 @@ as a stable public-release operation.
 | Check | Result | Evidence |
 |---|---:|---|
 | TypeScript | Pass | `tsc --noEmit` on Windows and Linux |
-| Frontend logic | Pass | 15 Vitest files, 187 tests, including direction, native-cel mirroring, and mirrored hit-testing primitives |
+| Frontend logic | Pass | 16 Vitest files, 193 tests, including the presentation conflict matrix, roaming phases, direction, native-cel mirroring, and mirrored hit-testing primitives |
 | Interaction timing | Pass | explicit tests for 20-second requests, cooldown, initial anti-nag behavior, 60-second rest, and touch-to-wake |
-| Native privacy logic | Pass | 6 Rust tests, including no-keycode serialization and coarse media classification, on Windows |
+| Native privacy logic | Pass | 5 Rust tests, including no-keycode serialization and coarse video classification, on Windows |
 | Production frontend | Pass | Vite 8.2.1 build and packaged CSP/asset smoke test |
 | Companion art | Pass | all 9 premium packs; semantic source-pose, boundary-alpha, frame-density and frame-uniqueness validation; generic eye artifacts and Husky idle bowls removed |
 | Direction and DPI | Pass locally | travel direction owns facing; every cel declares native direction; cursor geometry and velocity share a physical-coordinate plus monitor-scale contract |
@@ -41,10 +41,10 @@ as a stable public-release operation.
 | Windows size control | Pass | accessibility tree exposes 65–200%; 150% produced a 288×288 pet window from the 192×192 base |
 | Windows Settings | Pass | free/accountless message, play-request controls, sound volume/preview, Wellbeing, actions, tabs and creator attribution visible |
 | Windows package | Pass | current x64 NSIS installer and SHA-256 manifest generated |
-| Linux native runtime | Pass with split evidence | rc.7 AppImage and Debian package CI is green; the prior release reached `Pet ready` and remained alive after 8 seconds under Xvfb/DBus |
+| Linux native runtime | Pass in CI | rc.8 AppImage and Debian packages built successfully; package metadata, checksums, SBOM generation, and artifact upload passed |
 | Linux packages | Pass | x64 AppImage and `.deb`; Debian metadata identifies Sabin Raut |
 | SBOM/checksums | Pass | CycloneDX web SBOM and SHA-256 manifests generated |
-| macOS artifacts | Pass in CI | rc.7 Apple Silicon and Intel DMGs mounted, matched the expected architecture, passed ad-hoc signature checks, launched to frontend readiness, and uploaded with checksums/SBOMs; Developer ID notarization and physical runtime acceptance remain external |
+| macOS artifacts | Pass in CI | rc.8 Apple Silicon and Intel DMGs mounted, matched the expected architecture, passed ad-hoc signature checks, launched to frontend readiness, and uploaded with checksums/SBOMs; Developer ID notarization and physical runtime acceptance remain external |
 
 The Rust warnings are inherited primarily from Tauri's Linux GTK3/WebKitGTK
 stack. `RUSTSEC-2024-0429` is explicitly documented in `audit.toml`; MyPerro
@@ -56,7 +56,7 @@ debt and must be revisited when the desktop stack migrates.
 - The desktop window contains no visible buttons, gear, or action dock. Only
   the pet remains, plus temporary speech and an active focus timer when needed.
 - After clicking the companion, controls are F Feed, W Water, P Play, R Rest,
-  N Peek, H Headphones, D Dance, T Typing, B Bark/meow, J Jump, and S Settings.
+  N Peek, D Dance, T Typing, B Bark/meow, J Jump, and S Settings.
   They are deliberately scoped to the focused
   pet window so MyPerro never steals ordinary typing from other applications.
 - Right-click and the tray remain mouse-only/accessibility fallback paths.
@@ -95,9 +95,9 @@ debt and must be revisited when the desktop stack migrates.
 - Nine dog and cat characters share one validated native-resolution atlas
   pipeline with addressable typing, tail, walking, running, eating, drinking,
   sleeping, petting, jumping, and celebration frames.
-- Foreground media awareness returns only `none`, `music`, or `video`; known
-  music players add headphones and known video apps/browser pages activate
-  peek mode. No audio, title, URL, process path, or media content is serialized.
+- Foreground video awareness returns only `none` or `video`; known video apps
+  and browser pages activate peek mode. No audio, title, URL, process path, or
+  media content is serialized.
 - Signed updater artifacts, a static GitHub `latest.json`, periodic availability
   checks, user-confirmed installation and restart are wired for all platforms.
 - Release automation covers native builds, tests, dependency audits, pack
@@ -112,10 +112,10 @@ debt and must be revisited when the desktop stack migrates.
 | Area | Score | Honest assessment |
 |---|---:|---|
 | Core virtual-pet loop | 9.0 | Play requests, interruptible rest, persistent wellbeing and kind offline caps create attachment without punishing absence. Long-term progression and learned tricks remain shallow. |
-| Reactive behavior | 9.3 | Cursor attention, drag, shake, pet, typing, scrolling, wander, sleep, reminders, requests, media headphones, video peek and agent states are broad. Arbitrary-window perching and universal system-audio-session detection remain absent. |
+| Reactive behavior | 9.3 | Cursor attention, drag, shake, pet, typing, scrolling, directed roaming, sleep, reminders, requests, video peek and task states are broad. Arbitrary-window perching remains absent. |
 | Feature discoverability | 9.1 | The desktop is cleaner but less self-explanatory. First-run guidance, Settings shortcut cards, accessibility metadata, right-click and tray labels compensate without permanent controls. |
 | Character art | 8.7 | Clean, transparent and semantically mapped across nine companions; neutral poses are prop-free and generic pupil artifacts are removed. It still uses fewer principal drawings than bespoke commercial frame-by-frame production. |
-| Motion quality | 8.5 | Anticipation/impact/recovery, a post-feed dance, post-water shake, eye follow and micro-motion read well. Live2D deformation and hand-authored transition continuity would be smoother. |
+| Motion quality | 8.8 | A single presentation director now prevents sliding care poses and timer conflicts; roaming has anticipate, travel and settle phases, plus a visible play roll. More unique in-between drawings would still improve transition continuity. |
 | Settings/accessibility | 9.0 | Clear information architecture, native keyboard tabs, auto-save status, range controls, reduced motion and large targets. Screen-reader/high-contrast audits still need real OS coverage. |
 | Privacy/security | 9.3 | Local-only, narrow capabilities, restrictive CSP, consent, no account and no telemetry are excellent. Unsigned global-input software will still attract antivirus scrutiny. |
 | Cross-platform engineering | 8.9 | One Tauri codebase, verified Windows/Linux packages, dual-architecture macOS CI. Native Wayland input is compositor-limited and macOS runtime acceptance is external. |
