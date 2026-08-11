@@ -5,7 +5,7 @@ reminds you to take breaks, asks to play, and quietly keeps you company.
 
 **Created by Sabin Raut.**
 
-macOS · Windows · Linux (X11/XWayland) · MIT licensed · free forever · no telemetry · no account
+macOS · Windows · Linux (X11/XWayland) · MIT licensed · open source · no telemetry · no account
 
 **Website and downloads:** https://sabin901.github.io/MyPerro/
 
