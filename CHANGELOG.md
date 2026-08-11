@@ -3,6 +3,25 @@
 All notable MyPerro changes are documented here. The project follows Semantic
 Versioning once it reaches 1.0.
 
+## 0.9.0-rc.10 — 2026-08-11
+
+### Changed
+
+- Unified the website, application, Settings, installer, dock/taskbar, and tray
+  artwork around one canonical MyPerro identity.
+- Added real in-app animation previews for all nine companions, companion deep
+  links, preview sizing, swipe and keyboard navigation, responsive navigation,
+  and a scroll-driven product story to the public website.
+- Added shared brand tokens, asset synchronization, and documented logo usage
+  so future builds keep every surface consistent.
+
+### Fixed
+
+- Marked the monochrome tray asset as macOS template artwork so it remains
+  legible in both light and dark menu bars.
+- Independently built and launched the packaged Intel Mac application in CI,
+  alongside Apple Silicon, Windows, and Linux package verification.
+
 ## 0.9.0-rc.9 — 2026-08-11
 
 ### Changed
