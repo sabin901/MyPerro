@@ -226,9 +226,18 @@ fn main() {
                 ],
             )?;
 
-            TrayIconBuilder::new()
+            let tray_icon =
+                tauri::image::Image::from_bytes(include_bytes!("../icons/tray/32x32.png"))?;
+
+            let tray_builder = TrayIconBuilder::new()
+                .icon(tray_icon)
                 .menu(&menu)
-                .tooltip("MyPerro")
+                .tooltip("MyPerro");
+
+            #[cfg(target_os = "macos")]
+            let tray_builder = tray_builder.icon_as_template(true);
+
+            tray_builder
                 .on_menu_event(|app, event| match event.id.as_ref() {
                     "show" => {
                         if let Some(w) = app.get_webview_window("pet") {

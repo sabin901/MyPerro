@@ -71,6 +71,11 @@ npm run validate:packs
 npm run smoke:dist
 ```
 
+The canonical logo and design tokens live in `assets/`. Run `npm run
+brand:sync` after editing the master mark, and `npm run brand:icons` when the
+application icon changes. Both the app and website builds sync the shared mark
+automatically.
+
 ## Change Your Companion
 
 Open Settings by clicking the pet and pressing `S`, using the tray menu, or
@@ -106,6 +111,7 @@ Supported statuses are `thinking`, `done`, and `error`. `message` is optional.
 | `docs/PHASES.md` | Project phases and exit criteria |
 | `docs/PRD.md` | Product scope |
 | `docs/ART_GUIDE.md` | Pixel-art rules |
+| `docs/brand-guidelines.md` | Logo, colour, typography, and asset usage |
 | `docs/pack-format.md` | Community dog-pack format |
 | `docs/EVALUATION.md` | Current verification, critique, and release gates |
 | `docs/COMPETITIVE_REVIEW.md` | Product comparison and next investments |

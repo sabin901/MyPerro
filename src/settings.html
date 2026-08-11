@@ -49,6 +49,9 @@
         font: 700 20px/1.1 Georgia, "Times New Roman", serif;
         margin: 0 0 4px; letter-spacing: .04em; text-transform: uppercase;
       }
+      .settings-title { display: flex; align-items: center; gap: 9px; margin-bottom: 4px; }
+      .settings-title img { width: 32px; height: 32px; flex: none; }
+      .settings-title h1 { margin: 0; }
       p.sub { margin: 0; color: var(--muted); font-size: 14px; }
       .free-line { margin: 5px 0 0; color: var(--green); font-size: 13px; font-weight: 800; }
       form { display: grid; gap: 16px; }
@@ -263,7 +266,7 @@
     <header>
       <div class="preview"><canvas id="breedPreview" width="96" height="96"></canvas></div>
       <div>
-        <h1>MyPerro</h1>
+        <div class="settings-title"><img src="./brand/myperro-mark.svg" width="32" height="32" alt="" /><h1>MyPerro</h1></div>
         <p class="sub">A tiny vintage control room for your desktop companion.</p>
         <p class="sub creator-line">Created by Sabin Raut</p>
         <p class="free-line">Open source · no account · no subscription · local only</p>
