@@ -36,7 +36,8 @@ macOS · Windows · Linux (X11/XWayland) · MIT licensed · free forever · no t
   Only the coarse `none`/`video` result reaches the UI; titles, URLs and audio
   do not.
 - Cryptographically signed in-app updates from the official GitHub release
-  channel, with a manual Check for updates action in Settings.
+  channel. Published builds check automatically and installation remains a
+  user-confirmed action in Settings.
 - Task-based, auto-saving settings for names, reminders, scheduled messages,
   quiet hours, Pomodoro, breed, 65–200% size, opacity, colours, markings, sound
   volume and preview, reduced motion, always-on-top, start at login, and peek mode.

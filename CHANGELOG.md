@@ -3,6 +3,30 @@
 All notable MyPerro changes are documented here. The project follows Semantic
 Versioning once it reaches 1.0.
 
+## 0.9.0-rc.9 — 2026-08-11
+
+### Changed
+
+- Published signed builds, including release candidates, now check the official
+  update channel 15 seconds after startup and every six hours thereafter.
+- Update discovery remains private and non-disruptive: MyPerro shows a local
+  notice, then waits for the user to confirm installation in Settings.
+- Developer and local builds remain disconnected from the public release
+  channel.
+
+### Fixed
+
+- Closed updater resources after automatic and manual checks, including when an
+  update is declined, repeated, unavailable, or fails.
+- Added release-channel regression tests covering stable, release-candidate,
+  beta, developer, local, malformed, and placeholder versions.
+
+### Upgrade note
+
+- Existing rc.7 and rc.8 installations require one manual **Settings → Check
+  for updates** action because their installed code did not poll automatically.
+  After rc.9 is installed, future signed releases are discovered automatically.
+
 ## 0.9.0-rc.8 — 2026-08-11
 
 ### Changed
