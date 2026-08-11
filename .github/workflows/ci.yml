@@ -56,10 +56,10 @@ jobs:
       matrix:
         include:
           - os: macos-15
-            bundle: dmg
+            bundle: app,dmg
             artifact: macos-apple-silicon-dmg
           - os: macos-15-intel
-            bundle: dmg
+            bundle: app,dmg
             artifact: macos-intel-dmg
           - os: windows-latest
             bundle: nsis
