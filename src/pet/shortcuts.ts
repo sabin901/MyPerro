@@ -1,6 +1,9 @@
-export type PetShortcut = "feed" | "water" | "play" | "rest" | "settings";
+export type PetShortcut =
+  | "feed" | "water" | "play" | "rest" | "peek" | "headphones"
+  | "dance" | "typing" | "bark" | "jump" | "settings";
 
-export const PET_SHORTCUT_LABEL = "F feed · W water · P play · R rest · S settings";
+export const PET_SHORTCUT_LABEL =
+  "F feed · W water · P play · R rest · N peek · H headphones · D dance · T typing · B bark · J jump · S settings";
 
 interface ShortcutKey {
   key: string;
@@ -22,6 +25,12 @@ export function petShortcutForKey(event: ShortcutKey): PetShortcut | null {
     case "w": return "water";
     case "p": return "play";
     case "r": return "rest";
+    case "n": return "peek";
+    case "h": return "headphones";
+    case "d": return "dance";
+    case "t": return "typing";
+    case "b": return "bark";
+    case "j": return "jump";
     case "s": return "settings";
     default: return null;
   }

@@ -32,6 +32,7 @@
     "smoke:dist": "node scripts/smoke-dist.mjs",
     "sbom": "cyclonedx-npm --output-file myperro-web.cdx.json --spec-version 1.6",
     "checksums": "node scripts/checksums.mjs",
+    "release:assets": "node scripts/prepare-release-assets.mjs",
     "release:check": "npm run typecheck && npm test && npm run build && npm run site:build && npm run validate:packs && npm run smoke:dist && cargo test --manifest-path src-tauri/Cargo.toml"
   },
   "devDependencies": {
@@ -50,6 +51,8 @@
     "@tauri-apps/plugin-autostart": "^2.5.1",
     "@tauri-apps/plugin-log": "^2.9.0",
     "@tauri-apps/plugin-notification": "^2.3.3",
+    "@tauri-apps/plugin-process": "^2.3.1",
+    "@tauri-apps/plugin-updater": "^2.10.1",
     "@tauri-apps/plugin-window-state": "^2.4.1"
   }
 }

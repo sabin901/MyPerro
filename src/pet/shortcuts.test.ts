@@ -7,6 +7,12 @@ describe("pet-only keyboard shortcuts", () => {
     expect(petShortcutForKey({ key: "W" })).toBe("water");
     expect(petShortcutForKey({ key: "p" })).toBe("play");
     expect(petShortcutForKey({ key: "R" })).toBe("rest");
+    expect(petShortcutForKey({ key: "n" })).toBe("peek");
+    expect(petShortcutForKey({ key: "H" })).toBe("headphones");
+    expect(petShortcutForKey({ key: "d" })).toBe("dance");
+    expect(petShortcutForKey({ key: "T" })).toBe("typing");
+    expect(petShortcutForKey({ key: "b" })).toBe("bark");
+    expect(petShortcutForKey({ key: "J" })).toBe("jump");
     expect(petShortcutForKey({ key: "s" })).toBe("settings");
   });
 
@@ -20,5 +26,6 @@ describe("pet-only keyboard shortcuts", () => {
   it("ignores unrelated keys and publishes the discoverability label", () => {
     expect(petShortcutForKey({ key: "x" })).toBeNull();
     expect(PET_SHORTCUT_LABEL).toContain("S settings");
+    expect(PET_SHORTCUT_LABEL).toContain("N peek");
   });
 });

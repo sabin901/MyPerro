@@ -17,25 +17,27 @@ from PIL import Image
 CELL = 192
 COLS = 8
 POSES = {
-    # Source pose 15 is a clean, happy seated character once its detached
-    # celebration sparkles are removed. It avoids baking food/water bowls into
-    # every neutral frame (the original source poses 0-2 include both bowls).
-    "idle": 15, "sit": 15, "sit_side": 15, "stand": 15, "side_eye": 15,
-    "head_tilt": 15, "look_up": 15, "blink": 15, "tail_wag": 15,
-    "tail_wag_alt": 15, "walk": 3, "walk_a": 3,
-    "walk_b": 4, "run": 4, "run_alt": 3, "chase": 4, "turn": 4, "drag": 4,
-    "type_paw": 5, "type_paw_alt": 6, "type_intense": 6, "type_intense_alt": 5,
+    # The approved 4x4 sheets all use the same semantic order. Keep each
+    # runtime state within its real source pose family: the previous pipeline
+    # mapped every neutral state to cell 15 (celebration), alternated opposite-
+    # facing walk cells, and swapped keyboard/laptop props while typing.
+    "idle": 0, "sit": 0, "sit_side": 0, "stand": 0, "side_eye": 0,
+    "head_tilt": 0, "look_up": 0, "blink": 1, "tail_wag": 2,
+    "tail_wag_alt": 2, "walk": 3, "walk_a": 3,
+    "walk_b": 3, "run": 3, "run_alt": 3, "chase": 3, "turn": 4, "drag": 0,
+    "type_paw": 5, "type_paw_alt": 5, "type_intense": 5, "type_intense_alt": 5,
     "focus_sit": 6, "drink": 7, "drink_alt": 7, "eat": 8, "eat_alt": 8,
-    "beg": 9, "play": 10, "zoomies": 10, "pet_happy": 11, "pet_happy_alt": 2,
+    "beg": 9, "play": 10, "zoomies": 10, "pet_happy": 11, "pet_happy_alt": 11,
     "sleep": 12, "sleep_alt": 12, "lie_down": 12, "wake": 13, "stretch": 13,
-    "yawn": 13, "alert": 14, "bark": 14, "scratch": 14, "jump": 15,
-    "happy_jump": 15, "shake": 15, "land": 15, "pant": 15,
-    "deliver_note": 6, "paper_unroll": 6, "paper_unroll_alt": 6,
+    "yawn": 13, "alert": 14, "bark": 14, "scratch": 0, "jump": 15,
+    "happy_jump": 15, "shake": 0, "land": 0, "pant": 0,
+    "deliver_note": 0, "paper_unroll": 0, "paper_unroll_alt": 0,
 }
 
 PROP_FREE_FRAMES = {
     "idle", "sit", "sit_side", "stand", "side_eye", "head_tilt", "look_up",
-    "blink", "tail_wag", "tail_wag_alt", "pant",
+    "blink", "tail_wag", "tail_wag_alt", "pant", "drag", "scratch", "shake",
+    "land", "deliver_note", "paper_unroll", "paper_unroll_alt",
 }
 
 MOTION = {
@@ -78,7 +80,12 @@ def remove_chroma_background(source: Image.Image) -> Image.Image:
 
 
 def keep_largest_component(source: Image.Image) -> Image.Image:
-    """Remove detached bowls/sparkles while retaining the complete character."""
+    """Remove detached bowls/sparkles while retaining the complete character.
+
+    Generated shadows can join nearby props with a few translucent pixels, so
+    connectivity at alpha > 8 is not enough. Find the largest solid character
+    core first, then retain the feathered artwork inside its padded bounds.
+    """
     alpha = source.getchannel("A")
     width, height = source.size
     alpha_pixels = alpha.load()
@@ -86,7 +93,7 @@ def keep_largest_component(source: Image.Image) -> Image.Image:
     components: list[list[tuple[int, int]]] = []
     for y in range(height):
         for x in range(width):
-            if (x, y) in seen or alpha_pixels[x, y] <= 8:
+            if (x, y) in seen or alpha_pixels[x, y] <= 80:
                 continue
             component: list[tuple[int, int]] = []
             queue = [(x, y)]
@@ -95,18 +102,22 @@ def keep_largest_component(source: Image.Image) -> Image.Image:
                 component.append((qx, qy))
                 for nx, ny in ((qx - 1, qy), (qx + 1, qy), (qx, qy - 1), (qx, qy + 1)):
                     if (0 <= nx < width and 0 <= ny < height and
-                            (nx, ny) not in seen and alpha_pixels[nx, ny] > 8):
+                            (nx, ny) not in seen and alpha_pixels[nx, ny] > 80):
                         seen.add((nx, ny))
                         queue.append((nx, ny))
             components.append(component)
     if not components:
         return source
-    keep = set(max(components, key=len))
+    keep = max(components, key=len)
+    min_x = max(0, min(x for x, _ in keep) - 8)
+    max_x = min(width - 1, max(x for x, _ in keep) + 8)
+    min_y = max(0, min(y for _, y in keep) - 8)
+    max_y = min(height - 1, max(y for _, y in keep) + 8)
     result = source.copy()
     result_pixels = result.load()
     for y in range(height):
         for x in range(width):
-            if (x, y) not in keep:
+            if x < min_x or x > max_x or y < min_y or y > max_y:
                 result_pixels[x, y] = (0, 0, 0, 0)
     return result
 
@@ -177,9 +188,8 @@ def main() -> None:
         "canvas": {"width": CELL, "height": CELL},
         "grid": {"cols": COLS, "rows": rows},
         "displayScale": 1,
-        "artStyle": "premium-production-v2",
+        "artStyle": "premium-production-v3",
         "sourceCells": source_indices,
-        "landmarks": {"eyes": [{"x": 76, "y": 73}, {"x": 109, "y": 73}]},
         "frames": frames,
     }
     (output_dir / "atlas.json").write_text(json.dumps(meta, indent=2) + "\n", encoding="utf-8")

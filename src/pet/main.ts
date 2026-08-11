@@ -10,11 +10,13 @@ import { currentMonitor, getCurrentWindow, monitorFromPoint } from "@tauri-apps/
 import { LogicalPosition, LogicalSize } from "@tauri-apps/api/dpi";
 import { emit, listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
+import { getVersion } from "@tauri-apps/api/app";
 import {
   isPermissionGranted,
   sendNotification,
 } from "@tauri-apps/plugin-notification";
 import { error as logError, info as logInfo, warn as logWarn } from "@tauri-apps/plugin-log";
+import { check } from "@tauri-apps/plugin-updater";
 
 import { actualActivityAt, FPS, shouldDraw, isDegraded, keysPerSecond, THRESHOLDS, type Mode } from "./behaviour";
 import {
@@ -82,6 +84,9 @@ interface AgentStatusFile {
   updatedAt?: number;
 }
 
+type DesktopMediaKind = "none" | "music" | "video";
+interface DesktopContext { media: DesktopMediaKind }
+
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const DISPLAY_SCALE = 2;               // plan §9.3. Integer only.
@@ -129,7 +134,12 @@ let dragging = false;
 let ignoringCursor = true;
 let wasAsleep = false;
 let peekMode = false;
-let peekTimer: ReturnType<typeof setTimeout> | null = null;
+let manualPeekMode = false;
+let mediaPeekMode = false;
+let mediaMode: DesktopMediaKind = "none";
+let mediaCandidate: DesktopMediaKind = "none";
+let mediaCandidateCount = 0;
+let headphonesPreviewUntil = 0;
 let quietMode = false;
 let beforePeekPosition: { x: number; y: number } | null = null;
 let lastAutoWanderAt = 0;
@@ -175,6 +185,7 @@ let frames = 0, lastFpsAt = performance.now(), fps = 0, eventCount = 0, eventRat
 async function boot() {
   bootStage = "loading saved settings";
   settings = await loadSettings();
+  stableReleaseChannel = !((await getVersion().catch(() => "0.0.0-dev")).includes("-"));
   needs = loadNeeds();
   interactionState = loadInteractionState();
   wirePetOnlyControls();
@@ -190,13 +201,16 @@ async function boot() {
     ? await isPermissionGranted().catch(() => false)
     : false;
   applyPinnedNote();
-  peekMode = false;
+  manualPeekMode = settings.peekMode;
+  await applyPeekMode(manualPeekMode);
   setInterval(pollReminders, 1000);   // the scheduler ticks once a second
   setInterval(pollAgentStatus, 1000);
   setInterval(autoWander, 2200);
   setInterval(tickRoaming, 50);
   setInterval(pollCompanionInteraction, 5000);
   setInterval(updateVirtualPet, 60_000);
+  setInterval(pollDesktopContext, 2000);
+  if (stableReleaseChannel) setInterval(pollAvailableUpdate, 6 * 60 * 60_000);
 
   engine = new BehaviourEngine(performance.now());
 
@@ -235,6 +249,8 @@ async function boot() {
   });
   await listen<CareAction>("care-action", e => handleCare(e.payload));
   await listen<string>("preview-action", e => previewAction(e.payload));
+  void pollDesktopContext();
+  if (stableReleaseChannel) setTimeout(() => { void pollAvailableUpdate(); }, 15_000);
 
   wireDrag();
   wireHud();
@@ -431,12 +447,31 @@ function wirePetOnlyControls() {
     if (!shortcut) return;
     event.preventDefault();
     event.stopPropagation();
-    if (shortcut === "settings") {
-      void invoke("open_settings");
-      return;
+    switch (shortcut) {
+      case "settings": void invoke("open_settings"); break;
+      case "peek": void togglePeekMode(); break;
+      case "play": triggerPlay(); handleCare("play"); break;
+      case "feed": handleCare("feed"); break;
+      case "water": handleCare("water"); break;
+      case "rest": handleCare("rest"); break;
+      case "headphones":
+        headphonesPreviewUntil = performance.now() + MESSAGE_DURATION_MS;
+        showCareFrame("tail_wag", 3200);
+        break;
+      case "dance":
+        showCareFrame(reducedMotion ? "tail_wag" : "happy_jump", 5200);
+        playSound("happy");
+        break;
+      case "typing": showCareFrame("type_paw", 6000); break;
+      case "bark":
+        showCareFrame("bark", 2200);
+        playSound(settings.appearance.breed.endsWith("-cat") ? "purr" : "bark");
+        break;
+      case "jump":
+        showCareFrame(reducedMotion ? "tail_wag" : "happy_jump", 3200);
+        playSound("happy");
+        break;
     }
-    if (shortcut === "play") triggerPlay();
-    handleCare(shortcut);
   });
 }
 
@@ -544,8 +579,8 @@ async function applySettings(next: Settings) {
     ? await isPermissionGranted().catch(() => false)
     : false;
   applyPinnedNote();
-  peekMode = false;
-  await applyPeekMode(false);
+  manualPeekMode = settings.peekMode;
+  await applyPeekMode(manualPeekMode || mediaPeekMode);
 }
 
 function loadImage(src: string): Promise<HTMLImageElement> {
@@ -843,7 +878,40 @@ function togglePomodoro() {
 }
 
 async function togglePeekMode() {
-  await applyPeekMode(!peekMode);
+  manualPeekMode = !manualPeekMode;
+  await applyPeekMode(manualPeekMode || mediaPeekMode);
+}
+
+/**
+ * Locally classify the foreground application. Rust intentionally returns no
+ * process path, window title, URL, or audio data—only none/music/video. Two
+ * matching polls provide hysteresis when the user briefly focuses MyPerro.
+ */
+async function pollDesktopContext() {
+  const next = await invoke<DesktopContext>("desktop_context").catch(() => null);
+  if (!next) return;
+  if (next.media !== mediaCandidate) {
+    mediaCandidate = next.media;
+    mediaCandidateCount = 1;
+    return;
+  }
+  mediaCandidateCount++;
+  if (mediaCandidateCount < 2 || next.media === mediaMode) return;
+
+  mediaMode = next.media;
+  mediaPeekMode = mediaMode === "video";
+  await applyPeekMode(manualPeekMode || mediaPeekMode);
+}
+
+let lastUpdateNotice = "";
+let stableReleaseChannel = false;
+async function pollAvailableUpdate() {
+  if (!stableReleaseChannel) return;
+  const update = await check().catch(() => null);
+  if (!update || update.version === lastUpdateNotice) return;
+  lastUpdateNotice = update.version;
+  flashNote(`MyPerro ${update.version} is ready. Press S to install the verified update.`);
+  showNativeReminder(`A verified MyPerro ${update.version} update is ready in Settings.`);
 }
 
 function toggleQuietMode() {
@@ -862,10 +930,7 @@ function triggerPlay() {
 }
 
 async function applyPeekMode(enabled: boolean) {
-  if (peekTimer) {
-    clearTimeout(peekTimer);
-    peekTimer = null;
-  }
+  if (enabled === peekMode && (enabled || beforePeekPosition === null)) return;
   peekMode = enabled;
   if (enabled) cancelRoam();
   document.body.classList.toggle("peek", enabled);
@@ -896,9 +961,6 @@ async function applyPeekMode(enabled: boolean) {
     winY: top + Math.round(height * 0.58),
   };
   await win.setPosition(new LogicalPosition(Math.round(viewport.winX), Math.round(viewport.winY)));
-  peekTimer = setTimeout(() => {
-    void applyPeekMode(false);
-  }, 20_000);
 }
 
 /** The always-on pinned note from settings. */
@@ -1197,7 +1259,16 @@ function drawSpriteCel(f: Frame, offset: { x: number; y: number }, now: number) 
 }
 
 function drawStateEffects(now: number) {
-  if (reducedMotion) return;
+  const headphones = mediaMode === "music" || now < headphonesPreviewUntil;
+  if (reducedMotion) {
+    if (headphones) {
+      ctx.save();
+      ctx.scale(canvas.width / 96, canvas.height / 96);
+      drawHeadphones();
+      ctx.restore();
+    }
+    return;
+  }
   const frame = visibleFrame.replace(/_alt$/, "");
   const t = now / 1000;
   ctx.save();
@@ -1254,6 +1325,34 @@ function drawStateEffects(now: number) {
     ctx.strokeStyle = "#f4c94f"; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.arc(83, 45, 7 + (t * 8) % 5, -0.7, 0.7); ctx.stroke();
   }
+  if (headphones) drawHeadphones();
+  ctx.restore();
+}
+
+/** Code-native headphones stay crisp and consistent across every pet pack. */
+function drawHeadphones() {
+  ctx.save();
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.strokeStyle = "#312941";
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.arc(48, 34, 20, Math.PI, 0);
+  ctx.stroke();
+  ctx.strokeStyle = "#72c8e8";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(48, 34, 20, Math.PI, 0);
+  ctx.stroke();
+  ctx.fillStyle = "#312941";
+  ctx.fillRect(24, 34, 9, 18);
+  ctx.fillRect(63, 34, 9, 18);
+  ctx.fillStyle = "#72c8e8";
+  ctx.fillRect(27, 37, 4, 12);
+  ctx.fillRect(65, 37, 4, 12);
+  ctx.fillStyle = "rgba(255,227,123,.92)";
+  ctx.fillRect(20, 25, 2, 5); ctx.fillRect(18, 27, 6, 2);
+  ctx.fillRect(75, 20, 2, 5); ctx.fillRect(73, 22, 6, 2);
   ctx.restore();
 }
 
@@ -1348,7 +1447,10 @@ function motionOffset(now: number): { x: number; y: number } {
 }
 
 function drawEyeFollow(offset: { x: number; y: number }) {
-  if (reducedMotion || EYELESS_FRAMES.has(visibleFrame)) return;
+  // Premium sheets already contain carefully placed expressive eyes. The old
+  // universal landmark pair was correct for no breed and painted stray square
+  // pupils over faces, especially cats and long-muzzled dogs.
+  if (atlas.artStyle?.startsWith("premium-") || reducedMotion || EYELESS_FRAMES.has(visibleFrame)) return;
   const base = visibleFrame.replace(/_alt$/, "");
   if (!["idle", "sit", "stand", "sit_side", "head_tilt", "look_up", "side_eye", "alert"].includes(base)) return;
   const look = eyeOffset();

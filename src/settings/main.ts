@@ -14,6 +14,8 @@ import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { isPermissionGranted, requestPermission } from "@tauri-apps/plugin-notification";
 import { error as logError, info as logInfo } from "@tauri-apps/plugin-log";
+import { check } from "@tauri-apps/plugin-updater";
+import { relaunch } from "@tauri-apps/plugin-process";
 import {
   applyCare, loadNeeds, moodMessage, petMood, saveNeeds, wellbeingScore,
   type CareAction, type PetNeeds,
@@ -280,6 +282,37 @@ function wireProductionControls() {
     }
   });
   $("exportDiagnostics").addEventListener("click", () => { void exportDiagnostics(); });
+  $("checkUpdates").addEventListener("click", () => { void checkForUpdates(); });
+}
+
+async function checkForUpdates() {
+  const button = $("checkUpdates") as HTMLButtonElement;
+  const status = $("updateStatus");
+  button.disabled = true;
+  status.textContent = "Checking the signed release channel…";
+  try {
+    const update = await check();
+    if (!update) {
+      status.textContent = "MyPerro is up to date.";
+      return;
+    }
+    status.textContent = `Version ${update.version} is ready.`;
+    if (!window.confirm(`Install MyPerro ${update.version} now? The app will restart.`)) return;
+    let downloaded = 0;
+    let total = 0;
+    await update.downloadAndInstall(event => {
+      if (event.event === "Started") total = event.data.contentLength ?? 0;
+      if (event.event === "Progress") downloaded += event.data.chunkLength;
+      if (event.event === "Finished") status.textContent = "Update verified and installed. Restarting…";
+      else if (total > 0) status.textContent = `Downloading update… ${Math.min(100, Math.round(downloaded / total * 100))}%`;
+    });
+    await relaunch();
+  } catch (error) {
+    status.textContent = "The update service is not available yet. Try again later.";
+    await logError(`Update check failed: ${String(error)}`).catch(() => {});
+  } finally {
+    button.disabled = false;
+  }
 }
 
 interface DiagnosticReport {

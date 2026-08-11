@@ -39,6 +39,56 @@ try {
   process.exit(1);
 }
 
+// Premium packs carry the source-cell provenance used to build every runtime
+// frame. Validate semantic families as well as PNG structure so a celebration
+// pose can never silently become "idle" again.
+let atlasMeta;
+const atlasMetaPath = join(dir, "atlas.json");
+if (existsSync(atlasMetaPath)) {
+  try {
+    atlasMeta = JSON.parse(readFileSync(atlasMetaPath, "utf8"));
+  } catch (e) {
+    console.error(`✗ atlas.json is not valid JSON: ${e.message}`);
+    process.exit(1);
+  }
+}
+
+const PREMIUM_SOURCE_FAMILIES = [
+  [0, ["idle", "sit", "sit_side", "stand", "side_eye", "head_tilt", "look_up", "drag", "scratch", "shake", "land", "pant", "deliver_note", "paper_unroll", "paper_unroll_alt"]],
+  [1, ["blink"]],
+  [2, ["tail_wag", "tail_wag_alt"]],
+  [3, ["walk", "walk_a", "walk_b", "run", "run_alt", "chase"]],
+  [4, ["turn"]],
+  [5, ["type_paw", "type_paw_alt", "type_intense", "type_intense_alt"]],
+  [6, ["focus_sit"]],
+  [7, ["drink", "drink_alt"]],
+  [8, ["eat", "eat_alt"]],
+  [9, ["beg"]],
+  [10, ["play", "zoomies"]],
+  [11, ["pet_happy", "pet_happy_alt"]],
+  [12, ["sleep", "sleep_alt", "lie_down"]],
+  [13, ["wake", "stretch", "yawn"]],
+  [14, ["alert", "bark"]],
+  [15, ["jump", "happy_jump"]],
+];
+
+let semanticFailure = false;
+if (atlasMeta?.artStyle === "premium-production-v3") {
+  for (const [expectedCell, names] of PREMIUM_SOURCE_FAMILIES) {
+    for (const name of names) {
+      const actual = atlasMeta.sourceCells?.[name];
+      if (actual !== expectedCell) {
+        console.error(`✗ ${name} uses source cell ${String(actual)}; expected semantic cell ${expectedCell}`);
+        semanticFailure = true;
+      }
+    }
+  }
+  if (atlasMeta.landmarks?.eyes) {
+    console.error("✗ premium packs must not use universal procedural eye landmarks");
+    semanticFailure = true;
+  }
+}
+
 // Minimal atlas probe: PNG width/height live at bytes 16–24; alpha (colour
 // type 6) at byte 25. Enough to feed the validator without an image library.
 let atlas;
@@ -95,7 +145,7 @@ const { validatePack } = await import("../src/pet/pack.ts").catch(async () => {
 const result = validatePack(manifest, atlas);
 
 for (const w of result.warnings) console.warn(`⚠ ${w}`);
-if (result.ok) {
+if (result.ok && !semanticFailure) {
   console.log(`✓ ${manifest.id ?? dir} looks good${atlas ? "" : " (manifest only — no atlas.png found)"}`);
   process.exit(0);
 } else {

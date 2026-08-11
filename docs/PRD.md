@@ -39,7 +39,7 @@ They will uninstall immediately if it makes their fan spin, and refuse to instal
 
 Longer than the include list, by design. Each is a real temptation that would cost the ship date.
 
-Any breed other than the Shiba · multiple dogs on screen · accounts, cloud sync, online gallery · plugin SDK · AI chat, voice, or an LLM in the app · hunger, decay, or anything punishing you for closing it · Tamagotchi needs or pet death · achievements, levels, streaks · task list or notes beyond the single pinned note · music reactions · window climbing · payment or licensing · mobile apps · coding-agent integrations *(first post-alpha release, off by default)* · Steam, Mac App Store, Microsoft Store.
+Multiple pets on screen · accounts, cloud sync, online gallery · plugin SDK · AI chat, voice, or an LLM in the app · pet death or punitive offline decay · achievements, levels, streaks · task list or notes beyond the single pinned note · arbitrary window climbing · payment or licensing · mobile apps · Steam, Mac App Store, Microsoft Store.
 
 ## Acceptance criteria
 
