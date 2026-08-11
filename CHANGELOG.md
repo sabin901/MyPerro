@@ -32,6 +32,9 @@ Versioning once it reaches 1.0.
 - 187 frontend behavior tests across 15 files, six Rust privacy/platform
   tests, strict Rust linting, production app/website builds, all nine semantic
   art validators, packaged CSP/asset smoke tests, and native Windows startup.
+- Native installers/packages from the same revision on Windows, Ubuntu,
+  Apple Silicon macOS, and Intel macOS; both packaged Mac apps launched to
+  frontend readiness from their mounted DMGs.
 
 ## 0.9.0-rc.6 — 2026-08-10
 
