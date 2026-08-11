@@ -1174,8 +1174,9 @@ async function updateHitState(gx: number, gy: number) {
 
 /**
  * Without input monitoring there is no cursor position, so per-pixel hit
- * testing is impossible. Trade it for a solid rectangular window the user can
- * still grab — degraded, but not bricked.
+ * testing is impossible. Keep the pet click-through instead of turning its
+ * transparent window into an invisible rectangle over the user's desktop.
+ * Settings and permission recovery remain available from the tray.
  */
 function startDegradedWatchdog() {
   setInterval(async () => {
@@ -1183,8 +1184,8 @@ function startDegradedWatchdog() {
     if (stale === degraded) return;
     degraded = stale;
     if (degraded) {
-      ignoringCursor = false;
-      await win.setIgnoreCursorEvents(false);
+      ignoringCursor = true;
+      await win.setIgnoreCursorEvents(true);
     }
   }, 1000);
 }

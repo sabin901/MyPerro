@@ -27,6 +27,7 @@
         <a href="#companions" data-section-link="companions">Companions</a>
         <a href="#life" data-section-link="life">Life with MyPerro</a>
         <a href="#privacy" data-section-link="privacy">Privacy</a>
+        <a href="#community" data-section-link="community">Reviews</a>
         <a class="nav-download" href="#download" data-section-link="download">Download</a>
       </nav>
     </header>
@@ -160,11 +161,55 @@
         </div>
       </section>
 
+      <section class="section community" id="community">
+        <header class="section-heading" data-reveal>
+          <div><p class="eyebrow">The open guestbook</p><h2>Built with people,<br />not invented praise.</h2></div>
+          <p>MyPerro is still growing. Reviews stay public, criticism stays visible, and every useful report has somewhere clear to go.</p>
+        </header>
+        <div class="community-ledger">
+          <article class="community-card community-card-featured" data-reveal>
+            <span class="community-index">01 · Review</span>
+            <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M6 7.5h20v14H14l-6 5v-5H6v-14Z" /><path d="M11 12h10M11 16h7" /></svg>
+            <h3>Tell us how your companion feels.</h3>
+            <p>Share the animal you chose, your platform, what made you smile, and what still feels unfinished. Honest notes are more useful than a row of anonymous stars.</p>
+            <a class="button primary" href="https://github.com/sabin901/MyPerro/discussions/14">Write a public review</a>
+          </article>
+          <article class="community-card" data-reveal>
+            <span class="community-index">02 · Ideas</span>
+            <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 4a9 9 0 0 0-5.2 16.4V24h10.4v-3.6A9 9 0 0 0 16 4Z" /><path d="M12 28h8M13 24h6" /></svg>
+            <h3>Request a motion or companion.</h3>
+            <p>Propose a trick, character, sound, or quality-of-life improvement and let other people add to the idea.</p>
+            <a class="text-link" href="https://github.com/sabin901/MyPerro/discussions/categories/ideas">Visit the ideas board</a>
+          </article>
+          <article class="community-card" data-reveal>
+            <span class="community-index">03 · Field report</span>
+            <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M9 5h14v22H9z" /><path d="M13 9h6M13 14h6M13 19h4" /></svg>
+            <h3>Send a precise Mac report.</h3>
+            <p>A dedicated form records processor, macOS version, permission state, and the exact behavior without asking for private activity.</p>
+            <a class="text-link" href="https://github.com/sabin901/MyPerro/issues/new?template=macos_report.yml">Report a Mac problem</a>
+          </article>
+        </div>
+        <p class="community-footnote" data-reveal>Public feedback may be highlighted here later only with the author’s permission and a link to the original post.</p>
+      </section>
+
       <section class="section download" id="download">
         <header class="download-heading" data-reveal>
           <div><p class="eyebrow">Official builds</p><h2>Choose your desktop.</h2></div>
-          <p>No checkout, license key, advertising, or account. Downloads come directly from the verified public GitHub release.</p>
+          <p>No checkout, license key, advertising, or account. Downloads come directly from the public GitHub release with published checksums.</p>
         </header>
+        <aside class="mac-assurance" data-reveal aria-labelledby="macAssuranceTitle">
+          <div class="mac-assurance-copy">
+            <p class="eyebrow">Mac release desk</p>
+            <h3 id="macAssuranceTitle">Two processors. The same complete companion.</h3>
+            <p>Apple silicon and Intel are built separately and launched in native CI. Choose the chip shown in Apple menu → About This Mac; the website will never guess and send the wrong DMG.</p>
+            <a class="text-link" href="https://github.com/sabin901/MyPerro/blob/main/docs/MACOS.md">Read the Mac install and permission guide</a>
+          </div>
+          <dl class="mac-assurance-ledger">
+            <div><dt>Apple silicon</dt><dd>M1 and newer · arm64</dd></div>
+            <div><dt>Intel</dt><dd>Core processors · x86_64</dd></div>
+            <div class="verification-pending"><dt>Apple verification</dt><dd>Developer ID notarization pending</dd></div>
+          </dl>
+        </aside>
         <div class="download-register" data-reveal>
           <article class="download-row" data-platform="windows">
             <p class="platform-index">01</p><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5.2 11 4v7H3V5.2Zm9-1.35L21 2.5V11h-9V3.85ZM3 12h8v7L3 17.8V12Zm9 0h9v8.5L12 19.15V12Z" /></svg>
@@ -187,7 +232,7 @@
             <div class="split-links"><a class="button secondary download-link" data-asset="linux-appimage" href="#">AppImage</a><a class="button secondary download-link" data-asset="linux-deb" href="#">Debian</a></div>
           </article>
         </div>
-        <p class="release-note">Current public build: <strong>v0.9.0-rc.10</strong> · Release candidate · <a href="https://github.com/sabin901/MyPerro/releases">Checksums and release notes</a></p>
+        <p class="release-note">Current public build: <strong id="releaseVersion">v0.9.0-rc.10</strong> · Release candidate · <a href="https://github.com/sabin901/MyPerro/releases">Checksums and release notes</a></p>
       </section>
 
       <section class="section faq" id="faq">
@@ -196,6 +241,8 @@
           <details><summary>What does MyPerro cost?</summary><p>Nothing. MyPerro is open-source software with no purchase, advertising, account, or locked premium tier.</p></details>
           <details><summary>Does it read what I type?</summary><p>No. Native input code discards key identity and emits only a count. Typed text cannot be reconstructed by the app.</p></details>
           <details><summary>Does it track me?</summary><p>Behavioral analytics are not included. You may opt into a once-daily active-install count containing only a random ID, app version, operating system, and CPU architecture. It is off by default and deleting it is one click in Settings.</p></details>
+          <details><summary>Which Mac download should I choose?</summary><p>Open Apple menu → About This Mac. Choose Apple silicon for an M-series chip and Intel for an Intel processor. MyPerro deliberately does not guess because the wrong architecture can fail at launch.</p></details>
+          <details><summary>Why does Mac ask for Accessibility access?</summary><p>It allows private cursor and input-count reactions outside the pet window. The app now checks the native permission, opens the correct System Settings page, and reconnects after approval without requiring a restart. Typed content is never received.</p></details>
           <details><summary>How do I open Settings?</summary><p>Right-click the companion or press S while it is focused. The tray menu provides the same route.</p></details>
           <details><summary>Will the pet block other windows?</summary><p>Transparent pixels pass clicks through to the desktop. Size, opacity, edge peek, reduced motion, and always-on-top can all be adjusted.</p></details>
         </div>
@@ -205,7 +252,7 @@
     <footer>
       <a class="wordmark" href="#top"><img src="./brand/myperro-mark.svg" width="44" height="44" alt="" /><span><b>MyPerro</b><small>Desktop companion</small></span></a>
       <p>Original work by <strong>Sabin Raut</strong><br />Open source · MIT License</p>
-      <nav aria-label="Footer navigation"><a href="https://github.com/sabin901/MyPerro">Source</a><a href="https://github.com/sabin901/MyPerro/blob/main/PRIVACY.md">Privacy</a><a href="https://github.com/sabin901/MyPerro/issues">Support</a></nav>
+      <nav aria-label="Footer navigation"><a href="https://github.com/sabin901/MyPerro">Source</a><a href="https://github.com/sabin901/MyPerro/discussions/14">Reviews</a><a href="https://github.com/sabin901/MyPerro/blob/main/PRIVACY.md">Privacy</a><a href="https://github.com/sabin901/MyPerro/issues">Support</a></nav>
     </footer>
 
     <script type="module" src="./site.js"></script>

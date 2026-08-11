@@ -22,6 +22,7 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run usage:test
+      - run: npm run site:test
       - run: npm run build
       - run: npm run validate:packs
       - run: npm run smoke:dist

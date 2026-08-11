@@ -17,6 +17,7 @@
     "site:assets": "npm run brand:sync && node scripts/build-website-assets.mjs",
     "site:dev": "npm run site:assets && vite --config website/vite.config.ts",
     "site:build": "npm run site:assets && vite build --config website/vite.config.ts",
+    "site:test": "node --test website/*.test.mjs",
     "art:shiba": "node scripts/generate-dog-atlases.mjs",
     "art:dogs": "node scripts/generate-dog-atlases.mjs",
     "art:companions": "node scripts/generate-dog-atlases.mjs",
@@ -37,7 +38,7 @@
     "usage:test": "node --test services/usage-counter/test/*.test.mjs",
     "usage:stats": "node scripts/usage-stats.mjs",
     "release:assets": "node scripts/prepare-release-assets.mjs",
-    "release:check": "npm run typecheck && npm test && npm run usage:test && npm run build && npm run site:build && npm run validate:packs && npm run smoke:dist && cargo test --manifest-path src-tauri/Cargo.toml"
+    "release:check": "npm run typecheck && npm test && npm run usage:test && npm run site:test && npm run build && npm run site:build && npm run validate:packs && npm run smoke:dist && cargo test --manifest-path src-tauri/Cargo.toml"
   },
   "devDependencies": {
     "@cyclonedx/cyclonedx-npm": "^6.0.0",

@@ -32,24 +32,30 @@ struct InputServiceState {
     health: input::SharedInputHealth,
     accumulator: input::SharedAccumulator,
     enabled: input::SharedInputEnabled,
-    started: AtomicBool,
+    started: std::sync::Arc<AtomicBool>,
 }
 
-fn start_input_service(state: &InputServiceState) {
+fn start_input_service(state: &InputServiceState, prompt_for_permission: bool) -> bool {
     state.enabled.store(true, Ordering::SeqCst);
+    if !input::input_permission_granted(prompt_for_permission) {
+        input::mark_input_unavailable(&state.health);
+        return false;
+    }
     input::mark_input_starting(&state.health);
     if state
         .started
         .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
         .is_err()
     {
-        return;
+        return true;
     }
     input::spawn_listener(
         state.accumulator.clone(),
         state.health.clone(),
         state.enabled.clone(),
+        state.started.clone(),
     );
+    true
 }
 
 /// Self-reported CPU and memory, so Phase 1 exit criteria can be measured
@@ -114,14 +120,33 @@ fn input_health(state: tauri::State<'_, InputServiceState>) -> input::InputHealt
 }
 
 #[tauri::command]
-fn enable_input_monitoring(state: tauri::State<'_, InputServiceState>) {
-    start_input_service(&state);
+fn enable_input_monitoring(state: tauri::State<'_, InputServiceState>) -> bool {
+    start_input_service(&state, true)
+}
+
+#[tauri::command]
+fn retry_input_monitoring(state: tauri::State<'_, InputServiceState>) -> bool {
+    start_input_service(&state, false)
 }
 
 #[tauri::command]
 fn disable_input_monitoring(state: tauri::State<'_, InputServiceState>) {
     state.enabled.store(false, Ordering::SeqCst);
     input::mark_input_disabled(&state.health);
+}
+
+#[tauri::command]
+fn open_input_permission_settings() -> Result<bool, String> {
+    #[cfg(target_os = "macos")]
+    {
+        std::process::Command::new("open")
+            .arg("x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")
+            .spawn()
+            .map_err(|error| format!("cannot open macOS Accessibility settings: {error}"))?;
+        return Ok(true);
+    }
+    #[cfg(not(target_os = "macos"))]
+    Ok(false)
 }
 
 #[derive(Serialize)]
@@ -164,7 +189,7 @@ fn main() {
         health: input::new_input_health(),
         accumulator: input::new_accumulator(),
         enabled: std::sync::Arc::new(AtomicBool::new(false)),
-        started: AtomicBool::new(false),
+        started: std::sync::Arc::new(AtomicBool::new(false)),
     };
     tauri::Builder::default()
         // Keep this first: the plugin must claim the process before windows,
@@ -198,7 +223,9 @@ fn main() {
             set_pass_through,
             input_health,
             enable_input_monitoring,
+            retry_input_monitoring,
             disable_input_monitoring,
+            open_input_permission_settings,
             diagnostic_report,
             desktop_context::desktop_context,
             agent_status::load_agent_status,
@@ -285,7 +312,7 @@ fn main() {
                 .unwrap_or(false);
             let input_state = app.state::<InputServiceState>();
             if consented {
-                start_input_service(&input_state);
+                start_input_service(&input_state, false);
             } else {
                 show_settings_window(app.handle());
             }

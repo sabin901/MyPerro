@@ -1,0 +1,84 @@
+name: macOS behavior report
+description: Report an install, permission, transparency, or animation problem on Mac
+title: "[macOS]: "
+labels: ["bug", "macOS"]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for testing the Mac build. Never include typed content, usernames, or private files. Settings → App can create a privacy-safe diagnostic report.
+  - type: input
+    id: version
+    attributes:
+      label: MyPerro version
+      placeholder: 0.9.0-rc.10
+    validations:
+      required: true
+  - type: dropdown
+    id: architecture
+    attributes:
+      label: Mac processor
+      description: Find this in Apple menu → About This Mac.
+      options:
+        - Apple silicon (M1 or newer)
+        - Intel
+        - I am not sure
+    validations:
+      required: true
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version
+      placeholder: macOS 15.6
+    validations:
+      required: true
+  - type: dropdown
+    id: installer
+    attributes:
+      label: DMG downloaded
+      options:
+        - Apple silicon / aarch64
+        - Intel / x64
+        - I am not sure
+    validations:
+      required: true
+  - type: dropdown
+    id: installed
+    attributes:
+      label: Was MyPerro copied into Applications?
+      options: ["Yes", "No", "I am not sure"]
+    validations:
+      required: true
+  - type: dropdown
+    id: accessibility
+    attributes:
+      label: Accessibility permission
+      description: System Settings → Privacy & Security → Accessibility.
+      options:
+        - MyPerro is enabled
+        - MyPerro is listed but disabled
+        - MyPerro is not listed
+        - I am not sure
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: What happened?
+      description: Describe the visible behavior, including which companion and action were involved.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+      placeholder: |-
+        1. Opened…
+        2. Chose…
+        3. Expected… but saw…
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Privacy-safe diagnostics
+      description: Drag the JSON file from Settings → App → Download diagnostics here, if available.

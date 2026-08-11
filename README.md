@@ -116,6 +116,7 @@ Supported statuses are `thinking`, `done`, and `error`. `message` is optional.
 | `docs/EVALUATION.md` | Current verification, critique, and release gates |
 | `docs/COMPETITIVE_REVIEW.md` | Product comparison and next investments |
 | `docs/RELEASE.md` | Signing, packaging, QA, updater and rollback runbook |
+| `docs/MACOS.md` | Correct Mac build, install, permission and diagnostic guide |
 | `docs/USAGE_COUNTING.md` | Deploy and read the optional active-install counter |
 
 ## Licence

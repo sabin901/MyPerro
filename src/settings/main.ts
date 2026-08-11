@@ -236,7 +236,7 @@ function wireOnboarding() {
     ($("inputMonitoringEnabled") as HTMLInputElement).checked = enable;
     ($("anonymousUsageEnabled") as HTMLInputElement).checked = checked("onboardingUsageEnabled");
     if (enable) {
-      await invoke("enable_input_monitoring").catch(async error => {
+      await invoke<boolean>("enable_input_monitoring").catch(async error => {
         await logError(`Could not start input monitoring: ${String(error)}`).catch(() => {});
       });
     }
@@ -304,10 +304,16 @@ function wireProductionControls() {
   });
   $("inputMonitoringEnabled").addEventListener("change", async () => {
     if (checked("inputMonitoringEnabled")) {
-      await invoke("enable_input_monitoring").catch(async error => {
+      const started = await invoke<boolean>("enable_input_monitoring").catch(async error => {
         ($("inputMonitoringEnabled") as HTMLInputElement).checked = false;
         await logError(`Could not enable input monitoring: ${String(error)}`).catch(() => {});
+        return false;
       });
+      if (!started) {
+        const badge = $("saved");
+        badge.textContent = "Allow MyPerro in Mac Accessibility to finish setup";
+        badge.className = "saved error";
+      }
     } else {
       await invoke("disable_input_monitoring").catch(async error => {
         await logError(`Could not disable input monitoring: ${String(error)}`).catch(() => {});
@@ -327,6 +333,7 @@ function wireProductionControls() {
   });
   $("exportDiagnostics").addEventListener("click", () => { void exportDiagnostics(); });
   $("checkUpdates").addEventListener("click", () => { void checkForUpdates(); });
+  $("openInputPermission").addEventListener("click", () => { void invoke("open_input_permission_settings"); });
 }
 
 async function checkForUpdates() {
@@ -415,13 +422,18 @@ async function renderAppInfo() {
   const userAgent = navigator.userAgent.toLowerCase();
   const platform = userAgent.includes("windows") ? "Windows" :
     userAgent.includes("mac") ? "macOS" : userAgent.includes("linux") ? "Linux" : "this platform";
+  $("openInputPermission").hidden = platform !== "macOS";
   $("platformNote").textContent = platform === "Linux"
     ? "Linux support: X11 and XWayland are supported; native Wayland global input reactions depend on the compositor."
     : `${platform} desktop support is enabled in this build.`;
 
   const refresh = async () => {
     try {
-      const health = await invoke<InputHealth>("input_health");
+      let health = await invoke<InputHealth>("input_health");
+      if (platform === "macOS" && checked("inputMonitoringEnabled") && health.status === "unavailable") {
+        await invoke<boolean>("retry_input_monitoring").catch(() => false);
+        health = await invoke<InputHealth>("input_health");
+      }
       $("inputDiagnostic").dataset.status = health.status;
       $("inputStatus").textContent = health.summary;
       $("inputGuidance").textContent = health.guidance;
