@@ -32,6 +32,8 @@ export interface PackManifest {
   license: string;
   canvas: { width: number; height: number };
   frames: Record<string, PackFrame>;
+  /** Native direction of each cel. Front poses are never horizontally flipped. */
+  frameFacing?: Record<string, "left" | "right" | "front">;
 }
 
 export const PACK_SCHEMA_VERSION = 1;
@@ -124,6 +126,26 @@ export function validatePack(raw: unknown, atlas?: AtlasInfo): ValidationResult 
     // Required animations must all be present.
     for (const need of REQUIRED_ANIMATIONS) {
       if (!(need in frames)) errors.push(`missing required animation "${need}"`);
+    }
+  }
+
+  // ── native frame direction ──
+  // Optional for schema-v1 community packs (legacy art is right-facing), but
+  // when supplied it is strict: invalid or orphaned metadata would make the
+  // visible sprite disagree with movement and pointer hit-testing.
+  const frameFacing = m.frameFacing;
+  if (frameFacing !== undefined) {
+    if (typeof frameFacing !== "object" || frameFacing === null || Array.isArray(frameFacing)) {
+      errors.push("frameFacing must map frame names to left, right, or front");
+    } else {
+      for (const [name, direction] of Object.entries(frameFacing)) {
+        if (direction !== "left" && direction !== "right" && direction !== "front") {
+          errors.push(`frameFacing.${name} must be left, right, or front`);
+        }
+        if (!frames || typeof frames !== "object" || !(name in frames)) {
+          errors.push(`frameFacing references unknown frame "${name}"`);
+        }
+      }
     }
   }
 

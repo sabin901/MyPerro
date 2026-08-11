@@ -89,6 +89,10 @@ fn input_permission_guidance() -> &'static str {
 pub struct Activity {
     pub cursor_x: f64,
     pub cursor_y: f64,
+    /// DPI scale of the monitor containing the cursor. Coordinates and
+    /// velocity are emitted in physical pixels; the frontend converts both
+    /// with this same value so mixed-DPI desktops keep one unit contract.
+    pub cursor_scale_factor: f64,
     /// Pixels per second, smoothed over the batch window.
     pub cursor_velocity: f64,
     pub keys_since_last: u32,
@@ -130,6 +134,7 @@ impl Accumulator {
         let a = Activity {
             cursor_x: self.cursor.0,
             cursor_y: self.cursor.1,
+            cursor_scale_factor: 1.0,
             cursor_velocity: self.distance / secs,
             keys_since_last: self.keys,
             clicks_since_last: self.clicks,

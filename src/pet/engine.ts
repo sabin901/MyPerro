@@ -237,16 +237,15 @@ export class BehaviourEngine {
     // trigger is stuck on. This is the anti-wedge rule.
     const expired = this.current.maxMs !== undefined && elapsed >= this.current.maxMs;
 
-    // A non-interruptible state holds until minMs, then behaves normally.
-    const locked = !this.current.interruptible && elapsed < this.current.minMs;
-
     if (expired) {
       this.enter(BY_ID.get(this.current.fallback)!, now);
-    } else if (!locked) {
+    } else {
       const next = this.pick(now, s);
       if (next && next.id !== this.current.id) {
-        // minMs applies to interruptible states too, but only against
-        // lower or equal priority — a drag must never wait.
+        // minMs protects a visible action from lower/equal-priority churn,
+        // including non-interruptible actions. A strictly higher-priority
+        // direct interaction must still preempt immediately: if the user is
+        // physically holding the dog, drag can never wait behind a reminder.
         const holdMin = elapsed < this.current.minMs && next.priority >= this.current.priority;
         if (!holdMin) this.enter(next, now);
       }

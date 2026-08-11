@@ -87,6 +87,16 @@ if (atlasMeta?.artStyle === "premium-production-v3") {
     console.error("✗ premium packs must not use universal procedural eye landmarks");
     semanticFailure = true;
   }
+  for (const name of ["walk", "walk_a", "walk_b", "run", "run_alt", "chase"]) {
+    if (atlasMeta.frameFacing?.[name] !== "left" || manifest.frameFacing?.[name] !== "left") {
+      console.error(`✗ ${name} must declare its premium source cel as natively left-facing`);
+      semanticFailure = true;
+    }
+  }
+  if (atlasMeta.frameFacing?.turn !== "right" || manifest.frameFacing?.turn !== "right") {
+    console.error("✗ turn must declare its premium source cel as natively right-facing");
+    semanticFailure = true;
+  }
 }
 
 // Minimal atlas probe: PNG width/height live at bytes 16–24; alpha (colour

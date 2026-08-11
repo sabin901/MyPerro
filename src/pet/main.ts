@@ -28,6 +28,10 @@ import {
   physicalToLogical, clampToMonitor, type Viewport,
 } from "./coords";
 import {
+  horizontalFacingLeft, mirroredSampleX, shouldMirrorFacing, travelFacingLeft,
+  type NativeFacing,
+} from "./direction";
+import {
   makeRepeating, startPomodoro, stopPomodoro, pollScheduler,
   type SchedulerState,
 } from "./scheduler";
@@ -62,6 +66,7 @@ interface Atlas {
   grid: { cols: number; rows: number };
   displayScale?: number;
   artStyle?: string;
+  frameFacing?: Record<string, NativeFacing>;
   landmarks?: { eyes?: Array<{ x: number; y: number }> };
   frames: Record<string, Frame>;
 }
@@ -70,6 +75,7 @@ interface Atlas {
 interface Activity {
   cursor_x: number;
   cursor_y: number;
+  cursor_scale_factor?: number;
   cursor_velocity: number;
   keys_since_last: number;
   clicks_since_last: number;
@@ -722,10 +728,11 @@ async function syncWindowGeometry() {
  */
 function toSignals(a: Activity, now: number): Signals {
   // Velocity arrives in physical px/s; the plan's thresholds are logical.
-  const velocity = normaliseVelocity(a.cursor_velocity, viewport.scaleFactor);
+  const velocity = normaliseVelocity(a.cursor_velocity, activityScaleFactor(a));
   const kps = keysPerSecond(a.keys_since_last, a.batch_ms || 66);
 
-  const sprite = globalToSprite({ x: a.cursor_x, y: a.cursor_y }, viewport);
+  const cursor = activityCursorLogical(a);
+  const sprite = globalToSprite(cursor, viewport);
   const overHead = sprite !== null
     && sprite.y < viewport.cell * HEAD_FRACTION
     && isSolid(sprite.x, sprite.y);
@@ -733,10 +740,10 @@ function toSignals(a: Activity, now: number): Signals {
   // Petting is stroking *over the head*; the detector only sees motion while
   // the cursor is actually on the dog, so wandering elsewhere can't trigger it.
   const petting = !dragging && overHead
-    ? pettingDetector.update(now, a.cursor_x)
+    ? pettingDetector.update(now, cursor.x)
     : (pettingDetector.reset(), false);
 
-  const shaking = dragging ? shakeDetector.update(now, a.cursor_x) : (shakeDetector.reset(), false);
+  const shaking = dragging ? shakeDetector.update(now, cursor.x) : (shakeDetector.reset(), false);
 
   const chasing = chaseDetector.update(now, velocity > THRESHOLDS.chaseVelocity);
   const alert = velocity > THRESHOLDS.alertVelocity;
@@ -761,8 +768,19 @@ function toSignals(a: Activity, now: number): Signals {
 function isSolid(sx: number, sy: number): boolean {
   const f = atlas.frames[visibleFrame] ?? atlas.frames[currentFrame] ?? atlas.frames["idle"];
   if (!f) return false;
-  const i = (f.y + sy) * maskW + (f.x + sx);
+  const sampleX = mirroredSampleX(sx, f.w, shouldMirrorCurrentFrame());
+  const i = (f.y + sy) * maskW + (f.x + sampleX);
   return i >= 0 && i < hitMask.length && hitMask[i] > HIT_ALPHA;
+}
+
+function activityScaleFactor(a: Activity): number {
+  return Number.isFinite(a.cursor_scale_factor) && (a.cursor_scale_factor ?? 0) > 0
+    ? a.cursor_scale_factor!
+    : viewport.scaleFactor;
+}
+
+function activityCursorLogical(a: Activity, scaleFactor = activityScaleFactor(a)) {
+  return physicalToLogical({ x: a.cursor_x, y: a.cursor_y }, scaleFactor);
 }
 
 function onActivity(a: Activity) {
@@ -781,8 +799,13 @@ function onActivity(a: Activity) {
   if (out.changed && out.state === "pet") handlePetTouch();
 
   if (!dragging) {
-    facingLeft = a.cursor_x < windowCentre(viewport).x;
-    void updateHitState(a.cursor_x, a.cursor_y);
+    const cursor = activityCursorLogical(a);
+    // Travel owns direction. A background cursor heartbeat must never turn a
+    // companion around while its window is visibly moving the other way.
+    if (!activeRoam && now >= wanderUntil) {
+      facingLeft = horizontalFacingLeft(windowCentre(viewport).x, cursor.x, facingLeft, 8);
+    }
+    void updateHitState(cursor.x, cursor.y);
     void followCursorAttention(a, now);
   }
 }
@@ -1035,7 +1058,7 @@ async function startRoam(playful: boolean) {
   });
   if (!plan) return;
   activeRoam = plan;
-  facingLeft = plan.target.x < plan.start.x;
+  facingLeft = travelFacingLeft(plan.start.x, plan.target.x, facingLeft);
   lastAutoWanderAt = now;
   wanderUntil = now + plan.durationMs;
 }
@@ -1073,8 +1096,9 @@ async function followCursorAttention(a: Activity, now: number) {
   const monitor = await monitorFromPoint(a.cursor_x, a.cursor_y).catch(() => null);
   if (!monitor) return;
   const sf = monitor.scaleFactor || viewport.scaleFactor || 1;
+  const cursor = physicalToLogical({ x: a.cursor_x, y: a.cursor_y }, sf);
   const move = attentionMove({
-    cursor: { x: a.cursor_x / sf, y: a.cursor_y / sf },
+    cursor,
     viewport,
     monitor: {
       x: monitor.position.x / sf,
@@ -1199,7 +1223,7 @@ function draw() {
       ? "run"
       : available.has("walk_a") ? "walk_a" : visibleFrame;
   }
-  if (now < playUntil) {
+  if (now < playUntil && !activeRoam) {
     visibleFrame = available.has("zoomies") ? "zoomies" : visibleFrame;
   }
   if (isRoamRolling(activeRoam, now)) {
@@ -1215,7 +1239,7 @@ function draw() {
   const offset = motionOffset(now);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.save();
-  if (facingLeft) { ctx.translate(canvas.width, 0); ctx.scale(-1, 1); }
+  if (shouldMirrorCurrentFrame()) { ctx.translate(canvas.width, 0); ctx.scale(-1, 1); }
   drawSpriteCel(f, offset, now);
   drawMarkingStyle(offset);
   drawEyeFollow(offset);
@@ -1472,11 +1496,33 @@ function drawEyeFollow(offset: { x: number; y: number }) {
 function eyeOffset(): { x: number; y: number } {
   if (!lastActivity) return { x: 0, y: 0 };
   const centre = windowCentre(viewport);
-  const dx = Math.max(-1, Math.min(1, Math.round((lastActivity.cursor_x - centre.x) / 120)));
-  const dy = Math.max(-1, Math.min(1, Math.round((lastActivity.cursor_y - centre.y) / 120)));
+  const cursor = activityCursorLogical(lastActivity);
+  const dx = Math.max(-1, Math.min(1, Math.round((cursor.x - centre.x) / 120)));
+  const dy = Math.max(-1, Math.min(1, Math.round((cursor.y - centre.y) / 120)));
   if (visibleFrame === "look_up") return { x: dx, y: -1 };
   if (visibleFrame === "side_eye") return { x: facingLeft ? -2 : 2, y: 0 };
   return { x: dx, y: dy };
+}
+
+const DIRECTIONAL_FALLBACK_FRAMES = new Set([
+  "walk", "walk_a", "walk_b", "run", "run_alt", "chase", "turn",
+]);
+
+function currentFrameNativeFacing(): NativeFacing {
+  const exact = atlas.frameFacing?.[visibleFrame];
+  if (exact) return exact;
+  const base = visibleFrame.replace(/_alt$/, "");
+  const baseFacing = atlas.frameFacing?.[base];
+  if (baseFacing) return baseFacing;
+  // Schema-v1 community packs follow ART_GUIDE.md and author locomotion to
+  // the right. Non-directional poses remain front-facing and unmirrored.
+  return DIRECTIONAL_FALLBACK_FRAMES.has(visibleFrame) || DIRECTIONAL_FALLBACK_FRAMES.has(base)
+    ? "right"
+    : "front";
+}
+
+function shouldMirrorCurrentFrame(): boolean {
+  return shouldMirrorFacing(facingLeft, currentFrameNativeFacing());
 }
 
 // ─── Diagnostics HUD ──────────────────────────────────────────────────────────
@@ -1492,7 +1538,7 @@ function wireHud() {
 async function renderHud() {
   const perf = await invoke<{ cpu: number; mem_mb: number }>("perf_stats").catch(() => null);
   const a = lastActivity;
-  const vel = a ? normaliseVelocity(a.cursor_velocity, viewport.scaleFactor) : 0;
+  const vel = a ? normaliseVelocity(a.cursor_velocity, activityScaleFactor(a)) : 0;
   hudEl.textContent =
     `MyPerro · phase 2\n` +
     `state    ${engine?.state ?? "—"}  →  ${currentFrame}${facingLeft ? " ◀" : " ▶"}\n` +

@@ -121,8 +121,7 @@ describe("engine — priority and interruption", () => {
   it("but a drag still breaks a non-interruptible state — the user is holding the dog", () => {
     const e = new BehaviourEngine(0);
     e.update(0, sig({ reminder: "water" }));
-    expect(e.update(100, sig({ dragging: true })).state).toBe("reminder");
-    expect(e.update(1300, sig({ dragging: true })).state).toBe("drag");
+    expect(e.update(100, sig({ dragging: true })).state).toBe("drag");
   });
 
   it("escalates typing intensity", () => {

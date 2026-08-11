@@ -89,6 +89,18 @@ describe("validatePack — frames", () => {
     expect(r.ok).toBe(true);
     expect(r.warnings.some(w => w.includes("idle"))).toBe(true);
   });
+
+  it("accepts valid native-facing metadata", () => {
+    const m = { ...goodManifest(), frameFacing: { walk_a: "left", idle: "front" } };
+    expect(validatePack(m, bigAtlas).ok).toBe(true);
+  });
+
+  it("rejects invalid and orphaned native-facing metadata", () => {
+    const m = { ...goodManifest(), frameFacing: { walk_a: "up", missing: "left" } };
+    const r = validatePack(m, bigAtlas);
+    expect(r.errors.some(e => e.includes("frameFacing.walk_a"))).toBe(true);
+    expect(r.errors.some(e => e.includes('unknown frame "missing"'))).toBe(true);
+  });
 });
 
 describe("validatePack — atlas image", () => {

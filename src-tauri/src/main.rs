@@ -307,7 +307,36 @@ fn main() {
 
                     // Drain over the interval we actually slept, otherwise
                     // velocity and keys-per-second are wrong at low cadences.
-                    if let Some(activity) = input::drain_over(&acc, interval) {
+                    if let Some(mut activity) = input::drain_over(&acc, interval) {
+                        // rdev exposes platform-native cursor units (Quartz
+                        // points on macOS, screen pixels on Windows/X11). Use
+                        // Tauri's canonical PhysicalPosition for every emitted
+                        // snapshot so the frontend has one coordinate contract
+                        // on Retina and mixed-DPI desktops.
+                        if let Some(window) = handle.get_webview_window("pet") {
+                            if let Ok(cursor) = window.cursor_position() {
+                                activity.cursor_x = cursor.x;
+                                activity.cursor_y = cursor.y;
+                                let cursor_scale = window
+                                    .monitor_from_point(cursor.x, cursor.y)
+                                    .ok()
+                                    .flatten()
+                                    .map(|monitor| monitor.scale_factor())
+                                    .or_else(|| window.scale_factor().ok())
+                                    .unwrap_or(1.0)
+                                    .max(f64::EPSILON);
+                                activity.cursor_scale_factor = cursor_scale;
+                                // Quartz mouse events are measured in points;
+                                // Windows and X11 supply physical pixels. Make
+                                // velocity match the physical cursor contract
+                                // before the frontend converts it back to the
+                                // cursor monitor's logical units.
+                                #[cfg(target_os = "macos")]
+                                {
+                                    activity.cursor_velocity *= cursor_scale;
+                                }
+                            }
+                        }
                         let _ = handle.emit("activity", activity);
                     }
                 }

@@ -3,6 +3,36 @@
 All notable MyPerro changes are documented here. The project follows Semantic
 Versioning once it reaches 1.0.
 
+## 0.9.0-rc.7 — 2026-08-11
+
+### Changed
+
+- Added explicit native-facing metadata to every animation in all nine
+  companion packs, with strict validation in both the pack schema and premium
+  art pipeline.
+- Standardized pointer geometry and velocity on physical coordinates plus the
+  cursor monitor's DPI scale for Retina and mixed-DPI desktops.
+
+### Fixed
+
+- Corrected leftward roaming that displayed a right-facing companion because
+  the premium locomotion cel was authored left-facing but mirrored under the
+  legacy right-facing convention.
+- Prevented background cursor heartbeats from reversing a companion while its
+  window is already roaming in the opposite direction.
+- Made alpha hit-testing mirror-aware, keeping clicks, petting and drag pickup
+  aligned with asymmetric visible silhouettes.
+- Kept directional run/walk animation visible during playful roaming instead
+  of replacing it with a stationary zoomies pose.
+- Allowed direct dragging to immediately preempt a timed reminder, matching
+  the behavior engine's documented interaction priority.
+
+### Verified
+
+- 187 frontend behavior tests across 15 files, six Rust privacy/platform
+  tests, strict Rust linting, production app/website builds, all nine semantic
+  art validators, packaged CSP/asset smoke tests, and native Windows startup.
+
 ## 0.9.0-rc.6 — 2026-08-10
 
 ### Added
