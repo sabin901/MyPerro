@@ -111,6 +111,9 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      - name: Launch packaged macOS application
+        if: ${{ startsWith(matrix.os, 'macos-') }}
+        run: bash scripts/macos-package-smoke.sh
       - name: Generate checksums and web SBOM
         run: |
           npm run checksums

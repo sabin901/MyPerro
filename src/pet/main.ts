@@ -166,17 +166,21 @@ let lastAgentStatusSignature = "";
 let settings: Settings;
 let scheduler: SchedulerState;
 let notificationsGranted = false;
+let bootStage = "initialising";
 
 let frames = 0, lastFpsAt = performance.now(), fps = 0, eventCount = 0, eventRate = 0;
 
 // ─── Boot ─────────────────────────────────────────────────────────────────────
 
 async function boot() {
+  bootStage = "loading saved settings";
   settings = await loadSettings();
   needs = loadNeeds();
   interactionState = loadInteractionState();
   wirePetOnlyControls();
+  bootStage = "loading companion artwork";
   await loadBreedAtlas(settings);
+  bootStage = "positioning the companion window";
   await syncWindowGeometry();
   await win.setAlwaysOnTop(settings.alwaysOnTop);
 
@@ -196,6 +200,7 @@ async function boot() {
 
   engine = new BehaviourEngine(performance.now());
 
+  bootStage = "connecting desktop events";
   await listen<Activity>("activity", e => {
     lastActivity = e.payload;
     lastActivityAt = performance.now();
@@ -243,6 +248,8 @@ async function boot() {
   window.addEventListener("focus", () => pollReminders());
   requestAnimationFrame(loop);
   updateVirtualPet();
+  bootStage = "ready";
+  await invoke("mark_startup_ready").catch(() => false);
   await logInfo(`Pet ready with companion pack ${settings.appearance.breed}`).catch(() => {});
 }
 
@@ -1402,12 +1409,12 @@ async function renderHud() {
 
 boot().catch(async err => {
   const message = err instanceof Error ? err.message : String(err);
-  await logError(`Pet startup failed: ${message}`).catch(() => {});
+  await logError(`Pet startup failed during ${bootStage}: ${message}`).catch(() => {});
   // Never expose an internal stack or URL on the desktop. Keep Settings
   // reachable so the user has a recovery path even if an art pack is damaged.
-  hudEl.textContent = "MyPerro needs attention";
+  hudEl.textContent = "MyPerro startup stopped";
   hudEl.classList.remove("hidden");
   hudEl.classList.add("error");
-  noteEl.textContent = "Press S or open Settings from the tray to repair this companion.";
+  noteEl.textContent = `Could not finish ${bootStage}. Press S or open Settings from the tray.`;
   noteEl.classList.remove("hidden");
 });
