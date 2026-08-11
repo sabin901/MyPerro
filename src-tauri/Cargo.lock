@@ -2672,7 +2672,7 @@ dependencies = [
 
 [[package]]
 name = "myperro"
-version = "0.9.0-rc.9"
+version = "0.9.0-rc.10"
 dependencies = [
  "active-win-pos-rs",
  "core-foundation 0.10.1",
