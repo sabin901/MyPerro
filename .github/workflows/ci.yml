@@ -36,16 +36,16 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      checks: write
     steps:
       - uses: actions/checkout@v7
-      - uses: rustsec/audit-check@v2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          working-directory: src-tauri
-          # Mirrors audit.toml: glib 0.18 is inherited from Tauri's GTK stack,
-          # and MyPerro does not call the affected VariantStrIter API.
-          ignore: RUSTSEC-2024-0429
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install cargo-audit
+        run: cargo install cargo-audit --locked
+      - name: Audit Rust dependencies
+        working-directory: src-tauri
+        # Mirrors audit.toml: glib 0.18 is inherited from Tauri's GTK stack,
+        # and MyPerro does not call the affected VariantStrIter API.
+        run: cargo audit --ignore RUSTSEC-2024-0429
 
   # Slow lane: prove it actually builds a native app on all three platforms.
   build:
@@ -56,10 +56,10 @@ jobs:
       matrix:
         include:
           - os: macos-15
-            bundle: dmg
+            bundle: app,dmg
             artifact: macos-apple-silicon-dmg
           - os: macos-15-intel
-            bundle: dmg
+            bundle: app,dmg
             artifact: macos-intel-dmg
           - os: windows-latest
             bundle: nsis

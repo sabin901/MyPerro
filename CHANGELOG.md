@@ -3,6 +3,39 @@
 All notable MyPerro changes are documented here. The project follows Semantic
 Versioning once it reaches 1.0.
 
+## 0.9.0-rc.6 — 2026-08-10
+
+### Added
+
+- Privacy-safe foreground media reactions: headphones for known music players
+  and peek behavior for known video players, plus manual N and H shortcuts.
+- Cryptographically signed updater bundles and manifests for Windows, macOS
+  Apple Silicon, macOS Intel, AppImage, and Debian packages.
+- Packaged-DMG startup verification on both supported Mac architectures.
+
+### Changed
+
+- Reworked the semantic pose mapping for all nine companions so typing, walking,
+  resting, care actions, and celebrations consistently show the intended art.
+- Peek mode now remains active until it is explicitly dismissed instead of
+  being interrupted by ordinary idle behavior.
+
+### Fixed
+
+- Removed celebration poses from neutral states, opposite-facing walk frames,
+  keyboard/laptop swaps during typing, generic square pupil artifacts, and
+  food and water props from the Husky's neutral pose.
+- Corrected Mac packaging checks so an installable DMG must mount, contain the
+  expected CPU architecture, pass signature verification, launch, and reach
+  frontend readiness before a release is prepared.
+
+### Verified
+
+- TypeScript, unit, production, website, semantic art, packaged-page, Rust,
+  dependency, and security checks.
+- Native packages on Windows, Ubuntu 22.04, Apple Silicon macOS, and Intel
+  macOS from the same source revision.
+
 ## 0.9.0-rc.5 — 2026-08-10
 
 ### Added
