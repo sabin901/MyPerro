@@ -9,34 +9,18 @@ const DOWNLOADS = {
 };
 
 const companions = [
-  ["shiba-inu", "Shiba Inu", "Bright & curious"],
-  ["pomeranian", "Pomeranian", "Tiny & confident"],
-  ["husky", "Husky", "Chatty & adventurous"],
-  ["german-shepherd", "German Shepherd", "Loyal & watchful"],
-  ["dalmatian", "Dalmatian", "Playful & spirited"],
-  ["lhasa-apso", "Lhasa Apso", "Gentle & dignified"],
-  ["calico-cat", "Calico Cat", "Clever & affectionate"],
-  ["midnight-cat", "Midnight Cat", "Quiet & mysterious"],
-  ["cream-tabby", "Cream Tabby", "Cozy & easygoing"],
+  { id: "shiba-inu", name: "Shiba Inu", nature: "Bright & curious", description: "An alert little shadow for busy days—quick to wander, tilt its head, and celebrate the smallest bit of attention." },
+  { id: "pomeranian", name: "Pomeranian", nature: "Tiny & confident", description: "A pocket-sized spark with a proud stride, lively hops, and a tail that rarely remembers how to stay still." },
+  { id: "husky", name: "Husky", nature: "Chatty & adventurous", description: "An expressive explorer who asks for company, roams with purpose, and has something cheerful to say about snack time." },
+  { id: "german-shepherd", name: "German Shepherd", nature: "Loyal & watchful", description: "A calm, dependable presence that keeps an eye on the room, stays close while you work, and settles when you do." },
+  { id: "dalmatian", name: "Dalmatian", nature: "Playful & spirited", description: "A high-spirited friend made for quick runs, comic tumbles, eager play, and a very enthusiastic welcome back." },
+  { id: "lhasa-apso", name: "Lhasa Apso", nature: "Gentle & dignified", description: "A thoughtful little companion with an unhurried manner, soft reactions, and a dignified appreciation for attention." },
+  { id: "calico-cat", name: "Calico Cat", nature: "Clever & affectionate", description: "A bright, independent cat who watches first, wanders second, and saves its warmest reactions for a well-timed pet." },
+  { id: "midnight-cat", name: "Midnight Cat", nature: "Quiet & mysterious", description: "A subtle night-coloured observer that moves softly, rests nearby, and turns curiosity into small moments of mischief." },
+  { id: "cream-tabby", name: "Cream Tabby", nature: "Cozy & easygoing", description: "A mellow desktop neighbour happiest near the workday—stretching, snoozing, and quietly asking when dinner might happen." },
 ];
 
-const grid = document.querySelector("#companionGrid");
-for (const [id, name, nature] of companions) {
-  const card = document.createElement("article");
-  card.className = "companion-card";
-  const image = document.createElement("img");
-  image.src = `./pets/${id}.png`;
-  image.alt = `${name} desktop companion`;
-  image.width = 192;
-  image.height = 192;
-  if (id !== "shiba-inu") image.loading = "lazy";
-  const heading = document.createElement("h3");
-  heading.textContent = name;
-  const description = document.createElement("p");
-  description.textContent = nature;
-  card.append(image, heading, description);
-  grid?.append(card);
-}
+const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 for (const link of document.querySelectorAll(".download-link")) {
   const asset = link.dataset.asset;
@@ -56,8 +40,8 @@ function currentPlatform() {
 
 const platform = currentPlatform();
 if (platform) {
-  const card = document.querySelector(`[data-platform="${platform}"]`);
-  card?.classList.add("is-device");
+  const row = document.querySelector(`[data-platform="${platform}"]`);
+  row?.classList.add("is-device");
   const hero = document.querySelector("#heroDownload");
   const preferredAsset = platform === "linux" ? "linux-appimage" : platform;
   if (hero && DOWNLOADS[preferredAsset]) {
@@ -68,14 +52,82 @@ if (platform) {
   }
 }
 
+const companionRail = document.querySelector("#companionRail");
+const spotlightImage = document.querySelector("#spotlightImage");
+const spotlightNumber = document.querySelector("#spotlightNumber");
+const spotlightNature = document.querySelector("#spotlightNature");
+const spotlightName = document.querySelector("#spotlightName");
+const spotlightDescription = document.querySelector("#spotlightDescription");
+const companionPosition = document.querySelector("#companionPosition");
+let companionIndex = 0;
+
+function twoDigits(value) {
+  return String(value).padStart(2, "0");
+}
+
+function updateCompanion(index, moveFocus = false) {
+  companionIndex = (index + companions.length) % companions.length;
+  const companion = companions[companionIndex];
+  const commit = () => {
+    spotlightImage.src = `./pets/${companion.id}.png`;
+    spotlightImage.alt = `${companion.name} desktop companion`;
+    spotlightNumber.textContent = twoDigits(companionIndex + 1);
+    spotlightNature.textContent = companion.nature;
+    spotlightName.textContent = companion.name;
+    spotlightDescription.textContent = companion.description;
+    companionPosition.textContent = `${twoDigits(companionIndex + 1)} / ${twoDigits(companions.length)}`;
+    for (const [tabIndex, tab] of [...companionRail.children].entries()) {
+      const selected = tabIndex === companionIndex;
+      tab.setAttribute("aria-selected", String(selected));
+      tab.tabIndex = selected ? 0 : -1;
+      tab.classList.toggle("is-active", selected);
+    }
+  };
+
+  if (!reducedMotion && document.startViewTransition) {
+    document.startViewTransition(commit);
+  } else {
+    commit();
+  }
+
+  if (moveFocus) companionRail.children[companionIndex]?.focus();
+}
+
+for (const [index, companion] of companions.entries()) {
+  const tab = document.createElement("button");
+  tab.className = "companion-tab";
+  tab.type = "button";
+  tab.id = `companion-${companion.id}`;
+  tab.setAttribute("role", "tab");
+  tab.setAttribute("aria-controls", "companionPanel");
+  tab.setAttribute("aria-selected", String(index === 0));
+  tab.tabIndex = index === 0 ? 0 : -1;
+  tab.innerHTML = `<img src="./pets/${companion.id}.png" width="56" height="56" alt="" ${index > 2 ? "loading=\"lazy\"" : ""}><span><small>${twoDigits(index + 1)}</small>${companion.name}</span>`;
+  tab.addEventListener("click", () => updateCompanion(index));
+  tab.addEventListener("keydown", event => {
+    let nextIndex;
+    if (event.key === "ArrowRight" || event.key === "ArrowDown") nextIndex = companionIndex + 1;
+    if (event.key === "ArrowLeft" || event.key === "ArrowUp") nextIndex = companionIndex - 1;
+    if (event.key === "Home") nextIndex = 0;
+    if (event.key === "End") nextIndex = companions.length - 1;
+    if (nextIndex === undefined) return;
+    event.preventDefault();
+    updateCompanion(nextIndex, true);
+  });
+  companionRail?.append(tab);
+}
+
+document.querySelector("#previousCompanion")?.addEventListener("click", () => updateCompanion(companionIndex - 1));
+document.querySelector("#nextCompanion")?.addEventListener("click", () => updateCompanion(companionIndex + 1));
+
 const canvas = document.querySelector("#heroPet");
 const context = canvas?.getContext("2d", { alpha: true });
 const note = document.querySelector(".desktop-note");
-const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 let atlas;
 let sheet;
 let demo = "roam";
 let demoStarted = performance.now();
+let noteTimer;
 
 const demos = {
   roam: { frames: ["head_tilt", "walk_a", "walk_b", "walk_a", "sit_side"], frameMs: 220, note: "A quiet walk across the desktop." },
@@ -85,6 +137,20 @@ const demos = {
   sleep: { frames: ["lie_down", "sleep", "sleep_alt", "sleep"], frameMs: 700, note: "One minute of rest, unless gently woken." },
 };
 
+function changeDemoNote(message) {
+  if (!note) return;
+  clearTimeout(noteTimer);
+  if (reducedMotion) {
+    note.textContent = message;
+    return;
+  }
+  note.classList.add("is-changing");
+  noteTimer = setTimeout(() => {
+    note.textContent = message;
+    note.classList.remove("is-changing");
+  }, 130);
+}
+
 for (const button of document.querySelectorAll("[data-demo]")) {
   button.addEventListener("click", () => {
     demo = button.dataset.demo;
@@ -92,7 +158,7 @@ for (const button of document.querySelectorAll("[data-demo]")) {
     for (const item of document.querySelectorAll("[data-demo]")) {
       item.setAttribute("aria-pressed", String(item === button));
     }
-    if (note) note.textContent = demos[demo].note;
+    changeDemoNote(demos[demo].note);
   });
 }
 
@@ -154,6 +220,55 @@ function drawHero(now) {
   requestAnimationFrame(drawHero);
 }
 
-loadHero().catch(() => {
-  if (note) note.textContent = "The companion preview could not load.";
-});
+loadHero().catch(() => changeDemoNote("The companion preview could not load."));
+
+const revealItems = document.querySelectorAll("[data-reveal]");
+if (!reducedMotion && "IntersectionObserver" in window) {
+  document.body.classList.add("motion-ready");
+  const revealObserver = new IntersectionObserver(entries => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      entry.target.classList.add("is-visible");
+      revealObserver.unobserve(entry.target);
+    }
+  }, { threshold: .12, rootMargin: "0px 0px -40px" });
+  requestAnimationFrame(() => revealItems.forEach(item => revealObserver.observe(item)));
+} else {
+  revealItems.forEach(item => item.classList.add("is-visible"));
+}
+
+const header = document.querySelector("#siteHeader");
+const progress = document.querySelector("#pageProgress");
+let scrollQueued = false;
+
+function updateScrollState() {
+  const available = document.documentElement.scrollHeight - innerHeight;
+  const amount = available > 0 ? Math.min(1, scrollY / available) : 0;
+  progress?.style.setProperty("--page-progress", String(amount));
+  header?.classList.toggle("is-scrolled", scrollY > 12);
+  scrollQueued = false;
+}
+
+addEventListener("scroll", () => {
+  if (scrollQueued) return;
+  scrollQueued = true;
+  requestAnimationFrame(updateScrollState);
+}, { passive: true });
+updateScrollState();
+
+const observedSections = ["companions", "life", "privacy", "download"]
+  .map(id => document.getElementById(id))
+  .filter(Boolean);
+if ("IntersectionObserver" in window) {
+  const sectionObserver = new IntersectionObserver(entries => {
+    const visible = entries.filter(entry => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+    if (!visible) return;
+    for (const link of document.querySelectorAll("[data-section-link]")) {
+      const active = link.dataset.sectionLink === visible.target.id;
+      link.classList.toggle("is-active", active);
+      if (active) link.setAttribute("aria-current", "location");
+      else link.removeAttribute("aria-current");
+    }
+  }, { rootMargin: "-20% 0px -65%", threshold: [0, .2, .5] });
+  observedSections.forEach(section => sectionObserver.observe(section));
+}

@@ -3,124 +3,132 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#f3e5c8" />
-    <meta name="description" content="MyPerro is a free and private virtual pet for Windows, macOS, and Linux. Nine expressive companions, no account, subscription, advertising, or telemetry." />
-    <meta property="og:title" content="MyPerro — your desktop has a new best friend" />
-    <meta property="og:description" content="Nine expressive desktop pets. Free forever, private by design, and made by Sabin Raut." />
-    <title>MyPerro — Your desktop has a new best friend</title>
-    <link rel="icon" href="./pets/shiba-inu.png" />
+    <meta name="theme-color" content="#efe2c8" />
+    <meta name="description" content="MyPerro is an open-source, private virtual pet for Windows, macOS, and Linux. Nine expressive companions with no account, advertising, or telemetry." />
+    <meta property="og:title" content="MyPerro — a little life beside your work" />
+    <meta property="og:description" content="Nine expressive desktop companions. Open source, private by design, and originally created by Sabin Raut." />
+    <title>MyPerro — A little life beside your work</title>
+    <link rel="icon" href="./brand/myperro-mark.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
+    <div class="page-progress" id="pageProgress" aria-hidden="true"></div>
 
-    <header class="site-header">
+    <header class="site-header" id="siteHeader">
       <a class="wordmark" href="#top" aria-label="MyPerro home">
-        <span class="monogram" aria-hidden="true"><span></span></span>
-        <span><b>MyPerro</b><small>A desktop companion by Sabin Raut</small></span>
+        <img src="./brand/myperro-mark.svg" width="44" height="44" alt="" />
+        <span><b>MyPerro</b><small>Desktop companion</small></span>
       </a>
       <nav aria-label="Main navigation">
-        <a href="#companions">Companions</a>
-        <a href="#features">Features</a>
-        <a href="#privacy">Privacy</a>
-        <a class="nav-download" href="#download">Download free</a>
+        <a href="#companions" data-section-link="companions">Companions</a>
+        <a href="#life" data-section-link="life">Life with MyPerro</a>
+        <a href="#privacy" data-section-link="privacy">Privacy</a>
+        <a class="nav-download" href="#download" data-section-link="download">Download</a>
       </nav>
     </header>
 
     <main id="main">
       <section class="hero" id="top">
-        <div class="hero-copy">
-          <p class="kicker"><span></span> Free, local, and made with care</p>
-          <h1>Your desktop has a new <em>best friend.</em></h1>
-          <p class="hero-intro">MyPerro is a tiny animated companion that wanders, naps, rolls over, asks to play, reacts to your work, and keeps you company—without reading what you do.</p>
+        <div class="hero-copy" data-reveal>
+          <p class="eyebrow">A private companion for the desktop</p>
+          <h1>A little life,<br /><em>beside your work.</em></h1>
+          <p class="hero-intro">MyPerro wanders, naps, asks for care, reacts to your rhythm, and quietly keeps you company. It stays local, transparent, and out of your data.</p>
           <div class="hero-actions">
             <a class="button primary" id="heroDownload" href="#download">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 5-5m-5 5-5-5M5 20h14" /></svg>
               <span>Download MyPerro</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5" /></svg>
             </a>
-            <a class="button ghost" href="#specimen">Meet the pets</a>
+            <a class="text-link" href="#companions">Meet all nine companions</a>
           </div>
-          <ul class="trust-list" aria-label="Product promises">
-            <li>Free forever</li>
-            <li>No signup</li>
-            <li>No telemetry</li>
-            <li>Windows, Mac, Linux</li>
-          </ul>
+          <dl class="hero-facts">
+            <div><dt>License</dt><dd>Open source</dd></div>
+            <div><dt>Account</dt><dd>Not required</dd></div>
+            <div><dt>Platforms</dt><dd>Windows · Mac · Linux</dd></div>
+          </dl>
         </div>
 
-        <figure class="specimen" id="specimen">
-          <figcaption><span>Live desktop preview</span><span>No. 01 · Shiba Inu</span></figcaption>
-          <div class="specimen-stage">
-            <div class="desktop-card desktop-card-one" aria-hidden="true"><span></span><span></span><span></span></div>
-            <div class="desktop-card desktop-card-two" aria-hidden="true"><span></span><span></span></div>
-            <p class="desktop-note" aria-live="polite">Going for a little walk…</p>
+        <figure class="desktop-preview" id="preview" data-reveal>
+          <figcaption><span>Live desktop study</span><span>Shiba Inu · No. 01</span></figcaption>
+          <div class="preview-stage">
+            <div class="desktop-lines" aria-hidden="true"><span></span><span></span><span></span></div>
+            <p class="desktop-note" aria-live="polite">A quiet walk across the desktop.</p>
             <canvas id="heroPet" width="384" height="384" role="img" aria-label="An animated Shiba Inu desktop companion"></canvas>
-            <div class="demo-controls" aria-label="Animation controls">
-              <button type="button" data-demo="roam" aria-pressed="true">Roam</button>
-              <button type="button" data-demo="type" aria-pressed="false">Type</button>
-              <button type="button" data-demo="snack" aria-pressed="false">Feed</button>
-              <button type="button" data-demo="roll" aria-pressed="false">Play</button>
-              <button type="button" data-demo="sleep" aria-pressed="false">Nap</button>
+            <div class="demo-controls" aria-label="Choose a companion moment">
+              <button type="button" data-demo="roam" aria-pressed="true"><span>01</span>Walk</button>
+              <button type="button" data-demo="type" aria-pressed="false"><span>02</span>Work</button>
+              <button type="button" data-demo="snack" aria-pressed="false"><span>03</span>Feed</button>
+              <button type="button" data-demo="roll" aria-pressed="false"><span>04</span>Play</button>
+              <button type="button" data-demo="sleep" aria-pressed="false"><span>05</span>Rest</button>
             </div>
           </div>
-          <p class="specimen-note">Try the moments above. In the app, only the pet and temporary transparent speech appear over your real desktop.</p>
+          <p class="preview-caption">Only the companion and temporary transparent speech appear over the real desktop.</p>
         </figure>
       </section>
 
-      <section class="edition-strip" aria-label="Product summary">
-        <p><b>9</b><span>distinct companions</span></p>
-        <p><b>50+</b><span>expressive poses</span></p>
-        <p><b>3</b><span>desktop platforms</span></p>
-        <p><b>0</b><span>accounts or subscriptions</span></p>
+      <section class="fact-register" aria-label="Product summary">
+        <p><strong>09</strong><span>Companions</span></p>
+        <p><strong>50+</strong><span>Expressive motions</span></p>
+        <p><strong>03</strong><span>Desktop platforms</span></p>
+        <p><strong>Local</strong><span>By design</span></p>
       </section>
 
       <section class="section companions" id="companions">
-        <header class="section-heading">
-          <div><p class="kicker"><span></span> The MyPerro family</p><h2>Choose who waits on your desktop.</h2></div>
-          <p>Dogs, cats, fluffballs, and gentle giants. Every character includes the complete set of reactions, care routines, sounds, roaming, and everyday surprises.</p>
+        <header class="section-heading" data-reveal>
+          <div><p class="eyebrow">The MyPerro family</p><h2>Choose the character<br />of your companion.</h2></div>
+          <p>Every animal receives the complete care, work, rest, sound, and play system. The difference is personality—not a paid tier.</p>
         </header>
-        <div class="companion-grid" id="companionGrid" aria-live="polite"></div>
+
+        <div class="companion-showcase" data-reveal>
+          <div class="companion-portrait" id="companionPanel" role="tabpanel" aria-live="polite">
+            <span class="portrait-number" id="spotlightNumber">01</span>
+            <div class="portrait-orbit" aria-hidden="true"></div>
+            <img id="spotlightImage" src="./pets/shiba-inu.png" width="384" height="384" alt="Shiba Inu desktop companion" />
+            <p class="portrait-caption">Actual in-app character artwork</p>
+          </div>
+          <div class="companion-details">
+            <p class="eyebrow" id="spotlightNature">Bright &amp; curious</p>
+            <h3 id="spotlightName">Shiba Inu</h3>
+            <p id="spotlightDescription">An alert little shadow for busy days—quick to wander, tilt its head, and celebrate the smallest bit of attention.</p>
+            <div class="companion-nav" aria-label="Companion navigation">
+              <button type="button" id="previousCompanion">Previous</button>
+              <span id="companionPosition">01 / 09</span>
+              <button type="button" id="nextCompanion">Next</button>
+            </div>
+            <div class="companion-rail" id="companionRail" role="tablist" aria-label="Choose a companion"></div>
+          </div>
+        </div>
       </section>
 
-      <section class="section features" id="features">
-        <header class="section-heading light-heading">
-          <div><p class="kicker"><span></span> A small life of its own</p><h2>More than a pet that just sits there.</h2></div>
-          <p>A single behaviour director gives every action a beginning, a purpose, and a natural ending—so the companion feels present instead of random.</p>
+      <section class="section life" id="life">
+        <header class="section-heading light-heading" data-reveal>
+          <div><p class="eyebrow">A small life of its own</p><h2>Purposeful moments,<br />not random poses.</h2></div>
+          <p>One behaviour director decides what happens next, so care, play, movement, and reactions never compete for the same moment.</p>
         </header>
-        <div class="feature-grid">
-          <article class="feature-card feature-wide">
-            <span class="feature-number">01</span>
-            <div><h3>Roams like a real companion</h3><p>Looks where it wants to go, walks or runs in the correct direction, tumbles during play, and settles when the moment is quiet.</p></div>
-            <img src="./pets/husky.png" width="192" height="192" alt="Husky desktop companion" loading="lazy" />
+
+        <div class="story-list">
+          <article class="story" data-reveal>
+            <div class="story-art rust-art"><span class="story-index">01</span><img src="./pets/husky.png" width="288" height="288" alt="Husky desktop companion" loading="lazy" /></div>
+            <div><p class="eyebrow">Movement</p><h3>Walks with somewhere to go.</h3><p>The companion looks first, travels in the correct direction, changes pace, tumbles during play, and settles naturally at its destination.</p></div>
           </article>
-          <article class="feature-card">
-            <span class="feature-number">02</span>
-            <img src="./pets/pomeranian.png" width="192" height="192" alt="Pomeranian desktop companion" loading="lazy" />
-            <div><h3>Reacts as you work</h3><p>Typing paws, cursor chasing, scrolling paper, stretch reminders, quiet company, and a jump when a task is done.</p></div>
+          <article class="story reverse" data-reveal>
+            <div class="story-art gold-art"><span class="story-index">02</span><img src="./pets/calico-cat.png" width="288" height="288" alt="Calico cat desktop companion" loading="lazy" /></div>
+            <div><p class="eyebrow">Care</p><h3>Food, water, play, and real rest.</h3><p>Needs change gently over time. Feed, offer water, pet, play, or begin a one-minute rest that ends early with a touch.</p></div>
           </article>
-          <article class="feature-card feature-accent">
-            <span class="feature-number">03</span>
-            <img src="./pets/calico-cat.png" width="192" height="192" alt="Calico cat desktop companion" loading="lazy" />
-            <div><h3>Needs ordinary care</h3><p>Offer food or water, play together, pet your companion, or let it take a real one-minute nap.</p></div>
-          </article>
-          <article class="feature-card feature-dark">
-            <span class="feature-number">04</span>
-            <img src="./pets/midnight-cat.png" width="192" height="192" alt="Midnight cat desktop companion" loading="lazy" />
-            <div><h3>Sounds alive</h3><p>Short barks, purrs, sips, snack sounds, sleepy murmurs, and happy chirps—at the volume you choose.</p></div>
-          </article>
-          <article class="feature-card feature-wide feature-paper">
-            <span class="feature-number">05</span>
-            <div><h3>Fits your screen, not the other way around</h3><p>Resize from 65 to 200 percent, adjust opacity and markings, use edge peek, quiet mode, reduced motion, or turn off always-on-top.</p></div>
-            <img src="./pets/lhasa-apso.png" width="192" height="192" alt="Lhasa Apso desktop companion" loading="lazy" />
+          <article class="story" data-reveal>
+            <div class="story-art paper-art"><span class="story-index">03</span><img src="./pets/pomeranian.png" width="288" height="288" alt="Pomeranian desktop companion" loading="lazy" /></div>
+            <div><p class="eyebrow">Company</p><h3>Present while you work.</h3><p>Typing paws, cursor chasing, scrolling paper, quiet micro-motions, short sounds, stretch reminders, and a happy jump when a task is done.</p></div>
           </article>
         </div>
       </section>
 
       <section class="section privacy" id="privacy">
-        <div class="privacy-mark" aria-hidden="true"><span>Private</span><b>By design</b><small>Local desktop software</small></div>
-        <div class="privacy-copy">
-          <p class="kicker"><span></span> A privacy promise you can verify</p>
+        <div class="privacy-intro" data-reveal>
+          <img src="./brand/myperro-mark.svg" width="88" height="88" alt="" />
+          <p class="eyebrow">Private by construction</p>
           <h2>It notices activity.<br />Never your content.</h2>
+        </div>
+        <div class="privacy-copy" data-reveal>
           <p>When reactions are enabled, MyPerro reduces movement, clicks, scrolling, and typing to anonymous counts at capture time. It never receives typed text, key names, clipboard contents, screenshots, browsing history, or document contents.</p>
           <dl class="privacy-list">
             <div><dt>Cloud account</dt><dd>Not required</dd></div>
@@ -128,45 +136,44 @@
             <div><dt>Advertising</dt><dd>Not included</dd></div>
             <div><dt>Settings</dt><dd>Stay on this computer</dd></div>
           </dl>
-          <a class="text-link light" href="https://github.com/sabin901/MyPerro/blob/main/PRIVACY.md">Read the complete privacy promise <span aria-hidden="true">→</span></a>
+          <a class="text-link light" href="https://github.com/sabin901/MyPerro/blob/main/PRIVACY.md">Read the privacy promise</a>
         </div>
       </section>
 
       <section class="section download" id="download">
-        <header class="download-heading">
-          <p class="kicker"><span></span> Bring one home</p>
-          <h2>Free for every desktop.</h2>
-          <p>No checkout. No license key. No account. Choose your system and download directly from the verified GitHub release.</p>
+        <header class="download-heading" data-reveal>
+          <div><p class="eyebrow">Official builds</p><h2>Choose your desktop.</h2></div>
+          <p>No checkout, license key, advertising, or account. Downloads come directly from the verified public GitHub release.</p>
         </header>
-        <div class="download-grid">
-          <article class="download-card" data-platform="windows">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5.2 11 4v7H3V5.2Zm9-1.35L21 2.5V11h-9V3.85ZM3 12h8v7L3 17.8V12Zm9 0h9v8.5L12 19.15V12Z" /></svg>
-            <p class="platform-index">01</p><h3>Windows</h3><p>Windows 10 or 11 · Intel/AMD 64-bit</p>
-            <a class="button primary download-link" data-asset="windows" href="#">Download installer</a>
+        <div class="download-register" data-reveal>
+          <article class="download-row" data-platform="windows">
+            <p class="platform-index">01</p><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5.2 11 4v7H3V5.2Zm9-1.35L21 2.5V11h-9V3.85ZM3 12h8v7L3 17.8V12Zm9 0h9v8.5L12 19.15V12Z" /></svg>
+            <div><h3>Windows</h3><p>Windows 10 or 11 · Intel/AMD 64-bit</p></div>
+            <a class="button secondary download-link" data-asset="windows" href="#">Download installer</a>
           </article>
-          <article class="download-card" data-platform="mac-arm">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.1 12.5c0-2.5 2.1-3.7 2.2-3.8-1.2-1.7-3-1.9-3.7-1.9-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.3-.9-1.7 0-3.3 1-4.2 2.5-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.5 1.3-.1 1.8-.8 3.4-.8 1.6 0 2 .8 3.4.8 1.4 0 2.3-1.2 3.1-2.5 1-1.4 1.4-2.8 1.4-2.9-.1 0-2.9-1.1-2.9-4.1ZM14.6 5.2c.7-.9 1.2-2.1 1.1-3.2-1.1 0-2.4.7-3.2 1.6-.7.8-1.3 2-1.1 3.1 1.2.1 2.5-.6 3.2-1.5Z" /></svg>
-            <p class="platform-index">02</p><h3>Mac · Apple silicon</h3><p>M1, M2, M3, M4 and newer</p>
+          <article class="download-row" data-platform="mac-arm">
+            <p class="platform-index">02</p><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.1 12.5c0-2.5 2.1-3.7 2.2-3.8-1.2-1.7-3-1.9-3.7-1.9-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.3-.9-1.7 0-3.3 1-4.2 2.5-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.5 1.3-.1 1.8-.8 3.4-.8 1.6 0 2 .8 3.4.8 1.4 0 2.3-1.2 3.1-2.5 1-1.4 1.4-2.8 1.4-2.9-.1 0-2.9-1.1-2.9-4.1ZM14.6 5.2c.7-.9 1.2-2.1 1.1-3.2-1.1 0-2.4.7-3.2 1.6-.7.8-1.3 2-1.1 3.1 1.2.1 2.5-.6 3.2-1.5Z" /></svg>
+            <div><h3>Mac · Apple silicon</h3><p>M1, M2, M3, M4 and newer</p></div>
             <a class="button secondary download-link" data-asset="mac-arm" href="#">Download disk image</a>
           </article>
-          <article class="download-card" data-platform="mac-intel">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.1 12.5c0-2.5 2.1-3.7 2.2-3.8-1.2-1.7-3-1.9-3.7-1.9-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.3-.9-1.7 0-3.3 1-4.2 2.5-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.5 1.3-.1 1.8-.8 3.4-.8 1.6 0 2 .8 3.4.8 1.4 0 2.3-1.2 3.1-2.5 1-1.4 1.4-2.8 1.4-2.9-.1 0-2.9-1.1-2.9-4.1ZM14.6 5.2c.7-.9 1.2-2.1 1.1-3.2-1.1 0-2.4.7-3.2 1.6-.7.8-1.3 2-1.1 3.1 1.2.1 2.5-.6 3.2-1.5Z" /></svg>
-            <p class="platform-index">03</p><h3>Mac · Intel</h3><p>Intel processor · macOS 12 or newer</p>
+          <article class="download-row" data-platform="mac-intel">
+            <p class="platform-index">03</p><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.1 12.5c0-2.5 2.1-3.7 2.2-3.8-1.2-1.7-3-1.9-3.7-1.9-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.3-.9-1.7 0-3.3 1-4.2 2.5-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.5 1.3-.1 1.8-.8 3.4-.8 1.6 0 2 .8 3.4.8 1.4 0 2.3-1.2 3.1-2.5 1-1.4 1.4-2.8 1.4-2.9-.1 0-2.9-1.1-2.9-4.1ZM14.6 5.2c.7-.9 1.2-2.1 1.1-3.2-1.1 0-2.4.7-3.2 1.6-.7.8-1.3 2-1.1 3.1 1.2.1 2.5-.6 3.2-1.5Z" /></svg>
+            <div><h3>Mac · Intel</h3><p>Intel processor · macOS 12 or newer</p></div>
             <a class="button secondary download-link" data-asset="mac-intel" href="#">Download disk image</a>
           </article>
-          <article class="download-card" data-platform="linux">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c-2.7 0-4.4 2.5-4.4 5.6 0 1.8-.5 3.1-1.3 4.3C5.4 13.3 4 15 4 17.4 4 20 6.3 22 9 22h6c2.7 0 5-2 5-4.6 0-2.4-1.4-4.1-2.3-5.5-.8-1.2-1.3-2.5-1.3-4.3C16.4 4.5 14.7 2 12 2Zm-1.7 5.2c.5 0 .8.4.8.9s-.3.9-.8.9-.8-.4-.8-.9.3-.9.8-.9Zm3.4 0c.5 0 .8.4.8.9s-.3.9-.8.9-.8-.4-.8-.9.3-.9.8-.9ZM9.5 11h5L12 13.2 9.5 11Z" /></svg>
-            <p class="platform-index">04</p><h3>Linux</h3><p>Intel/AMD 64-bit · AppImage or Debian</p>
+          <article class="download-row" data-platform="linux">
+            <p class="platform-index">04</p><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c-2.7 0-4.4 2.5-4.4 5.6 0 1.8-.5 3.1-1.3 4.3C5.4 13.3 4 15 4 17.4 4 20 6.3 22 9 22h6c2.7 0 5-2 5-4.6 0-2.4-1.4-4.1-2.3-5.5-.8-1.2-1.3-2.5-1.3-4.3C16.4 4.5 14.7 2 12 2Zm-1.7 5.2c.5 0 .8.4.8.9s-.3.9-.8.9-.8-.4-.8-.9.3-.9.8-.9Zm3.4 0c.5 0 .8.4.8.9s-.3.9-.8.9-.8-.4-.8-.9.3-.9.8-.9ZM9.5 11h5L12 13.2 9.5 11Z" /></svg>
+            <div><h3>Linux</h3><p>Intel/AMD 64-bit · AppImage or Debian</p></div>
             <div class="split-links"><a class="button secondary download-link" data-asset="linux-appimage" href="#">AppImage</a><a class="button secondary download-link" data-asset="linux-deb" href="#">Debian</a></div>
           </article>
         </div>
         <p class="release-note">Current public build: <strong>v0.9.0-rc.9</strong> · Release candidate · <a href="https://github.com/sabin901/MyPerro/releases">Checksums and release notes</a></p>
       </section>
 
-      <section class="section faq">
-        <header><p class="kicker"><span></span> Good to know</p><h2>Questions before your new roommate moves in?</h2></header>
-        <div class="faq-list">
-          <details><summary>Is MyPerro really free?</summary><p>Yes. MyPerro is open-source software with no subscription, purchase, advertising, account, or locked premium tier.</p></details>
+      <section class="section faq" id="faq">
+        <header data-reveal><p class="eyebrow">Before installation</p><h2>A few useful details.</h2></header>
+        <div class="faq-list" data-reveal>
+          <details><summary>What does MyPerro cost?</summary><p>Nothing. MyPerro is open-source software with no purchase, advertising, account, or locked premium tier.</p></details>
           <details><summary>Does it read what I type?</summary><p>No. Native input code discards key identity and emits only a count. Typed text cannot be reconstructed by the app.</p></details>
           <details><summary>How do I open Settings?</summary><p>Right-click the companion or press S while it is focused. The tray menu provides the same route.</p></details>
           <details><summary>Will the pet block other windows?</summary><p>Transparent pixels pass clicks through to the desktop. Size, opacity, edge peek, reduced motion, and always-on-top can all be adjusted.</p></details>
@@ -175,8 +182,8 @@
     </main>
 
     <footer>
-      <a class="wordmark" href="#top"><span class="monogram" aria-hidden="true"><span></span></span><span><b>MyPerro</b><small>Desktop companion</small></span></a>
-      <p>Original work by <strong>Sabin Raut</strong><br />Free and open source · MIT License</p>
+      <a class="wordmark" href="#top"><img src="./brand/myperro-mark.svg" width="44" height="44" alt="" /><span><b>MyPerro</b><small>Desktop companion</small></span></a>
+      <p>Original work by <strong>Sabin Raut</strong><br />Open source · MIT License</p>
       <nav aria-label="Footer navigation"><a href="https://github.com/sabin901/MyPerro">Source</a><a href="https://github.com/sabin901/MyPerro/blob/main/PRIVACY.md">Privacy</a><a href="https://github.com/sabin901/MyPerro/issues">Support</a></nav>
     </footer>
 
