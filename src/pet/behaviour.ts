@@ -12,6 +12,7 @@ export type Mode = "sleeping" | "idle" | "normal" | "fast";
 export interface Activity {
   cursor_x: number;
   cursor_y: number;
+  cursor_scale_factor?: number;
   cursor_velocity: number;
   keys_since_last: number;
   clicks_since_last: number;

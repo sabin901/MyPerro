@@ -172,6 +172,7 @@ def main() -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     frames = {}
     source_indices = {}
+    frame_facing = {}
     for index, (name, source_index) in enumerate(POSES.items()):
         source_cell = source_cells[source_index]
         if name in PROP_FREE_FRAMES:
@@ -183,6 +184,10 @@ def main() -> None:
             "x": x, "y": y, "w": CELL, "h": CELL, "index": index,
         }
         source_indices[name] = source_index
+        # The generated sheet's locomotion cel faces left, while the turn cel
+        # faces right. Everything else is substantially frontal and must not
+        # be mirrored. Persist this instead of relying on an artist convention.
+        frame_facing[name] = "left" if source_index == 3 else "right" if source_index == 4 else "front"
     output.save(output_dir / "atlas.png", optimize=True)
     meta = {
         "canvas": {"width": CELL, "height": CELL},
@@ -190,6 +195,7 @@ def main() -> None:
         "displayScale": 1,
         "artStyle": "premium-production-v3",
         "sourceCells": source_indices,
+        "frameFacing": frame_facing,
         "frames": frames,
     }
     (output_dir / "atlas.json").write_text(json.dumps(meta, indent=2) + "\n", encoding="utf-8")
@@ -198,6 +204,7 @@ def main() -> None:
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         manifest["canvas"] = meta["canvas"]
         manifest["frames"] = frames
+        manifest["frameFacing"] = frame_facing
         manifest["artStyle"] = meta["artStyle"]
         manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
 

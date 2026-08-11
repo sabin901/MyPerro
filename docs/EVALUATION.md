@@ -1,8 +1,8 @@
-# MyPerro production evaluation — 10 August 2026
+# MyPerro production evaluation — 11 August 2026
 
 ## Executive verdict
 
-MyPerro `0.9.0-rc.6` is a credible public release candidate and a good fit for
+MyPerro `0.9.0-rc.7` is a credible public release candidate and a good fit for
 a free, accountless public beta. It is no longer a prototype: the current
 Windows executable and installer build and run, the same revision produces
 Linux AppImage and Debian packages and reaches `Pet ready` in a native startup
@@ -20,7 +20,7 @@ physical clean-machine QA.
 Those require credentials and hardware outside this workspace and cannot be
 honestly replaced by source-level checks.
 
-**Readiness:** 9.2/10 as a product, 9.1/10 as a release candidate, and 8.4/10
+**Readiness:** 9.3/10 as a product, 9.2/10 as a release candidate, and 8.4/10
 as a stable public-release operation.
 
 ## Acceptance evidence
@@ -28,11 +28,12 @@ as a stable public-release operation.
 | Check | Result | Evidence |
 |---|---:|---|
 | TypeScript | Pass | `tsc --noEmit` on Windows and Linux |
-| Frontend logic | Pass | 14 Vitest files, 181 tests on Windows and Linux |
+| Frontend logic | Pass | 15 Vitest files, 187 tests, including direction, native-cel mirroring, and mirrored hit-testing primitives |
 | Interaction timing | Pass | explicit tests for 20-second requests, cooldown, initial anti-nag behavior, 60-second rest, and touch-to-wake |
 | Native privacy logic | Pass | 6 Rust tests, including no-keycode serialization and coarse media classification, on Windows |
 | Production frontend | Pass | Vite 8.2.1 build and packaged CSP/asset smoke test |
 | Companion art | Pass | all 9 premium packs; semantic source-pose, boundary-alpha, frame-density and frame-uniqueness validation; generic eye artifacts and Husky idle bowls removed |
+| Direction and DPI | Pass locally | travel direction owns facing; every cel declares native direction; cursor geometry and velocity share a physical-coordinate plus monitor-scale contract |
 | Sound design | Pass with human acceptance pending | tested bark/purr/yip, snack, slurp, happy, sleep/wake and chime recipes; volume persists and Settings includes a direct preview |
 | JavaScript audit | Pass | 0 known npm vulnerabilities |
 | RustSec audit | Reviewed | 0 classified vulnerabilities; 17 allowed upstream warnings |
@@ -40,10 +41,10 @@ as a stable public-release operation.
 | Windows size control | Pass | accessibility tree exposes 65–200%; 150% produced a 288×288 pet window from the 192×192 base |
 | Windows Settings | Pass | free/accountless message, play-request controls, sound volume/preview, Wellbeing, actions, tabs and creator attribution visible |
 | Windows package | Pass | current x64 NSIS installer and SHA-256 manifest generated |
-| Linux native runtime | Pass | prior release reached `Pet ready` and remained alive after 8 seconds under Xvfb/DBus; rc.5 CI packaging remains required |
+| Linux native runtime | Pass with split evidence | rc.7 AppImage and Debian package CI is green; the prior release reached `Pet ready` and remained alive after 8 seconds under Xvfb/DBus |
 | Linux packages | Pass | x64 AppImage and `.deb`; Debian metadata identifies Sabin Raut |
 | SBOM/checksums | Pass | CycloneDX web SBOM and SHA-256 manifests generated |
-| macOS artifacts | Pass in CI | separate Apple Silicon and Intel DMGs, checksums and SBOMs built and uploaded; Developer ID signing/notarization and physical runtime acceptance remain external |
+| macOS artifacts | Pass in CI | rc.7 Apple Silicon and Intel DMGs mounted, matched the expected architecture, passed ad-hoc signature checks, launched to frontend readiness, and uploaded with checksums/SBOMs; Developer ID notarization and physical runtime acceptance remain external |
 
 The Rust warnings are inherited primarily from Tauri's Linux GTK3/WebKitGTK
 stack. `RUSTSEC-2024-0429` is explicitly documented in `audit.toml`; MyPerro

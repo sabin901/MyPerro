@@ -1,11 +1,11 @@
-const RELEASE_TAG = "v0.9.0-rc.6";
+const RELEASE_TAG = "v0.9.0-rc.7";
 const RELEASE_ROOT = `https://github.com/sabin901/MyPerro/releases/download/${RELEASE_TAG}`;
 const DOWNLOADS = {
-  windows: `${RELEASE_ROOT}/MyPerro_0.9.0-rc.6_x64-setup.exe`,
-  "mac-arm": `${RELEASE_ROOT}/MyPerro_0.9.0-rc.6_aarch64.dmg`,
-  "mac-intel": `${RELEASE_ROOT}/MyPerro_0.9.0-rc.6_x64.dmg`,
-  "linux-appimage": `${RELEASE_ROOT}/MyPerro_0.9.0-rc.6_amd64.AppImage`,
-  "linux-deb": `${RELEASE_ROOT}/MyPerro_0.9.0-rc.6_amd64.deb`,
+  windows: `${RELEASE_ROOT}/MyPerro_0.9.0-rc.7_x64-setup.exe`,
+  "mac-arm": `${RELEASE_ROOT}/MyPerro_0.9.0-rc.7_aarch64.dmg`,
+  "mac-intel": `${RELEASE_ROOT}/MyPerro_0.9.0-rc.7_x64.dmg`,
+  "linux-appimage": `${RELEASE_ROOT}/MyPerro_0.9.0-rc.7_amd64.AppImage`,
+  "linux-deb": `${RELEASE_ROOT}/MyPerro_0.9.0-rc.7_amd64.deb`,
 };
 
 const companions = [
