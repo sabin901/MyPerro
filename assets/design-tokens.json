@@ -1,0 +1,25 @@
+{
+  "$schema": "https://design-tokens.github.io/community-group/format/",
+  "color": {
+    "forest": { "900": { "$value": "#0f332b", "$type": "color" }, "700": { "$value": "#16483c", "$type": "color" } },
+    "rust": { "800": { "$value": "#73362f", "$type": "color" }, "600": { "$value": "#9b463b", "$type": "color" } },
+    "gold": { "500": { "$value": "#d29a3a", "$type": "color" } },
+    "paper": { "200": { "$value": "#faf2e2", "$type": "color" }, "400": { "$value": "#dfccaa", "$type": "color" } },
+    "cream": { "300": { "$value": "#efe2c8", "$type": "color" } },
+    "sage": { "400": { "$value": "#9ebaae", "$type": "color" } },
+    "ink": { "900": { "$value": "#223029", "$type": "color" } }
+  },
+  "duration": {
+    "fast": { "$value": "150ms", "$type": "duration" },
+    "normal": { "$value": "240ms", "$type": "duration" },
+    "slow": { "$value": "380ms", "$type": "duration" }
+  },
+  "space": {
+    "1": { "$value": "4px", "$type": "dimension" },
+    "2": { "$value": "8px", "$type": "dimension" },
+    "4": { "$value": "16px", "$type": "dimension" },
+    "6": { "$value": "24px", "$type": "dimension" },
+    "8": { "$value": "32px", "$type": "dimension" },
+    "12": { "$value": "48px", "$type": "dimension" }
+  }
+}

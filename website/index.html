@@ -20,7 +20,10 @@
         <img src="./brand/myperro-mark.svg" width="44" height="44" alt="" />
         <span><b>MyPerro</b><small>Desktop companion</small></span>
       </a>
-      <nav aria-label="Main navigation">
+      <button class="menu-toggle" id="menuToggle" type="button" aria-controls="siteNavigation" aria-expanded="false">
+        <span>Menu</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16M4 16h16" /></svg>
+      </button>
+      <nav id="siteNavigation" aria-label="Main navigation">
         <a href="#companions" data-section-link="companions">Companions</a>
         <a href="#life" data-section-link="life">Life with MyPerro</a>
         <a href="#privacy" data-section-link="privacy">Privacy</a>
@@ -84,12 +87,22 @@
             <span class="portrait-number" id="spotlightNumber">01</span>
             <div class="portrait-orbit" aria-hidden="true"></div>
             <img id="spotlightImage" src="./pets/shiba-inu.png" width="384" height="384" alt="Shiba Inu desktop companion" />
-            <p class="portrait-caption">Actual in-app character artwork</p>
+            <canvas id="spotlightCanvas" width="384" height="384" role="img" aria-label="Animated Shiba Inu desktop companion"></canvas>
+            <p class="portrait-caption"><span class="live-dot" aria-hidden="true"></span>Actual in-app motion</p>
           </div>
           <div class="companion-details">
             <p class="eyebrow" id="spotlightNature">Bright &amp; curious</p>
             <h3 id="spotlightName">Shiba Inu</h3>
             <p id="spotlightDescription">An alert little shadow for busy days—quick to wander, tilt its head, and celebrate the smallest bit of attention.</p>
+            <div class="motion-picker" aria-label="Preview companion motion">
+              <button type="button" data-companion-motion="idle" aria-pressed="true">Be still</button>
+              <button type="button" data-companion-motion="walk" aria-pressed="false">Take a walk</button>
+              <button type="button" data-companion-motion="celebrate" aria-pressed="false">Celebrate</button>
+            </div>
+            <div class="size-studio">
+              <label for="companionSize"><span>Preview size</span><output id="companionSizeValue" for="companionSize">100%</output></label>
+              <input id="companionSize" type="range" min="65" max="145" value="100" step="5" />
+            </div>
             <div class="companion-nav" aria-label="Companion navigation">
               <button type="button" id="previousCompanion">Previous</button>
               <span id="companionPosition">01 / 09</span>
@@ -106,19 +119,26 @@
           <p>One behaviour director decides what happens next, so care, play, movement, and reactions never compete for the same moment.</p>
         </header>
 
-        <div class="story-list">
-          <article class="story" data-reveal>
-            <div class="story-art rust-art"><span class="story-index">01</span><img src="./pets/husky.png" width="288" height="288" alt="Husky desktop companion" loading="lazy" /></div>
-            <div><p class="eyebrow">Movement</p><h3>Walks with somewhere to go.</h3><p>The companion looks first, travels in the correct direction, changes pace, tumbles during play, and settles naturally at its destination.</p></div>
-          </article>
-          <article class="story reverse" data-reveal>
-            <div class="story-art gold-art"><span class="story-index">02</span><img src="./pets/calico-cat.png" width="288" height="288" alt="Calico cat desktop companion" loading="lazy" /></div>
-            <div><p class="eyebrow">Care</p><h3>Food, water, play, and real rest.</h3><p>Needs change gently over time. Feed, offer water, pet, play, or begin a one-minute rest that ends early with a touch.</p></div>
-          </article>
-          <article class="story" data-reveal>
-            <div class="story-art paper-art"><span class="story-index">03</span><img src="./pets/pomeranian.png" width="288" height="288" alt="Pomeranian desktop companion" loading="lazy" /></div>
-            <div><p class="eyebrow">Company</p><h3>Present while you work.</h3><p>Typing paws, cursor chasing, scrolling paper, quiet micro-motions, short sounds, stretch reminders, and a happy jump when a task is done.</p></div>
-          </article>
+        <div class="day-experience">
+          <figure class="day-stage" data-reveal>
+            <figcaption><span id="dayTime">09:14</span><span id="dayLabel">The workday begins</span></figcaption>
+            <div class="day-screen">
+              <div class="day-window" aria-hidden="true"><i></i><i></i><i></i></div>
+              <img id="dayImage" src="./pets/husky.png" width="384" height="384" alt="Husky desktop companion walking" loading="lazy" />
+              <p id="dayWhisper">Right here.</p>
+            </div>
+          </figure>
+          <div class="day-chapters">
+            <article class="day-chapter is-current" data-day-moment="walk" data-day-image="husky" data-day-time="09:14" data-day-label="The workday begins" data-day-whisper="Right here." data-reveal>
+              <span>01</span><p class="eyebrow">Movement</p><h3>Walks with somewhere to go.</h3><p>The companion looks first, travels in the correct direction, changes pace, tumbles during play, and settles naturally at its destination.</p>
+            </article>
+            <article class="day-chapter" data-day-moment="care" data-day-image="calico-cat" data-day-time="13:06" data-day-label="A small pause" data-day-whisper="A sip, please?" data-reveal>
+              <span>02</span><p class="eyebrow">Care</p><h3>Food, water, play, and real rest.</h3><p>Needs change gently over time. Feed, offer water, pet, play, or begin a one-minute rest that ends early with a touch.</p>
+            </article>
+            <article class="day-chapter" data-day-moment="company" data-day-image="pomeranian" data-day-time="16:42" data-day-label="Still beside you" data-day-whisper="Nearly there." data-reveal>
+              <span>03</span><p class="eyebrow">Company</p><h3>Present while you work.</h3><p>Typing paws, cursor chasing, scrolling paper, quiet micro-motions, short sounds, stretch reminders, and a happy jump when a task is done.</p>
+            </article>
+          </div>
         </div>
       </section>
 

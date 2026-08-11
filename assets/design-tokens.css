@@ -1,0 +1,59 @@
+:root {
+  /* Primitive colour tokens */
+  --mp-color-forest-900: #0f332b;
+  --mp-color-forest-700: #16483c;
+  --mp-color-ink-900: #223029;
+  --mp-color-rust-800: #73362f;
+  --mp-color-rust-600: #9b463b;
+  --mp-color-gold-500: #d29a3a;
+  --mp-color-sage-400: #9ebaae;
+  --mp-color-cream-300: #efe2c8;
+  --mp-color-paper-200: #faf2e2;
+  --mp-color-paper-400: #dfccaa;
+
+  /* Primitive space, type, radius, and motion tokens */
+  --mp-space-1: 4px;
+  --mp-space-2: 8px;
+  --mp-space-3: 12px;
+  --mp-space-4: 16px;
+  --mp-space-6: 24px;
+  --mp-space-8: 32px;
+  --mp-space-12: 48px;
+  --mp-space-16: 64px;
+  --mp-space-24: 96px;
+  --mp-radius-sm: 4px;
+  --mp-radius-md: 8px;
+  --mp-radius-lg: 16px;
+  --mp-font-display: Georgia, "Times New Roman", serif;
+  --mp-font-interface: "Segoe UI", Avenir, Helvetica, Arial, sans-serif;
+  --mp-duration-fast: 150ms;
+  --mp-duration-normal: 240ms;
+  --mp-duration-slow: 380ms;
+  --mp-ease-enter: cubic-bezier(.22, 1, .36, 1);
+  --mp-ease-exit: cubic-bezier(.4, 0, 1, 1);
+
+  /* Semantic tokens */
+  --mp-color-background: var(--mp-color-paper-200);
+  --mp-color-surface: var(--mp-color-cream-300);
+  --mp-color-surface-strong: var(--mp-color-paper-400);
+  --mp-color-text: var(--mp-color-ink-900);
+  --mp-color-text-muted: #626d64;
+  --mp-color-primary: var(--mp-color-forest-700);
+  --mp-color-primary-strong: var(--mp-color-forest-900);
+  --mp-color-accent: var(--mp-color-rust-600);
+  --mp-color-accent-strong: var(--mp-color-rust-800);
+  --mp-color-highlight: var(--mp-color-gold-500);
+  --mp-color-focus: #087d9c;
+  --mp-color-rule: rgba(34, 48, 41, .25);
+  --mp-color-rule-on-dark: rgba(250, 242, 226, .28);
+  --mp-shadow-raised: 0 26px 70px rgba(53, 39, 20, .14);
+
+  /* Component tokens */
+  --mp-button-height: 48px;
+  --mp-button-bg: var(--mp-color-primary);
+  --mp-button-fg: var(--mp-color-paper-200);
+  --mp-button-hover-bg: var(--mp-color-primary-strong);
+  --mp-focus-ring: 0 0 0 2px var(--mp-color-background), 0 0 0 5px var(--mp-color-focus);
+  --mp-section-gutter: clamp(22px, 7vw, 112px);
+  --mp-section-block: clamp(88px, 10vw, 148px);
+}

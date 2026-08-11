@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-labelledby="title description">
+  <title id="title">MyPerro companion mark</title>
+  <desc id="description">A minimal line-drawn companion face with two ears and a collar tag.</desc>
+  <g fill="none" stroke="#9b463b" stroke-linecap="round" stroke-linejoin="round">
+    <path stroke-width="5" d="M18 42 22 17l19 15a31 31 0 0 1 14 0l19-15 4 25v17c0 18-13 28-30 28S18 77 18 59V42Z"/>
+    <path stroke-width="4" d="M34 54c3-3 7-3 10 0m8 0c3-3 7-3 10 0M43 63h10l-5 5-5-5Zm5 5v4m0 0c-4 4-9 4-12 1m12-1c4 4 9 4 12 1"/>
+    <path stroke-width="3" d="M31 33 23 24m42 9 8-9" opacity=".6"/>
+  </g>
+  <circle cx="48" cy="82" r="5" fill="#d29a3a" stroke="#9b463b" stroke-width="3"/>
+</svg>
