@@ -25,6 +25,8 @@ Versioning once it reaches 1.0.
 - Added a presentation conflict matrix and roaming phase regression tests.
 - Verified desktop and mobile website layouts, interaction states, overflow,
   console output, TypeScript, Vitest, and Rust media classification locally.
+- Built rc.8 packages on Windows, Ubuntu, Apple Silicon macOS, and Intel macOS;
+  both mounted Mac applications launched to frontend readiness in CI.
 
 ## 0.9.0-rc.7 — 2026-08-11
 

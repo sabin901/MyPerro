@@ -41,10 +41,10 @@ as a stable public-release operation.
 | Windows size control | Pass | accessibility tree exposes 65–200%; 150% produced a 288×288 pet window from the 192×192 base |
 | Windows Settings | Pass | free/accountless message, play-request controls, sound volume/preview, Wellbeing, actions, tabs and creator attribution visible |
 | Windows package | Pass | current x64 NSIS installer and SHA-256 manifest generated |
-| Linux native runtime | Pending rc.8 CI | rc.7 AppImage and Debian package CI is green; rc.8 retains the same native window/input stack and awaits its release workflow |
+| Linux native runtime | Pass in CI | rc.8 AppImage and Debian packages built successfully; package metadata, checksums, SBOM generation, and artifact upload passed |
 | Linux packages | Pass | x64 AppImage and `.deb`; Debian metadata identifies Sabin Raut |
 | SBOM/checksums | Pass | CycloneDX web SBOM and SHA-256 manifests generated |
-| macOS artifacts | Pending rc.8 CI | rc.7 Apple Silicon and Intel DMGs mounted, matched the expected architecture, passed ad-hoc signature checks, launched to frontend readiness, and uploaded with checksums/SBOMs; rc.8 awaits the same workflow, while Developer ID notarization and physical runtime acceptance remain external |
+| macOS artifacts | Pass in CI | rc.8 Apple Silicon and Intel DMGs mounted, matched the expected architecture, passed ad-hoc signature checks, launched to frontend readiness, and uploaded with checksums/SBOMs; Developer ID notarization and physical runtime acceptance remain external |
 
 The Rust warnings are inherited primarily from Tauri's Linux GTK3/WebKitGTK
 stack. `RUSTSEC-2024-0429` is explicitly documented in `audit.toml`; MyPerro
