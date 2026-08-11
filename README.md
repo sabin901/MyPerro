@@ -5,7 +5,7 @@ reminds you to take breaks, asks to play, and quietly keeps you company.
 
 **Created by Sabin Raut.**
 
-macOS · Windows · Linux (X11/XWayland) · MIT licensed · open source · no telemetry · no account
+macOS · Windows · Linux (X11/XWayland) · MIT licensed · open source · no account · no hidden telemetry
 
 **Website and downloads:** https://sabin901.github.io/MyPerro/
 
@@ -116,6 +116,7 @@ Supported statuses are `thinking`, `done`, and `error`. `message` is optional.
 | `docs/EVALUATION.md` | Current verification, critique, and release gates |
 | `docs/COMPETITIVE_REVIEW.md` | Product comparison and next investments |
 | `docs/RELEASE.md` | Signing, packaging, QA, updater and rollback runbook |
+| `docs/USAGE_COUNTING.md` | Deploy and read the optional active-install counter |
 
 ## Licence
 

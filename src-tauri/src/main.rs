@@ -5,6 +5,7 @@ mod agent_status;
 mod desktop_context;
 mod input;
 mod settings_store;
+mod usage;
 
 use serde::Serialize;
 use std::sync::{
@@ -203,7 +204,9 @@ fn main() {
             agent_status::load_agent_status,
             agent_status::clear_agent_status,
             settings_store::load_settings,
-            settings_store::save_settings
+            settings_store::save_settings,
+            usage::send_usage_heartbeat,
+            usage::disable_usage_count
         ])
         .setup(|app| {
             // ── tray ──────────────────────────────────────────────────────

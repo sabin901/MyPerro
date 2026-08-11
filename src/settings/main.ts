@@ -39,6 +39,11 @@ interface InputHealth {
   guidance: string;
 }
 
+interface UsageResult {
+  status: "disabled" | "not_configured" | "throttled" | "sent" | "deleted";
+  nextAllowedAt?: number | null;
+}
+
 /** Read a form field, tolerating blanks. */
 const text = (id: string) => ($(id) as HTMLInputElement).value;
 const int = (id: string) => {
@@ -88,6 +93,7 @@ function fill(s: Settings) {
   ($("startAtLogin") as HTMLInputElement).checked = s.startAtLogin;
   ($("inputMonitoringEnabled") as HTMLInputElement).checked = s.inputMonitoringEnabled;
   ($("notificationsEnabled") as HTMLInputElement).checked = s.notificationsEnabled;
+  ($("anonymousUsageEnabled") as HTMLInputElement).checked = s.anonymousUsageEnabled;
   onboardingComplete = s.onboardingComplete;
   renderBreedCards(s.appearance.breed);
 }
@@ -125,6 +131,7 @@ function collect(): Settings {
     startAtLogin: checked("startAtLogin"),
     inputMonitoringEnabled: checked("inputMonitoringEnabled"),
     notificationsEnabled: checked("notificationsEnabled"),
+    anonymousUsageEnabled: checked("anonymousUsageEnabled"),
     onboardingComplete,
     appearance: {
       breed: ($("breed") as HTMLSelectElement).value,
@@ -144,6 +151,7 @@ async function main() {
   fill(loaded);
   wireTabs();
   wireOnboarding();
+  wireAnonymousUsage();
   wireProductionControls();
   currentNeeds = loadNeeds();
   renderNeeds(currentNeeds);
@@ -226,19 +234,24 @@ function wireOnboarding() {
   const finish = async (enable: boolean) => {
     onboardingComplete = true;
     ($("inputMonitoringEnabled") as HTMLInputElement).checked = enable;
+    ($("anonymousUsageEnabled") as HTMLInputElement).checked = checked("onboardingUsageEnabled");
     if (enable) {
       await invoke("enable_input_monitoring").catch(async error => {
         await logError(`Could not start input monitoring: ${String(error)}`).catch(() => {});
       });
     }
     await persistSettings(false);
+    await syncAnonymousUsage();
     dialog.close();
     window.scrollTo({ top: 0, behavior: "auto" });
     await logInfo(`Onboarding completed; input reactions ${enable ? "enabled" : "disabled"}`).catch(() => {});
   };
   $("enableReactions").addEventListener("click", () => { void finish(true); });
   $("skipReactions").addEventListener("click", () => { void finish(false); });
-  $("replayOnboarding").addEventListener("click", () => dialog.showModal());
+  $("replayOnboarding").addEventListener("click", () => {
+    ($("onboardingUsageEnabled") as HTMLInputElement).checked = checked("anonymousUsageEnabled");
+    dialog.showModal();
+  });
 
   const ua = navigator.userAgent.toLowerCase();
   $("onboardingPlatform").textContent = ua.includes("mac")
@@ -246,6 +259,37 @@ function wireOnboarding() {
     : ua.includes("linux")
       ? "Global reactions work on X11 and XWayland. Native Wayland may intentionally restrict them."
       : "Windows may ask your security software to allow the local activity listener.";
+}
+
+function wireAnonymousUsage() {
+  $("anonymousUsageEnabled").addEventListener("change", () => { void syncAnonymousUsage(); });
+  renderAnonymousUsageStatus(checked("anonymousUsageEnabled") ? "throttled" : "disabled");
+  void syncAnonymousUsage();
+}
+
+async function syncAnonymousUsage() {
+  const enabled = checked("anonymousUsageEnabled");
+  renderAnonymousUsageStatus(enabled ? "throttled" : "disabled");
+  try {
+    const result = enabled
+      ? await invoke<UsageResult>("send_usage_heartbeat", { enabled: true })
+      : await invoke<UsageResult>("disable_usage_count");
+    renderAnonymousUsageStatus(result.status);
+  } catch (error) {
+    $("anonymousUsageStatus").textContent = "Could not reach the counter. The app will retry later; no activity or personal content is included.";
+    await logError(`Anonymous usage count failed: ${String(error)}`).catch(() => {});
+  }
+}
+
+function renderAnonymousUsageStatus(status: UsageResult["status"]) {
+  const copy: Record<UsageResult["status"], string> = {
+    disabled: "Off. No usage heartbeat is sent.",
+    not_configured: "Enabled locally, but this build has no counting service configured.",
+    throttled: "On. The anonymous daily count is up to date.",
+    sent: "On. This installation was counted anonymously today.",
+    deleted: "Off. The anonymous identifier and server record were deleted.",
+  };
+  $("anonymousUsageStatus").textContent = copy[status];
 }
 
 function wireProductionControls() {

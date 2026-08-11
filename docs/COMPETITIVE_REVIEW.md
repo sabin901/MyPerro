@@ -22,7 +22,7 @@ Current public products reviewed:
 | Productivity | Pomodoro, stretch/water/message reminders, pinned note | Strong |
 | Desktop presence | 65–200% size, opacity, always-on-top, peek, drag, wander | Competitive after current pass |
 | Sound/personality | Adjustable cute care cues, play-request calls, post-meal dance and post-water shake | Strong foundation; recorded voice packs and richer choreography remain open opportunities |
-| Privacy | Local activity counts only; no keycodes or telemetry | Leading and verifiable |
+| Privacy | No keycodes or behavioral analytics; active-install count is minimal, explicit, and off by default | Leading and verifiable |
 | Platform reach | Windows/macOS plus Linux X11/XWayland build path | Broader than ComNyang; native Wayland remains experimental |
 | Personal creation | Presets, colours, markings | Behind Deskie AI creation and VPet Workshop |
 | World interaction | Wander and edge peek | Behind products that perch on arbitrary app windows |

@@ -256,6 +256,8 @@
           <li><strong>Only your pet stays on the desktop.</strong><br />Click the pet, then use F, W, P, R or S. There are no overlay buttons.</li>
           <li><strong>You stay in control.</strong><br />Input reactions, notifications and startup can be disabled at any time.</li>
         </ul>
+        <label><span><strong>Help count active installations</strong><br /><small>Optional and off by default. Sends one random installation ID, app version, operating system, and architecture at most once per day. No activity or personal content.</small></span>
+          <input type="checkbox" id="onboardingUsageEnabled" /></label>
         <p id="onboardingPlatform">Your operating system may show an accessibility permission prompt.</p>
         <div class="dialog-actions">
           <button type="button" id="enableReactions">Enable private reactions</button>
@@ -439,6 +441,8 @@
         <div class="quick-row"><button class="secondary" type="button" id="testSound">Hear a happy sound</button></div>
         <label><span>Private typing and pointer reactions</span><input type="checkbox" id="inputMonitoringEnabled" /></label>
         <label><span>Native reminder notifications</span><input type="checkbox" id="notificationsEnabled" /></label>
+        <label><span>Share anonymous active-install count</span><input type="checkbox" id="anonymousUsageEnabled" /></label>
+        <p class="platform-note" id="anonymousUsageStatus" role="status" aria-live="polite">Off. No usage heartbeat is sent.</p>
         <label><span>Keep peek mode on (N toggles)</span><input type="checkbox" id="peekMode" /></label>
         <p class="platform-note">Optional video peek classifies only the foreground app on this device. Titles, URLs, audio, and media content are never stored or sent anywhere.</p>
         <label><span>Stay above other windows</span><input type="checkbox" id="alwaysOnTop" /></label>
@@ -450,7 +454,7 @@
         <legend>About &amp; compatibility</legend>
         <div class="about-card">
           <div class="about-heading"><strong>MyPerro</strong><span class="version" id="appVersion">Version…</span></div>
-          <p class="about-copy">A free, privacy-first virtual pet. No account, sign-up, subscription or telemetry.</p>
+          <p class="about-copy">A free, privacy-first virtual pet. No account, sign-up, subscription, advertising, or hidden telemetry. Anonymous active-install counting is optional and off by default.</p>
           <p class="credit"><strong>Original creator: Sabin Raut</strong><br /><small>Copyright © 2026 Sabin Raut · MIT licensed</small></p>
           <div class="diagnostic" id="inputDiagnostic" data-status="starting" role="status" aria-live="polite">
             <span class="diagnostic-dot" aria-hidden="true"></span>

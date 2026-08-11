@@ -103,6 +103,7 @@ const FALLBACK_ATLAS_URL = "/placeholder/shiba_placeholder.png";
 const FALLBACK_META_URL  = "/placeholder/shiba_placeholder.json";
 const HIT_ALPHA = 8;
 const MESSAGE_DURATION_MS = 20_000;
+const USAGE_HEARTBEAT_RETRY_MS = 6 * 60 * 60 * 1000;
 const INTERACTION_STORAGE_KEY = "myperro.companion-interaction.v1";
 
 /** Head occupies roughly the top 45% of the cell — used for petting. */
@@ -194,6 +195,7 @@ let frames = 0, lastFpsAt = performance.now(), fps = 0, eventCount = 0, eventRat
 async function boot() {
   bootStage = "loading saved settings";
   settings = await loadSettings();
+  void syncAnonymousUsageState();
   updatePollingEnabled = shouldPollForUpdates(await getVersion().catch(() => "0.0.0-dev"));
   needs = loadNeeds();
   interactionState = loadInteractionState();
@@ -219,6 +221,7 @@ async function boot() {
   setInterval(pollCompanionInteraction, 5000);
   setInterval(updateVirtualPet, 60_000);
   setInterval(pollDesktopContext, 2000);
+  setInterval(() => { void syncAnonymousUsageState(); }, USAGE_HEARTBEAT_RETRY_MS);
   if (updatePollingEnabled) setInterval(pollAvailableUpdate, UPDATE_CHECK_INTERVAL_MS);
 
   engine = new BehaviourEngine(performance.now());
@@ -275,6 +278,15 @@ async function boot() {
   bootStage = "ready";
   await invoke("mark_startup_ready").catch(() => false);
   await logInfo(`Pet ready with companion pack ${settings.appearance.breed}`).catch(() => {});
+}
+
+async function syncAnonymousUsageState() {
+  if (!settings) return;
+  const command = settings.anonymousUsageEnabled ? "send_usage_heartbeat" : "disable_usage_count";
+  const args = settings.anonymousUsageEnabled ? { enabled: true } : undefined;
+  await invoke(command, args).catch(error => {
+    void logWarn(`Anonymous active-install count unavailable: ${String(error)}`).catch(() => {});
+  });
 }
 
 function handleCare(action: CareAction) {

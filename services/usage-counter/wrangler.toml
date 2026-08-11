@@ -1,0 +1,15 @@
+name = "ipet-usage"
+main = "src/index.mjs"
+compatibility_date = "2026-08-11"
+
+[observability]
+enabled = false
+
+[[d1_databases]]
+binding = "USAGE_DB"
+database_name = "ipet-usage"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+migrations_dir = "migrations"
+
+[triggers]
+crons = ["17 3 * * *"]

@@ -8,8 +8,10 @@ Windows executable and installer build and run, the same revision produces
 Linux AppImage and Debian packages and reaches `Pet ready` in a native startup
 smoke test, and CI now builds separate Apple Silicon and Intel macOS DMGs.
 
-It is deliberately local-only: there is no sign-up, subscription, payment,
-cloud account, telemetry, or runtime service dependency. The desktop surface
+It is deliberately local-first: there is no sign-up, subscription, payment,
+cloud account, behavioral analytics, or required runtime service dependency.
+An optional active-install count is explicit, off by default, and never receives
+local activity. The desktop surface
 contains no Care panel or action button; feed, water, play, and rest remain as
 focused first-letter, right-click, and tray interactions because they are core
 companion behaviors.
@@ -117,7 +119,7 @@ debt and must be revisited when the desktop stack migrates.
 | Character art | 8.7 | Clean, transparent and semantically mapped across nine companions; neutral poses are prop-free and generic pupil artifacts are removed. It still uses fewer principal drawings than bespoke commercial frame-by-frame production. |
 | Motion quality | 8.8 | A single presentation director now prevents sliding care poses and timer conflicts; roaming has anticipate, travel and settle phases, plus a visible play roll. More unique in-between drawings would still improve transition continuity. |
 | Settings/accessibility | 9.0 | Clear information architecture, native keyboard tabs, auto-save status, range controls, reduced motion and large targets. Screen-reader/high-contrast audits still need real OS coverage. |
-| Privacy/security | 9.3 | Local-only, narrow capabilities, restrictive CSP, consent, no account and no telemetry are excellent. Unsigned global-input software will still attract antivirus scrutiny. |
+| Privacy/security | 9.3 | Local-first operation, narrow capabilities, restrictive CSP, input consent, no account, and separately consented minimal active-install counting are strong. Unsigned global-input software will still attract antivirus scrutiny. |
 | Cross-platform engineering | 8.9 | One Tauri codebase, verified Windows/Linux packages, dual-architecture macOS CI. Native Wayland input is compositor-limited and macOS runtime acceptance is external. |
 | Release operations | 8.5 | CI, updater signatures/manifests, optional publisher signing, runbook, SBOM, checksums and rollback guidance exist. Actual publisher credentials and clean-machine update evidence remain unresolved. |
 | Ecosystem | 6.2 | Validators and documentation exist, but there is no in-app pack importer, creator studio, or moderated catalog. |

@@ -34,8 +34,10 @@
     "smoke:dist": "node scripts/smoke-dist.mjs",
     "sbom": "cyclonedx-npm --output-file myperro-web.cdx.json --spec-version 1.6",
     "checksums": "node scripts/checksums.mjs",
+    "usage:test": "node --test services/usage-counter/test/*.test.mjs",
+    "usage:stats": "node scripts/usage-stats.mjs",
     "release:assets": "node scripts/prepare-release-assets.mjs",
-    "release:check": "npm run typecheck && npm test && npm run build && npm run site:build && npm run validate:packs && npm run smoke:dist && cargo test --manifest-path src-tauri/Cargo.toml"
+    "release:check": "npm run typecheck && npm test && npm run usage:test && npm run build && npm run site:build && npm run validate:packs && npm run smoke:dist && cargo test --manifest-path src-tauri/Cargo.toml"
   },
   "devDependencies": {
     "@cyclonedx/cyclonedx-npm": "^6.0.0",

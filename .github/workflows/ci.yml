@@ -21,6 +21,7 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
+      - run: npm run usage:test
       - run: npm run build
       - run: npm run validate:packs
       - run: npm run smoke:dist
@@ -69,6 +70,8 @@ jobs:
             artifact: linux-packages
     runs-on: ${{ matrix.os }}
     env:
+      # Repository variable, not a secret. Empty keeps anonymous counting inert.
+      IPET_USAGE_ENDPOINT: ${{ vars.IPET_USAGE_ENDPOINT }}
       HAS_APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE != '' }}
       HAS_WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE != '' }}
       WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
