@@ -2,7 +2,7 @@
 
 ## Executive verdict
 
-MyPerro `0.9.0-rc.5` is a credible public release candidate and a good fit for
+MyPerro `0.9.0-rc.6` is a credible public release candidate and a good fit for
 a free, accountless public beta. It is no longer a prototype: the current
 Windows executable and installer build and run, the same revision produces
 Linux AppImage and Debian packages and reaches `Pet ready` in a native startup
