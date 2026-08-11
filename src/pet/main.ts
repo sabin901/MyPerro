@@ -57,6 +57,9 @@ import {
 } from "./audio";
 import { loadSettings } from "./store";
 import { DEFAULT_SETTINGS, personalise, REMINDER_TEXT, type Settings } from "./settings";
+import {
+  INITIAL_UPDATE_CHECK_MS, UPDATE_CHECK_INTERVAL_MS, shouldPollForUpdates,
+} from "./updatePolicy";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -191,7 +194,7 @@ let frames = 0, lastFpsAt = performance.now(), fps = 0, eventCount = 0, eventRat
 async function boot() {
   bootStage = "loading saved settings";
   settings = await loadSettings();
-  stableReleaseChannel = !((await getVersion().catch(() => "0.0.0-dev")).includes("-"));
+  updatePollingEnabled = shouldPollForUpdates(await getVersion().catch(() => "0.0.0-dev"));
   needs = loadNeeds();
   interactionState = loadInteractionState();
   wirePetOnlyControls();
@@ -216,7 +219,7 @@ async function boot() {
   setInterval(pollCompanionInteraction, 5000);
   setInterval(updateVirtualPet, 60_000);
   setInterval(pollDesktopContext, 2000);
-  if (stableReleaseChannel) setInterval(pollAvailableUpdate, 6 * 60 * 60_000);
+  if (updatePollingEnabled) setInterval(pollAvailableUpdate, UPDATE_CHECK_INTERVAL_MS);
 
   engine = new BehaviourEngine(performance.now());
 
@@ -255,7 +258,7 @@ async function boot() {
   await listen<CareAction>("care-action", e => handleCare(e.payload));
   await listen<string>("preview-action", e => previewAction(e.payload));
   void pollDesktopContext();
-  if (stableReleaseChannel) setTimeout(() => { void pollAvailableUpdate(); }, 15_000);
+  if (updatePollingEnabled) setTimeout(() => { void pollAvailableUpdate(); }, INITIAL_UPDATE_CHECK_MS);
 
   wireDrag();
   wireHud();
@@ -940,14 +943,22 @@ async function pollDesktopContext() {
 }
 
 let lastUpdateNotice = "";
-let stableReleaseChannel = false;
+let updatePollingEnabled = false;
 async function pollAvailableUpdate() {
-  if (!stableReleaseChannel) return;
-  const update = await check().catch(() => null);
-  if (!update || update.version === lastUpdateNotice) return;
-  lastUpdateNotice = update.version;
-  flashNote(`MyPerro ${update.version} is ready. Press S to install the verified update.`);
-  showNativeReminder(`A verified MyPerro ${update.version} update is ready in Settings.`);
+  if (!updatePollingEnabled) return;
+  const update = await check({ timeout: 15_000 }).catch(async error => {
+    await logWarn(`Automatic update check failed: ${String(error)}`).catch(() => {});
+    return null;
+  });
+  if (!update) return;
+  try {
+    if (update.version === lastUpdateNotice) return;
+    lastUpdateNotice = update.version;
+    flashNote(`MyPerro ${update.version} is ready. Press S to install the verified update.`);
+    showNativeReminder(`A verified MyPerro ${update.version} update is ready in Settings.`);
+  } finally {
+    await update.close().catch(() => {});
+  }
 }
 
 function toggleQuietMode() {

@@ -80,8 +80,11 @@ Tag builds create signed updater bundles for Windows x64, Linux x64, macOS
 Apple Silicon and macOS Intel, then generate `latest.json` beside the public
 installers. Pull-request builds deliberately disable updater artifact creation
 because GitHub does not expose release secrets to untrusted PR code.
-Automatic background checks run only for stable versions (versions without a
-SemVer prerelease suffix); release candidates retain the manual Settings check.
+Automatic background checks run for every published signed version, including
+release candidates, 15 seconds after startup and every six hours thereafter.
+Developer and local builds stay off the public update channel. Discovery only
+shows a local message and optional native notification; installation still
+requires the user to open Settings and confirm the verified update.
 
 Before the first stable release, install the previous signed build on one clean
 machine per platform, publish the new draft, make the release public, use

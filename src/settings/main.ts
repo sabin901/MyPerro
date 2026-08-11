@@ -288,10 +288,11 @@ function wireProductionControls() {
 async function checkForUpdates() {
   const button = $("checkUpdates") as HTMLButtonElement;
   const status = $("updateStatus");
+  let update: Awaited<ReturnType<typeof check>> = null;
   button.disabled = true;
   status.textContent = "Checking the signed release channel…";
   try {
-    const update = await check();
+    update = await check({ timeout: 15_000 });
     if (!update) {
       status.textContent = "MyPerro is up to date.";
       return;
@@ -306,11 +307,14 @@ async function checkForUpdates() {
       if (event.event === "Finished") status.textContent = "Update verified and installed. Restarting…";
       else if (total > 0) status.textContent = `Downloading update… ${Math.min(100, Math.round(downloaded / total * 100))}%`;
     });
+    await update.close().catch(() => {});
+    update = null;
     await relaunch();
   } catch (error) {
     status.textContent = "The update service is not available yet. Try again later.";
     await logError(`Update check failed: ${String(error)}`).catch(() => {});
   } finally {
+    if (update) await update.close().catch(() => {});
     button.disabled = false;
   }
 }

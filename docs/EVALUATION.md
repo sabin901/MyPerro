@@ -2,7 +2,7 @@
 
 ## Executive verdict
 
-MyPerro `0.9.0-rc.8` is a credible public release candidate and a good fit for
+MyPerro `0.9.0-rc.9` is a credible public release candidate and a good fit for
 a free, accountless public beta. It is no longer a prototype: the current
 Windows executable and installer build and run, the same revision produces
 Linux AppImage and Debian packages and reaches `Pet ready` in a native startup
@@ -28,7 +28,7 @@ as a stable public-release operation.
 | Check | Result | Evidence |
 |---|---:|---|
 | TypeScript | Pass | `tsc --noEmit` on Windows and Linux |
-| Frontend logic | Pass | 16 Vitest files, 193 tests, including the presentation conflict matrix, roaming phases, direction, native-cel mirroring, and mirrored hit-testing primitives |
+| Frontend logic | Pass | 17 Vitest files, 196 tests, including the presentation conflict matrix, roaming phases, direction, native-cel mirroring, mirrored hit-testing primitives, and release-channel policy |
 | Interaction timing | Pass | explicit tests for 20-second requests, cooldown, initial anti-nag behavior, 60-second rest, and touch-to-wake |
 | Native privacy logic | Pass | 5 Rust tests, including no-keycode serialization and coarse video classification, on Windows |
 | Production frontend | Pass | Vite 8.2.1 build and packaged CSP/asset smoke test |
@@ -41,10 +41,10 @@ as a stable public-release operation.
 | Windows size control | Pass | accessibility tree exposes 65–200%; 150% produced a 288×288 pet window from the 192×192 base |
 | Windows Settings | Pass | free/accountless message, play-request controls, sound volume/preview, Wellbeing, actions, tabs and creator attribution visible |
 | Windows package | Pass | current x64 NSIS installer and SHA-256 manifest generated |
-| Linux native runtime | Pass in CI | rc.8 AppImage and Debian packages built successfully; package metadata, checksums, SBOM generation, and artifact upload passed |
+| Linux native runtime | Pass in CI | rc.8 AppImage and Debian packages built successfully; package metadata, checksums, SBOM generation, and artifact upload passed; rc.9 cross-platform CI is required before publication |
 | Linux packages | Pass | x64 AppImage and `.deb`; Debian metadata identifies Sabin Raut |
 | SBOM/checksums | Pass | CycloneDX web SBOM and SHA-256 manifests generated |
-| macOS artifacts | Pass in CI | rc.8 Apple Silicon and Intel DMGs mounted, matched the expected architecture, passed ad-hoc signature checks, launched to frontend readiness, and uploaded with checksums/SBOMs; Developer ID notarization and physical runtime acceptance remain external |
+| macOS artifacts | Pass in CI | rc.8 Apple Silicon and Intel DMGs mounted, matched the expected architecture, passed ad-hoc signature checks, launched to frontend readiness, and uploaded with checksums/SBOMs; rc.9 cross-platform CI, Developer ID notarization, and physical runtime acceptance remain external |
 
 The Rust warnings are inherited primarily from Tauri's Linux GTK3/WebKitGTK
 stack. `RUSTSEC-2024-0429` is explicitly documented in `audit.toml`; MyPerro
