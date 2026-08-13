@@ -71,8 +71,8 @@ key may still use its pre-rename filename; back it up offline, never commit it,
 and add it to GitHub without printing it:
 
 ```powershell
-$updaterKey = Join-Path $env:USERPROFILE '.tauri\myperro.key'
-$updaterPassword = Join-Path $env:USERPROFILE '.tauri\myperro.key.password'
+$updaterKey = Join-Path $env:USERPROFILE '.tauri\pawi.key'
+$updaterPassword = Join-Path $env:USERPROFILE '.tauri\pawi.key.password'
 Get-Content -Raw -LiteralPath $updaterKey | gh secret set TAURI_SIGNING_PRIVATE_KEY --repo sabin901/Pawi
 Get-Content -Raw -LiteralPath $updaterPassword | gh secret set TAURI_SIGNING_PRIVATE_KEY_PASSWORD --repo sabin901/Pawi
 ```

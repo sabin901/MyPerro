@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { downloadsFromRelease, platformFamily } from "./release-links.js";
+import { FALLBACK_RELEASE, downloadsFromRelease, platformFamily, releaseApiUrl } from "./release-links.js";
 
 test("never guesses a Mac architecture from its user agent", () => {
   assert.equal(platformFamily("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)", "MacIntel"), "mac");
@@ -23,4 +23,12 @@ test("maps both native Mac DMGs from a GitHub release", () => {
   assert.equal(release.tag, "v1.2.3");
   assert.equal(release.downloads["mac-arm"], "https://example.test/arm.dmg");
   assert.equal(release.downloads["mac-intel"], "https://example.test/intel.dmg");
+});
+
+test("requests the exact tested beta instead of an older latest release", () => {
+  assert.equal(
+    releaseApiUrl(),
+    `https://api.github.com/repos/sabin901/Pawi/releases/tags/${FALLBACK_RELEASE.tag}`,
+  );
+  assert.match(FALLBACK_RELEASE.downloads.windows, /\/Pawi_0\.9\.0-rc\.11_x64-setup\.exe$/);
 });

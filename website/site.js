@@ -1,4 +1,4 @@
-import { FALLBACK_RELEASE, downloadsFromRelease, platformFamily } from "./release-links.js";
+import { FALLBACK_RELEASE, downloadsFromRelease, platformFamily, releaseApiUrl } from "./release-links.js";
 
 let releaseInfo = FALLBACK_RELEASE;
 
@@ -49,7 +49,7 @@ function applyPlatformRecommendation() {
 
 applyReleaseLinks();
 applyPlatformRecommendation();
-fetch("https://api.github.com/repos/sabin901/Pawi/releases/latest", {
+fetch(releaseApiUrl(), {
   headers: { Accept: "application/vnd.github+json" },
 })
   .then(response => response.ok ? response.json() : Promise.reject(new Error(`GitHub returned ${response.status}`)))

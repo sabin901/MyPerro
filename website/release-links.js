@@ -9,6 +9,10 @@ export const FALLBACK_RELEASE = {
   },
 };
 
+export function releaseApiUrl(tag = FALLBACK_RELEASE.tag) {
+  return `https://api.github.com/repos/sabin901/Pawi/releases/tags/${encodeURIComponent(tag)}`;
+}
+
 const ASSET_PATTERNS = {
   windows: /_x64-setup\.exe$/i,
   "mac-arm": /_aarch64\.dmg$/i,

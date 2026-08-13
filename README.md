@@ -11,6 +11,8 @@ macOS · Windows · Linux (X11/XWayland) · MIT licensed · open source · no ac
 
 **Website and downloads:** https://sabin901.github.io/Pawi/
 
+**Public-beta checklist:** [BETA_TESTING.md](BETA_TESTING.md)
+
 ## What It Does
 
 - Pixel puppy overlay with transparent click-through hit testing.

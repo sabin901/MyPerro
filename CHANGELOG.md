@@ -7,7 +7,7 @@ Versioning once it reaches 1.0.
 
 ### Changed
 
-- Renamed the complete product from MyPerro to **Pawi** (pronounced “paw-ee”)
+- Established **Pawi** (pronounced “paw-ee”) as the complete product identity
   across the application, installers, website, updater, diagnostics, package
   metadata, documentation, CI artifacts, and brand assets.
 - Moved new application data to the Pawi namespace while retaining read-only

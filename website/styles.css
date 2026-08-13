@@ -202,16 +202,18 @@ h1 em { color: var(--rust); font-weight: 500; }
 
 .companions { background: var(--paper); }
 .companion-showcase { display: grid; grid-template-columns: minmax(360px, .9fr) minmax(420px, 1.1fr); max-width: 1320px; min-height: 650px; margin: auto; border: 1px solid var(--ink); background: var(--cream); }
-.companion-portrait { position: relative; display: grid; min-height: 650px; place-items: center; overflow: hidden; border-right: 1px solid var(--ink); background: var(--paper-deep); }
-.companion-portrait::before { position: absolute; inset: 0; content: ""; opacity: .45; background: linear-gradient(rgba(155,70,59,.09) 1px, transparent 1px), linear-gradient(90deg, rgba(155,70,59,.09) 1px, transparent 1px); background-size: 56px 56px; }
-.portrait-number { position: absolute; top: 25px; left: 28px; color: var(--rust); font: italic 28px/1 var(--serif); }
-.portrait-orbit { position: absolute; width: min(72%, 390px); aspect-ratio: 1; border: 1px solid rgba(34,48,41,.22); border-radius: 50%; }
+.companion-portrait { position: relative; display: grid; min-height: 650px; isolation: isolate; place-items: center; overflow: hidden; border-right: 1px solid var(--ink); background: var(--paper-deep); }
+.companion-scene { position: absolute; z-index: 0; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; filter: saturate(.78) contrast(.92) brightness(.94); transform: scale(1.015); transition: filter var(--mp-duration-normal) ease, transform var(--mp-duration-slow) var(--ease); }
+.companion-portrait::before { position: absolute; z-index: 1; inset: 0; content: ""; background: linear-gradient(180deg, rgba(250,242,226,.2), rgba(250,242,226,.04) 43%, rgba(34,48,41,.15)), radial-gradient(circle at 50% 58%, rgba(255,244,207,.34), transparent 44%); pointer-events: none; }
+.companion-portrait:hover .companion-scene { filter: saturate(.84) contrast(.95) brightness(.97); transform: scale(1.025); }
+.portrait-number { position: absolute; z-index: 4; top: 25px; left: 28px; padding: 8px 10px; color: var(--rust-dark); border: 1px solid rgba(250,242,226,.5); background: rgba(250,242,226,.76); box-shadow: 0 5px 20px rgba(34,48,41,.08); font: italic 28px/1 var(--serif); backdrop-filter: blur(8px); }
+.portrait-orbit { position: absolute; z-index: 1; width: min(72%, 390px); aspect-ratio: 1; border: 1px solid rgba(250,242,226,.42); border-radius: 50%; box-shadow: inset 0 0 60px rgba(255,244,207,.12); }
 .portrait-orbit::after { position: absolute; inset: 24px; border: 1px solid rgba(34,48,41,.12); border-radius: 50%; content: ""; }
 #spotlightImage, #spotlightCanvas { position: absolute; z-index: 2; width: min(70%, 390px); image-rendering: pixelated; filter: drop-shadow(0 18px 9px rgba(62,48,33,.17)); transform: scale(var(--companion-preview-scale, 1)); transition: opacity var(--mp-duration-fast) ease, transform var(--mp-duration-normal) var(--ease); view-transition-name: companion-art; }
 #spotlightCanvas { z-index: 3; opacity: 0; }
 #spotlightCanvas.is-ready { opacity: 1; }
 #spotlightImage.is-hidden { opacity: 0; }
-.portrait-caption { position: absolute; right: 26px; bottom: 24px; margin: 0; color: var(--ink-muted); font-size: 8px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.portrait-caption { position: absolute; z-index: 4; right: 26px; bottom: 24px; margin: 0; padding: 8px 10px; color: var(--ink); border: 1px solid rgba(250,242,226,.5); background: rgba(250,242,226,.76); box-shadow: 0 5px 20px rgba(34,48,41,.08); font-size: 8px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; backdrop-filter: blur(8px); }
 .live-dot { display: inline-block; width: 6px; height: 6px; margin-right: 7px; border-radius: 50%; background: var(--rust); box-shadow: 0 0 0 4px rgba(155,70,59,.12); }
 .companion-details { display: flex; min-width: 0; flex-direction: column; padding: clamp(36px, 5vw, 72px); }
 .companion-details h3 { margin-bottom: 14px; font-size: clamp(50px, 5vw, 74px); font-weight: 500; letter-spacing: -.045em; line-height: .95; view-transition-name: companion-name; }
@@ -409,6 +411,7 @@ footer nav { justify-self: end; }
   .demo-controls button { padding-inline: 2px; }
   .fact-register p { display: grid; gap: 4px; }
   .companion-portrait { min-height: 420px; }
+  .companion-scene { object-position: center; }
   #spotlightImage, #spotlightCanvas { width: 78%; }
   .companion-details { padding: 30px 22px; }
   .companion-details h3 { font-size: 50px; }
