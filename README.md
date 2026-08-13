@@ -1,4 +1,4 @@
-# MyPerro
+# Paw-weee
 
 An open-source virtual pet that watches your cursor, reacts to your work,
 reminds you to take breaks, asks to play, and quietly keeps you company.
