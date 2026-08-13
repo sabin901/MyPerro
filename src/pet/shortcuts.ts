@@ -15,7 +15,7 @@ interface ShortcutKey {
 
 /**
  * Single-letter controls only apply while the pet window is focused. Keeping
- * this local (rather than registering system-wide letters) prevents MyPerro
+ * this local (rather than registering system-wide letters) prevents Pawi
  * from stealing ordinary typing from the user's other applications.
  */
 export function petShortcutForKey(event: ShortcutKey): PetShortcut | null {

@@ -56,4 +56,4 @@ The current `decide()` is a flat priority chain with no timing, hysteresis or co
 
 ## Note on the plan file itself
 
-`MYPERRO_MASTER_PROGRAM_PLAN.md` is 2,401 lines and lives in the chat upload area, which sits outside the folder I can write binaries or large files into. **Please drag it into `~/Desktop/MyPerro/docs/`** so it's version-controlled alongside everything else. I've read and reconciled against it either way.
+`PAWI_MASTER_PROGRAM_PLAN.md` is 2,401 lines and lives in the chat upload area, which sits outside the folder I can write binaries or large files into. **Please drag it into `~/Desktop/Pawi/docs/`** so it's version-controlled alongside everything else. I've read and reconciled against it either way.

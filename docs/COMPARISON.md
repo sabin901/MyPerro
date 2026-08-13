@@ -1,11 +1,11 @@
-# MyPerro vs ComNyang — honest status
+# Pawi vs ComNyang — honest status
 
 > Historical pre-alpha baseline. This document is retained to show where the
 > project began; it does not describe the current release candidate. See
 > [EVALUATION.md](EVALUATION.md) and [COMPETITIVE_REVIEW.md](COMPETITIVE_REVIEW.md)
 > for the current verified release-candidate position.
 
-Asked plainly: **how functional is MyPerro compared to the app you showed me?**
+Asked plainly: **how functional is Pawi compared to the app you showed me?**
 
 Short answer: **as a product, near zero. As an engine, maybe 60% of the behaviour surface.** Those two numbers are both true and the gap between them is the whole story.
 
@@ -13,7 +13,7 @@ Short answer: **as a product, near zero. As an engine, maybe 60% of the behaviou
 
 ## The number that matters
 
-ComNyang is a finished $3.90 product that thousands of people have installed and left running all day. MyPerro has **never been launched, not once, by anybody**. Until someone runs `npm start` and sees a dog on their desktop, its real-world functionality is 0% regardless of how much code exists.
+ComNyang is a finished $3.90 product that thousands of people have installed and left running all day. Pawi has **never been launched, not once, by anybody**. Until someone runs `npm start` and sees a dog on their desktop, its real-world functionality is 0% regardless of how much code exists.
 
 Everything below is subject to that.
 
@@ -21,7 +21,7 @@ Everything below is subject to that.
 
 ## Feature by feature
 
-| ComNyang | MyPerro | Honest status |
+| ComNyang | Pawi | Honest status |
 |---|---|---|
 | Pixel pet on the desktop | Window + renderer written | **Unverified** — never launched |
 | Transparent, always-on-top | Configured in `tauri.conf.json` | **Unverified** — the #1 risk |
@@ -51,7 +51,7 @@ Everything below is subject to that.
 
 ---
 
-## Where MyPerro is genuinely ahead
+## Where Pawi is genuinely ahead
 
 Not many places, but they're real and they're structural:
 
@@ -63,7 +63,7 @@ Not many places, but they're real and they're structural:
 
 ## Where it's badly behind
 
-- **The art.** This is the entire product to a user, and MyPerro has a downscaled AI reference sheet with 20 unrelated poses and no animation frames. ComNyang has a professionally animated cat. Nothing else on this list matters as much.
+- **The art.** This is the entire product to a user, and Pawi has a downscaled AI reference sheet with 20 unrelated poses and no animation frames. ComNyang has a professionally animated cat. Nothing else on this list matters as much.
 - **Nothing is verified on a real desktop.**
 - **No sound, no settings, no reminders, no installer.**
 

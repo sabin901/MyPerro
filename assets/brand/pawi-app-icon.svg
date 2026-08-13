@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title description">
-  <title id="title">MyPerro application icon</title>
-  <desc id="description">The MyPerro companion mark on a cream tile with a deep green frame.</desc>
+  <title id="title">Pawi application icon</title>
+  <desc id="description">The Pawi companion mark on a cream tile with a deep green frame.</desc>
   <rect width="1024" height="1024" rx="224" fill="#16483c"/>
   <rect x="60" y="60" width="904" height="904" rx="178" fill="#faf2e2"/>
   <g transform="translate(128 102) scale(8)" fill="none" stroke="#9b463b" stroke-linecap="round" stroke-linejoin="round">

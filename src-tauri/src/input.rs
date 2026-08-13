@@ -42,6 +42,10 @@ pub fn mark_input_disabled(health: &SharedInputHealth) {
     health.store(INPUT_DISABLED, Ordering::Relaxed);
 }
 
+pub fn mark_input_unavailable(health: &SharedInputHealth) {
+    health.store(INPUT_UNAVAILABLE, Ordering::Relaxed);
+}
+
 /// A user-facing, privacy-safe status. It reports whether the OS listener is
 /// connected; it never exposes which keys, buttons, or applications were used.
 pub fn input_health(health: &SharedInputHealth) -> InputHealth {
@@ -59,7 +63,7 @@ pub fn input_health(health: &SharedInputHealth) -> InputHealth {
         INPUT_DISABLED => InputHealth {
             status: "disabled",
             summary: "Input reactions are off",
-            guidance: "Enable privacy-safe input reactions in Settings. MyPerro counts activity only; it never records keycodes.",
+            guidance: "Enable privacy-safe input reactions in Settings. Pawi counts activity only; it never records keycodes.",
         },
         _ => InputHealth {
             status: "starting",
@@ -71,7 +75,7 @@ pub fn input_health(health: &SharedInputHealth) -> InputHealth {
 
 #[cfg(target_os = "macos")]
 fn input_permission_guidance() -> &'static str {
-    "Grant MyPerro Accessibility permission in System Settings, then restart the app."
+    "Open System Settings → Privacy & Security → Accessibility, allow Pawi, then return here. Reactions reconnect without a restart."
 }
 
 #[cfg(target_os = "linux")]
@@ -81,7 +85,7 @@ fn input_permission_guidance() -> &'static str {
 
 #[cfg(target_os = "windows")]
 fn input_permission_guidance() -> &'static str {
-    "Restart MyPerro. If the issue remains, check endpoint-security or accessibility restrictions."
+    "Restart Pawi. If the issue remains, check endpoint-security or accessibility restrictions."
 }
 
 /// Aggregated activity. Counts and geometry only — no keycodes, ever.
@@ -157,6 +161,36 @@ pub fn new_accumulator() -> SharedAccumulator {
     Arc::new(Mutex::new(Accumulator::new()))
 }
 
+/// Query macOS Accessibility trust and optionally ask the operating system to
+/// show its native permission prompt. Apple documents the prompt as
+/// asynchronous, so callers must keep the user's opt-in and retry later.
+#[cfg(target_os = "macos")]
+pub fn input_permission_granted(prompt: bool) -> bool {
+    use core_foundation::{
+        base::{Boolean, TCFType},
+        boolean::CFBoolean,
+        dictionary::{CFDictionary, CFDictionaryRef},
+        string::{CFString, CFStringRef},
+    };
+
+    #[link(name = "ApplicationServices", kind = "framework")]
+    extern "C" {
+        static kAXTrustedCheckOptionPrompt: CFStringRef;
+        fn AXIsProcessTrustedWithOptions(options: CFDictionaryRef) -> Boolean;
+    }
+
+    unsafe {
+        let key = CFString::wrap_under_get_rule(kAXTrustedCheckOptionPrompt);
+        let options = CFDictionary::from_CFType_pairs(&[(key, CFBoolean::from(prompt))]);
+        AXIsProcessTrustedWithOptions(options.as_concrete_TypeRef()) != 0
+    }
+}
+
+#[cfg(not(target_os = "macos"))]
+pub fn input_permission_granted(_prompt: bool) -> bool {
+    true
+}
+
 impl Accumulator {
     fn note_mouse_move(&mut self, x: f64, y: f64) {
         let dx = x - self.cursor.0;
@@ -192,7 +226,12 @@ impl Accumulator {
 /// from the event-tap thread, which can abort the process on newer macOS builds.
 /// Counting `KeyDown` directly keeps the privacy contract and avoids that crash.
 #[cfg(target_os = "macos")]
-pub fn spawn_listener(acc: SharedAccumulator, health: SharedInputHealth, enabled: SharedInputEnabled) {
+pub fn spawn_listener(
+    acc: SharedAccumulator,
+    health: SharedInputHealth,
+    enabled: SharedInputEnabled,
+    running: Arc<AtomicBool>,
+) {
     use core_foundation::runloop::CFRunLoop;
     use core_graphics::event::{
         CGEventTap, CGEventTapLocation, CGEventTapOptions, CGEventTapPlacement, CGEventType,
@@ -257,10 +296,11 @@ pub fn spawn_listener(acc: SharedAccumulator, health: SharedInputHealth, enabled
             CFRunLoop::run_current,
         );
 
+        running.store(false, Ordering::SeqCst);
         if result.is_err() {
-            health.store(INPUT_UNAVAILABLE, Ordering::Relaxed);
+            mark_input_unavailable(&health);
             eprintln!(
-                "[myperro] input monitoring unavailable. \
+                "[pawi] input monitoring unavailable. \
                  Running in degraded mode — grant Accessibility permission to enable reactions."
             );
         }
@@ -269,7 +309,12 @@ pub fn spawn_listener(acc: SharedAccumulator, health: SharedInputHealth, enabled
 
 /// Spawn the OS input listener. Blocks its own thread forever.
 #[cfg(not(target_os = "macos"))]
-pub fn spawn_listener(acc: SharedAccumulator, health: SharedInputHealth, enabled: SharedInputEnabled) {
+pub fn spawn_listener(
+    acc: SharedAccumulator,
+    health: SharedInputHealth,
+    enabled: SharedInputEnabled,
+    running: Arc<AtomicBool>,
+) {
     std::thread::spawn(move || {
         let callback_health = health.clone();
         let result = rdev::listen(move |event| {
@@ -296,10 +341,11 @@ pub fn spawn_listener(acc: SharedAccumulator, health: SharedInputHealth, enabled
             }
         });
 
+        running.store(false, Ordering::SeqCst);
         if let Err(e) = result {
-            health.store(INPUT_UNAVAILABLE, Ordering::Relaxed);
+            mark_input_unavailable(&health);
             eprintln!(
-                "[myperro] input monitoring unavailable ({:?}). \
+                "[pawi] input monitoring unavailable ({:?}). \
                  Running in degraded mode — grant Accessibility permission to enable reactions.",
                 e
             );

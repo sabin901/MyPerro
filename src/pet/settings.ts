@@ -59,6 +59,8 @@ export interface Settings {
   startAtLogin: boolean;
   inputMonitoringEnabled: boolean;
   notificationsEnabled: boolean;
+  /** Explicit opt-in to one anonymous active-install heartbeat per day. */
+  anonymousUsageEnabled: boolean;
   onboardingComplete: boolean;
   peekMode: boolean;
   alwaysOnTop: boolean;
@@ -66,7 +68,7 @@ export interface Settings {
   appearance: Appearance;
 }
 
-export const CURRENT_SCHEMA = 5;
+export const CURRENT_SCHEMA = 6;
 export const BUILT_IN_BREEDS = [
   "shiba-inu", "pomeranian", "husky", "german-shepherd", "dalmatian", "lhasa-apso",
   "calico-cat", "midnight-cat", "cream-tabby",
@@ -181,6 +183,7 @@ export const DEFAULT_SETTINGS: Settings = {
   startAtLogin: false,
   inputMonitoringEnabled: false,
   notificationsEnabled: false,
+  anonymousUsageEnabled: false,
   onboardingComplete: false,
   peekMode: false,
   alwaysOnTop: true,
@@ -245,6 +248,7 @@ export function normaliseSettings(raw: unknown): Settings {
     startAtLogin: bool(r.startAtLogin, d.startAtLogin),
     inputMonitoringEnabled: bool(r.inputMonitoringEnabled, d.inputMonitoringEnabled),
     notificationsEnabled: bool(r.notificationsEnabled, d.notificationsEnabled),
+    anonymousUsageEnabled: bool(r.anonymousUsageEnabled, d.anonymousUsageEnabled),
     onboardingComplete: bool(r.onboardingComplete, d.onboardingComplete),
     peekMode: bool(r.peekMode, d.peekMode),
     alwaysOnTop: bool(r.alwaysOnTop, d.alwaysOnTop),

@@ -1,15 +1,17 @@
-# MyPerro production evaluation — 11 August 2026
+# Pawi production evaluation — 11 August 2026
 
 ## Executive verdict
 
-MyPerro `0.9.0-rc.10` is a credible public release candidate and a good fit for
+Pawi `0.9.0-rc.10` is a credible public release candidate and a good fit for
 a free, accountless public beta. It is no longer a prototype: the current
 Windows executable and installer build and run, the same revision produces
 Linux AppImage and Debian packages and reaches `Pet ready` in a native startup
 smoke test, and CI now builds separate Apple Silicon and Intel macOS DMGs.
 
-It is deliberately local-only: there is no sign-up, subscription, payment,
-cloud account, telemetry, or runtime service dependency. The desktop surface
+It is deliberately local-first: there is no sign-up, subscription, payment,
+cloud account, behavioral analytics, or required runtime service dependency.
+An optional active-install count is explicit, off by default, and never receives
+local activity. The desktop surface
 contains no Care panel or action button; feed, water, play, and rest remain as
 focused first-letter, right-click, and tray interactions because they are core
 companion behaviors.
@@ -47,7 +49,7 @@ as a stable public-release operation.
 | macOS artifacts | Pass in CI | rc.9 Apple Silicon and Intel DMGs mounted, matched the expected architecture, passed ad-hoc signature checks, and launched to frontend readiness; Developer ID notarization and physical runtime acceptance remain external |
 
 The Rust warnings are inherited primarily from Tauri's Linux GTK3/WebKitGTK
-stack. `RUSTSEC-2024-0429` is explicitly documented in `audit.toml`; MyPerro
+stack. `RUSTSEC-2024-0429` is explicitly documented in `audit.toml`; Pawi
 does not call the affected iterator API. The warnings remain upstream technical
 debt and must be revisited when the desktop stack migrates.
 
@@ -58,7 +60,7 @@ debt and must be revisited when the desktop stack migrates.
 - After clicking the companion, controls are F Feed, W Water, P Play, R Rest,
   N Peek, D Dance, T Typing, B Bark/meow, J Jump, and S Settings.
   They are deliberately scoped to the focused
-  pet window so MyPerro never steals ordinary typing from other applications.
+  pet window so Pawi never steals ordinary typing from other applications.
 - Right-click and the tray remain mouse-only/accessibility fallback paths.
 - “Ask to play” is optional and configurable from 5 to 240 quiet minutes; the
   default is 30 minutes and a new installation is not nagged immediately.
@@ -117,14 +119,14 @@ debt and must be revisited when the desktop stack migrates.
 | Character art | 8.7 | Clean, transparent and semantically mapped across nine companions; neutral poses are prop-free and generic pupil artifacts are removed. It still uses fewer principal drawings than bespoke commercial frame-by-frame production. |
 | Motion quality | 8.8 | A single presentation director now prevents sliding care poses and timer conflicts; roaming has anticipate, travel and settle phases, plus a visible play roll. More unique in-between drawings would still improve transition continuity. |
 | Settings/accessibility | 9.0 | Clear information architecture, native keyboard tabs, auto-save status, range controls, reduced motion and large targets. Screen-reader/high-contrast audits still need real OS coverage. |
-| Privacy/security | 9.3 | Local-only, narrow capabilities, restrictive CSP, consent, no account and no telemetry are excellent. Unsigned global-input software will still attract antivirus scrutiny. |
+| Privacy/security | 9.3 | Local-first operation, narrow capabilities, restrictive CSP, input consent, no account, and separately consented minimal active-install counting are strong. Unsigned global-input software will still attract antivirus scrutiny. |
 | Cross-platform engineering | 8.9 | One Tauri codebase, verified Windows/Linux packages, dual-architecture macOS CI. Native Wayland input is compositor-limited and macOS runtime acceptance is external. |
 | Release operations | 8.5 | CI, updater signatures/manifests, optional publisher signing, runbook, SBOM, checksums and rollback guidance exist. Actual publisher credentials and clean-machine update evidence remain unresolved. |
 | Ecosystem | 6.2 | Validators and documentation exist, but there is no in-app pack importer, creator studio, or moderated catalog. |
 
 ## Competitive position
 
-MyPerro is stronger than mascot-only competitors in privacy, feature visibility,
+Pawi is stronger than mascot-only competitors in privacy, feature visibility,
 free/accountless distribution, Linux packaging, and built-in companion
 interactions. It is broadly competitive with ComNyang's input-reaction and
 productivity concept while being easier to audit because it is local-only.

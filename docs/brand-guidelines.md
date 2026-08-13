@@ -1,16 +1,18 @@
-# MyPerro brand guidelines
+# Pawi brand guidelines
 
 ## Brand idea
 
-MyPerro is a small life beside the workday: warm, observant, private, and quietly playful. The visual system combines vintage editorial structure with the clarity expected from modern desktop software.
+Pawi is a small life beside the workday: warm, observant, private, and quietly playful. The visual system combines vintage editorial structure with the clarity expected from modern desktop software.
+
+Pronunciation: **paw-ee**. Always write the product name as **Pawi**—capital P, with no internal capitalization or punctuation.
 
 ## Logo
 
-The companion-face mark is the single identifying symbol for MyPerro. Its ears allow it to represent the complete dog-and-cat family without becoming a portrait of one breed.
+The companion-face mark is the single identifying symbol for Pawi. Its ears allow it to represent the complete dog-and-cat family without becoming a portrait of one breed.
 
-- Use `assets/brand/myperro-mark.svg` for editorial and web surfaces.
-- Use `assets/brand/myperro-app-icon.svg` for installed applications and installers.
-- Use `assets/brand/myperro-tray-template.svg` for small monochrome system-tray contexts.
+- Use `assets/brand/pawi-mark.svg` for editorial and web surfaces.
+- Use `assets/brand/pawi-app-icon.svg` for installed applications and installers.
+- Use `assets/brand/pawi-tray-template.svg` for small monochrome system-tray contexts.
 - Preserve the mark's proportions, approved colours, and clear space.
 - Do not add gradients, shadows, rotation, extra outlines, or breed-specific details.
 - Minimum mark size: 24px digital; minimum full wordmark width: 120px.
@@ -41,4 +43,4 @@ Motion communicates a cause: selection, navigation, arrival, care, or response. 
 
 ## Voice
 
-Write with warmth and restraint. Prefer specific, calm language over hype. MyPerro is described as a companion, never a service tier, engagement mechanic, or artificial assistant.
+Write with warmth and restraint. Prefer specific, calm language over hype. Pawi is described as a companion, never a service tier, engagement mechanic, or artificial assistant.

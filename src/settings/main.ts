@@ -39,6 +39,11 @@ interface InputHealth {
   guidance: string;
 }
 
+interface UsageResult {
+  status: "disabled" | "not_configured" | "throttled" | "sent" | "deleted";
+  nextAllowedAt?: number | null;
+}
+
 /** Read a form field, tolerating blanks. */
 const text = (id: string) => ($(id) as HTMLInputElement).value;
 const int = (id: string) => {
@@ -88,6 +93,7 @@ function fill(s: Settings) {
   ($("startAtLogin") as HTMLInputElement).checked = s.startAtLogin;
   ($("inputMonitoringEnabled") as HTMLInputElement).checked = s.inputMonitoringEnabled;
   ($("notificationsEnabled") as HTMLInputElement).checked = s.notificationsEnabled;
+  ($("anonymousUsageEnabled") as HTMLInputElement).checked = s.anonymousUsageEnabled;
   onboardingComplete = s.onboardingComplete;
   renderBreedCards(s.appearance.breed);
 }
@@ -125,6 +131,7 @@ function collect(): Settings {
     startAtLogin: checked("startAtLogin"),
     inputMonitoringEnabled: checked("inputMonitoringEnabled"),
     notificationsEnabled: checked("notificationsEnabled"),
+    anonymousUsageEnabled: checked("anonymousUsageEnabled"),
     onboardingComplete,
     appearance: {
       breed: ($("breed") as HTMLSelectElement).value,
@@ -144,6 +151,7 @@ async function main() {
   fill(loaded);
   wireTabs();
   wireOnboarding();
+  wireAnonymousUsage();
   wireProductionControls();
   currentNeeds = loadNeeds();
   renderNeeds(currentNeeds);
@@ -226,26 +234,62 @@ function wireOnboarding() {
   const finish = async (enable: boolean) => {
     onboardingComplete = true;
     ($("inputMonitoringEnabled") as HTMLInputElement).checked = enable;
+    ($("anonymousUsageEnabled") as HTMLInputElement).checked = checked("onboardingUsageEnabled");
     if (enable) {
-      await invoke("enable_input_monitoring").catch(async error => {
+      await invoke<boolean>("enable_input_monitoring").catch(async error => {
         await logError(`Could not start input monitoring: ${String(error)}`).catch(() => {});
       });
     }
     await persistSettings(false);
+    await syncAnonymousUsage();
     dialog.close();
     window.scrollTo({ top: 0, behavior: "auto" });
     await logInfo(`Onboarding completed; input reactions ${enable ? "enabled" : "disabled"}`).catch(() => {});
   };
   $("enableReactions").addEventListener("click", () => { void finish(true); });
   $("skipReactions").addEventListener("click", () => { void finish(false); });
-  $("replayOnboarding").addEventListener("click", () => dialog.showModal());
+  $("replayOnboarding").addEventListener("click", () => {
+    ($("onboardingUsageEnabled") as HTMLInputElement).checked = checked("anonymousUsageEnabled");
+    dialog.showModal();
+  });
 
   const ua = navigator.userAgent.toLowerCase();
   $("onboardingPlatform").textContent = ua.includes("mac")
-    ? "macOS will ask for Accessibility permission so MyPerro can count activity while other apps are active."
+    ? "macOS will ask for Accessibility permission so Pawi can count activity while other apps are active."
     : ua.includes("linux")
       ? "Global reactions work on X11 and XWayland. Native Wayland may intentionally restrict them."
       : "Windows may ask your security software to allow the local activity listener.";
+}
+
+function wireAnonymousUsage() {
+  $("anonymousUsageEnabled").addEventListener("change", () => { void syncAnonymousUsage(); });
+  renderAnonymousUsageStatus(checked("anonymousUsageEnabled") ? "throttled" : "disabled");
+  void syncAnonymousUsage();
+}
+
+async function syncAnonymousUsage() {
+  const enabled = checked("anonymousUsageEnabled");
+  renderAnonymousUsageStatus(enabled ? "throttled" : "disabled");
+  try {
+    const result = enabled
+      ? await invoke<UsageResult>("send_usage_heartbeat", { enabled: true })
+      : await invoke<UsageResult>("disable_usage_count");
+    renderAnonymousUsageStatus(result.status);
+  } catch (error) {
+    $("anonymousUsageStatus").textContent = "Could not reach the counter. The app will retry later; no activity or personal content is included.";
+    await logError(`Anonymous usage count failed: ${String(error)}`).catch(() => {});
+  }
+}
+
+function renderAnonymousUsageStatus(status: UsageResult["status"]) {
+  const copy: Record<UsageResult["status"], string> = {
+    disabled: "Off. No usage heartbeat is sent.",
+    not_configured: "Enabled locally, but this build has no counting service configured.",
+    throttled: "On. The anonymous daily count is up to date.",
+    sent: "On. This installation was counted anonymously today.",
+    deleted: "Off. The anonymous identifier and server record were deleted.",
+  };
+  $("anonymousUsageStatus").textContent = copy[status];
 }
 
 function wireProductionControls() {
@@ -260,10 +304,16 @@ function wireProductionControls() {
   });
   $("inputMonitoringEnabled").addEventListener("change", async () => {
     if (checked("inputMonitoringEnabled")) {
-      await invoke("enable_input_monitoring").catch(async error => {
+      const started = await invoke<boolean>("enable_input_monitoring").catch(async error => {
         ($("inputMonitoringEnabled") as HTMLInputElement).checked = false;
         await logError(`Could not enable input monitoring: ${String(error)}`).catch(() => {});
+        return false;
       });
+      if (!started) {
+        const badge = $("saved");
+        badge.textContent = "Allow Pawi in Mac Accessibility to finish setup";
+        badge.className = "saved error";
+      }
     } else {
       await invoke("disable_input_monitoring").catch(async error => {
         await logError(`Could not disable input monitoring: ${String(error)}`).catch(() => {});
@@ -283,6 +333,7 @@ function wireProductionControls() {
   });
   $("exportDiagnostics").addEventListener("click", () => { void exportDiagnostics(); });
   $("checkUpdates").addEventListener("click", () => { void checkForUpdates(); });
+  $("openInputPermission").addEventListener("click", () => { void invoke("open_input_permission_settings"); });
 }
 
 async function checkForUpdates() {
@@ -294,11 +345,11 @@ async function checkForUpdates() {
   try {
     update = await check({ timeout: 15_000 });
     if (!update) {
-      status.textContent = "MyPerro is up to date.";
+      status.textContent = "Pawi is up to date.";
       return;
     }
     status.textContent = `Version ${update.version} is ready.`;
-    if (!window.confirm(`Install MyPerro ${update.version} now? The app will restart.`)) return;
+    if (!window.confirm(`Install Pawi ${update.version} now? The app will restart.`)) return;
     let downloaded = 0;
     let total = 0;
     await update.downloadAndInstall(event => {
@@ -345,7 +396,7 @@ async function exportDiagnostics() {
     const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" }));
     const link = document.createElement("a");
     link.href = url;
-    link.download = `myperro-diagnostics-${new Date().toISOString().slice(0, 10)}.json`;
+    link.download = `pawi-diagnostics-${new Date().toISOString().slice(0, 10)}.json`;
     link.click();
     URL.revokeObjectURL(url);
     const badge = $("saved");
@@ -371,20 +422,25 @@ async function renderAppInfo() {
   const userAgent = navigator.userAgent.toLowerCase();
   const platform = userAgent.includes("windows") ? "Windows" :
     userAgent.includes("mac") ? "macOS" : userAgent.includes("linux") ? "Linux" : "this platform";
+  $("openInputPermission").hidden = platform !== "macOS";
   $("platformNote").textContent = platform === "Linux"
     ? "Linux support: X11 and XWayland are supported; native Wayland global input reactions depend on the compositor."
     : `${platform} desktop support is enabled in this build.`;
 
   const refresh = async () => {
     try {
-      const health = await invoke<InputHealth>("input_health");
+      let health = await invoke<InputHealth>("input_health");
+      if (platform === "macOS" && checked("inputMonitoringEnabled") && health.status === "unavailable") {
+        await invoke<boolean>("retry_input_monitoring").catch(() => false);
+        health = await invoke<InputHealth>("input_health");
+      }
       $("inputDiagnostic").dataset.status = health.status;
       $("inputStatus").textContent = health.summary;
       $("inputGuidance").textContent = health.guidance;
     } catch {
       $("inputDiagnostic").dataset.status = "unavailable";
       $("inputStatus").textContent = "Compatibility check unavailable";
-      $("inputGuidance").textContent = "Restart MyPerro and open Settings again.";
+      $("inputGuidance").textContent = "Restart Pawi and open Settings again.";
     }
   };
   await refresh();
@@ -393,7 +449,8 @@ async function renderAppInfo() {
 
 function wireTabs() {
   const buttons = [...document.querySelectorAll<HTMLButtonElement>("button[data-tab]")];
-  const stored = localStorage.getItem("myperro.settings-tab");
+  const stored = localStorage.getItem("pawi.settings-tab")
+    ?? localStorage.getItem("myperro.settings-tab");
   const initial = buttons.some(button => button.dataset.tab === stored) ? stored! : "home";
   const activate = (tab: string, animate = true) => {
     buttons.forEach(button => {
@@ -406,7 +463,7 @@ function wireTabs() {
       pane.setAttribute("role", "tabpanel");
       pane.setAttribute("aria-labelledby", `tab-${pane.dataset.pane}`);
     });
-    localStorage.setItem("myperro.settings-tab", tab);
+    localStorage.setItem("pawi.settings-tab", tab);
     window.scrollTo({ top: 0, behavior: animate ? "smooth" : "auto" });
   };
   buttons.forEach(button => button.addEventListener("click", () => activate(button.dataset.tab!)));

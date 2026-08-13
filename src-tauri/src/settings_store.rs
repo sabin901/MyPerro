@@ -11,7 +11,9 @@ use std::path::PathBuf;
 use tauri::{AppHandle, Manager};
 use tauri_plugin_autostart::ManagerExt;
 
-const LEGACY_IDENTIFIER: &str = "dev.myperro.desktop";
+// Pawi used both identifiers before the rename. Keep these read-only migration
+// sources so an existing companion, care state, and login preference survive.
+const LEGACY_IDENTIFIERS: [&str; 2] = ["com.sabinraut.myperro", "dev.myperro.desktop"];
 
 fn settings_path(app: &AppHandle) -> Result<PathBuf, String> {
     let dir = app
@@ -29,16 +31,21 @@ pub fn load_settings(app: AppHandle) -> Result<Value, String> {
     let path = settings_path(&app)?;
     let backup = path.with_extension("json.bak");
     if !path.exists() && backup.exists() {
-        fs::rename(&backup, &path)
-            .map_err(|e| format!("cannot recover settings backup: {e}"))?;
+        fs::rename(&backup, &path).map_err(|e| format!("cannot recover settings backup: {e}"))?;
     }
     let source = if path.exists() {
         path.clone()
     } else {
-        let legacy = path
+        let legacy_root = path
             .parent()
             .and_then(|parent| parent.parent())
-            .map(|root| root.join(LEGACY_IDENTIFIER).join("settings.json"));
+            .map(PathBuf::from);
+        let legacy = legacy_root.and_then(|root| {
+            LEGACY_IDENTIFIERS
+                .iter()
+                .map(|identifier| root.join(identifier).join("settings.json"))
+                .find(|candidate| candidate.exists())
+        });
         match legacy.filter(|candidate| candidate.exists()) {
             Some(legacy) => {
                 // Preserve the old file as a rollback copy. A failed migration

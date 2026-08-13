@@ -34,6 +34,12 @@ describe("normaliseSettings", () => {
     expect(normaliseSettings({ soundVolume: .55 }).soundVolume).toBe(.55);
   });
 
+  it("keeps anonymous active-install counting explicitly opt-in", () => {
+    expect(DEFAULT_SETTINGS.anonymousUsageEnabled).toBe(false);
+    expect(normaliseSettings({ anonymousUsageEnabled: true }).anonymousUsageEnabled).toBe(true);
+    expect(normaliseSettings({ anonymousUsageEnabled: "yes" }).anonymousUsageEnabled).toBe(false);
+  });
+
   it("rejects a bad hour but keeps a good one", () => {
     expect(normaliseSettings({ quietFrom: 25 }).quietFrom).toBeNull();
     expect(normaliseSettings({ quietFrom: 22 }).quietFrom).toBe(22);

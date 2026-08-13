@@ -41,19 +41,19 @@ const signedPlatform = (folder, bundleSuffix, platform, outputName) => {
 
 // Human-facing installers keep Tauri's architecture-qualified filenames.
 for (const file of files.filter(file => /\.(dmg|exe|AppImage|deb)$/.test(file))) copy(file);
-const sbom = files.find(file => file.endsWith("myperro-web.cdx.json"));
-if (sbom) copy(sbom, "myperro-web.cdx.json");
+const sbom = files.find(file => file.endsWith("pawi-web.cdx.json"));
+if (sbom) copy(sbom, "pawi-web.cdx.json");
 
 const platforms = {
-  "darwin-aarch64": signedPlatform("macos-apple-silicon", ".app.tar.gz", "darwin-aarch64", `MyPerro_${version}_aarch64.app.tar.gz`),
-  "darwin-x86_64": signedPlatform("macos-intel", ".app.tar.gz", "darwin-x86_64", `MyPerro_${version}_x64.app.tar.gz`),
+  "darwin-aarch64": signedPlatform("macos-apple-silicon", ".app.tar.gz", "darwin-aarch64", `Pawi_${version}_aarch64.app.tar.gz`),
+  "darwin-x86_64": signedPlatform("macos-intel", ".app.tar.gz", "darwin-x86_64", `Pawi_${version}_x64.app.tar.gz`),
   "windows-x86_64": signedPlatform("windows-nsis", ".exe", "windows-x86_64"),
   "linux-x86_64": signedPlatform("linux-packages", ".AppImage", "linux-x86_64"),
 };
 
 writeFileSync(join(outputDir, "latest.json"), `${JSON.stringify({
   version,
-  notes: `MyPerro ${rawTag} — verified cross-platform update.`,
+  notes: `Pawi ${rawTag} — verified cross-platform update.`,
   pub_date: new Date().toISOString(),
   platforms,
 }, null, 2)}\n`);

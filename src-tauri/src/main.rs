@@ -5,6 +5,7 @@ mod agent_status;
 mod desktop_context;
 mod input;
 mod settings_store;
+mod usage;
 
 use serde::Serialize;
 use std::sync::{
@@ -31,24 +32,30 @@ struct InputServiceState {
     health: input::SharedInputHealth,
     accumulator: input::SharedAccumulator,
     enabled: input::SharedInputEnabled,
-    started: AtomicBool,
+    started: std::sync::Arc<AtomicBool>,
 }
 
-fn start_input_service(state: &InputServiceState) {
+fn start_input_service(state: &InputServiceState, prompt_for_permission: bool) -> bool {
     state.enabled.store(true, Ordering::SeqCst);
+    if !input::input_permission_granted(prompt_for_permission) {
+        input::mark_input_unavailable(&state.health);
+        return false;
+    }
     input::mark_input_starting(&state.health);
     if state
         .started
         .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
         .is_err()
     {
-        return;
+        return true;
     }
     input::spawn_listener(
         state.accumulator.clone(),
         state.health.clone(),
         state.enabled.clone(),
+        state.started.clone(),
     );
+    true
 }
 
 /// Self-reported CPU and memory, so Phase 1 exit criteria can be measured
@@ -113,14 +120,33 @@ fn input_health(state: tauri::State<'_, InputServiceState>) -> input::InputHealt
 }
 
 #[tauri::command]
-fn enable_input_monitoring(state: tauri::State<'_, InputServiceState>) {
-    start_input_service(&state);
+fn enable_input_monitoring(state: tauri::State<'_, InputServiceState>) -> bool {
+    start_input_service(&state, true)
+}
+
+#[tauri::command]
+fn retry_input_monitoring(state: tauri::State<'_, InputServiceState>) -> bool {
+    start_input_service(&state, false)
 }
 
 #[tauri::command]
 fn disable_input_monitoring(state: tauri::State<'_, InputServiceState>) {
     state.enabled.store(false, Ordering::SeqCst);
     input::mark_input_disabled(&state.health);
+}
+
+#[tauri::command]
+fn open_input_permission_settings() -> Result<bool, String> {
+    #[cfg(target_os = "macos")]
+    {
+        std::process::Command::new("open")
+            .arg("x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")
+            .spawn()
+            .map_err(|error| format!("cannot open macOS Accessibility settings: {error}"))?;
+        return Ok(true);
+    }
+    #[cfg(not(target_os = "macos"))]
+    Ok(false)
 }
 
 #[derive(Serialize)]
@@ -148,7 +174,7 @@ fn diagnostic_report(app: tauri::AppHandle) -> Result<DiagnosticReport, String> 
         .app_log_dir()
         .map_err(|e| format!("no log directory: {e}"))?;
     Ok(DiagnosticReport {
-        app: "MyPerro",
+        app: "Pawi",
         version: app.package_info().version.to_string(),
         author: "Sabin Raut",
         os: std::env::consts::OS,
@@ -163,7 +189,7 @@ fn main() {
         health: input::new_input_health(),
         accumulator: input::new_accumulator(),
         enabled: std::sync::Arc::new(AtomicBool::new(false)),
-        started: AtomicBool::new(false),
+        started: std::sync::Arc::new(AtomicBool::new(false)),
     };
     tauri::Builder::default()
         // Keep this first: the plugin must claim the process before windows,
@@ -197,13 +223,17 @@ fn main() {
             set_pass_through,
             input_health,
             enable_input_monitoring,
+            retry_input_monitoring,
             disable_input_monitoring,
+            open_input_permission_settings,
             diagnostic_report,
             desktop_context::desktop_context,
             agent_status::load_agent_status,
             agent_status::clear_agent_status,
             settings_store::load_settings,
-            settings_store::save_settings
+            settings_store::save_settings,
+            usage::send_usage_heartbeat,
+            usage::disable_usage_count
         ])
         .setup(|app| {
             // ── tray ──────────────────────────────────────────────────────
@@ -232,7 +262,7 @@ fn main() {
             let tray_builder = TrayIconBuilder::new()
                 .icon(tray_icon)
                 .menu(&menu)
-                .tooltip("MyPerro");
+                .tooltip("Pawi");
 
             #[cfg(target_os = "macos")]
             let tray_builder = tray_builder.icon_as_template(true);
@@ -282,7 +312,7 @@ fn main() {
                 .unwrap_or(false);
             let input_state = app.state::<InputServiceState>();
             if consented {
-                start_input_service(&input_state);
+                start_input_service(&input_state, false);
             } else {
                 show_settings_window(app.handle());
             }
@@ -354,17 +384,17 @@ fn main() {
             Ok(())
         })
         .run(tauri::generate_context!())
-        .expect("error while running MyPerro");
+        .expect("error while running Pawi");
 }
 
 /// A fixed-path, opt-in readiness marker used only by packaged-app CI.
 /// Normal installations never set the environment gate and never write it.
 #[tauri::command]
 fn mark_startup_ready() -> Result<bool, String> {
-    if std::env::var("MYPERRO_CI_SMOKE").as_deref() != Ok("1") {
+    if std::env::var("PAWI_CI_SMOKE").as_deref() != Ok("1") {
         return Ok(false);
     }
-    let marker = std::env::temp_dir().join("myperro-startup-ready");
+    let marker = std::env::temp_dir().join("pawi-startup-ready");
     std::fs::write(&marker, b"ready\n")
         .map_err(|error| format!("cannot write startup marker: {error}"))?;
     Ok(true)

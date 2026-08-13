@@ -1,4 +1,4 @@
-# MyPerro Competitive Review — 10 Aug 2026
+# Pawi Competitive Review — 10 Aug 2026
 
 Current public products reviewed:
 
@@ -13,7 +13,7 @@ Current public products reviewed:
 
 ## Position
 
-| Area | MyPerro | Competitive position |
+| Area | Pawi | Competitive position |
 |---|---|---|
 | Reactive desktop motion | Cursor, drag, shake, pet, type, overheat, scroll, reminders, AI states | Strong breadth; commercial transition polish still trails ComNyang |
 | Feature visibility | First-run guide, first-letter controls, right-click/tray actions, complete animation tour | Strong without adding permanent controls around the pet |
@@ -22,7 +22,7 @@ Current public products reviewed:
 | Productivity | Pomodoro, stretch/water/message reminders, pinned note | Strong |
 | Desktop presence | 65–200% size, opacity, always-on-top, peek, drag, wander | Competitive after current pass |
 | Sound/personality | Adjustable cute care cues, play-request calls, post-meal dance and post-water shake | Strong foundation; recorded voice packs and richer choreography remain open opportunities |
-| Privacy | Local activity counts only; no keycodes or telemetry | Leading and verifiable |
+| Privacy | No keycodes or behavioral analytics; active-install count is minimal, explicit, and off by default | Leading and verifiable |
 | Platform reach | Windows/macOS plus Linux X11/XWayland build path | Broader than ComNyang; native Wayland remains experimental |
 | Personal creation | Presets, colours, markings | Behind Deskie AI creation and VPet Workshop |
 | World interaction | Wander and edge peek | Behind products that perch on arbitrary app windows |
@@ -37,6 +37,6 @@ Current public products reviewed:
 4. Hardware QA matrix for macOS, Windows scaling, Linux X11, GNOME Wayland,
    KDE Wayland, and NVIDIA WebKitGTK.
 
-MyPerro is now a strong open-source release candidate rather than a prototype.
+Pawi is now a strong open-source release candidate rather than a prototype.
 Its next leap is professional frame-by-frame animation, an ecosystem, and deeper
 desktop physics—not another settings page.

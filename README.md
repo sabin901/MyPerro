@@ -1,13 +1,17 @@
-# Paw-weee
+# Pawi
+
+**Pronounced “paw-ee.”**
 
 An open-source virtual pet that watches your cursor, reacts to your work,
 reminds you to take breaks, asks to play, and quietly keeps you company.
 
 **Created by Sabin Raut.**
 
-macOS · Windows · Linux (X11/XWayland) · MIT licensed · open source · no telemetry · no account
+macOS · Windows · Linux (X11/XWayland) · MIT licensed · open source · no account · no hidden telemetry
 
 **Website and downloads:** https://sabin901.github.io/Pawi/
+
+**Public-beta checklist:** [BETA_TESTING.md](BETA_TESTING.md)
 
 ## What It Does
 
@@ -55,7 +59,7 @@ npm run art:dogs
 npm run start
 ```
 
-macOS may ask for Accessibility permission so MyPerro can read cursor and input
+macOS may ask for Accessibility permission so Pawi can read cursor and input
 counts. It never stores or emits keycodes; only counts and geometry leave Rust.
 On Linux, global input reactions work with X11/XWayland; native Wayland can
 block global input by design. Settings → App shows a live compatibility check.
@@ -90,7 +94,7 @@ right-clicking the companion, then use the
 
 ## AI-Agent Bridge
 
-Write this file in MyPerro's app config directory as `agent-status.json`:
+Write this file in Pawi's app config directory as `agent-status.json`:
 
 ```json
 {
@@ -116,6 +120,8 @@ Supported statuses are `thinking`, `done`, and `error`. `message` is optional.
 | `docs/EVALUATION.md` | Current verification, critique, and release gates |
 | `docs/COMPETITIVE_REVIEW.md` | Product comparison and next investments |
 | `docs/RELEASE.md` | Signing, packaging, QA, updater and rollback runbook |
+| `docs/MACOS.md` | Correct Mac build, install, permission and diagnostic guide |
+| `docs/USAGE_COUNTING.md` | Deploy and read the optional active-install counter |
 
 ## Licence
 

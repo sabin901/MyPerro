@@ -1,4 +1,4 @@
-# MyPerro — Product Requirements (Alpha, frozen)
+# Pawi — Product Requirements (Alpha, frozen)
 
 **Status:** frozen 8 August 2026. Changes require explicitly unfreezing, and every addition must be traded against something already on the list.
 
@@ -31,7 +31,7 @@ They will uninstall immediately if it makes their fan spin, and refuse to instal
 
 **Utility** — Pomodoro with a pixel clock beside the dog. Stretch reminder. Water reminder. One pinned note. Tray menu (show/hide, start focus, quiet mode, settings, quit). Settings window. Start at login. Global mute. Position remembered per monitor.
 
-**Trust** — onboarding explaining the input permission in plain language before requesting it. A working degraded mode if refused. Reduce-motion mode. No telemetry, no account, no network calls at rest.
+**Trust** — onboarding explaining the input permission in plain language before requesting it. A working degraded mode if refused. Reduce-motion mode. No account or hidden telemetry. Optional, off-by-default active-install counting sends only a random ID and release dimensions once daily.
 
 **Customisation** — fur colour and marking-pattern mapping ("match your real dog"). Collar colour. The dog's name, and yours, for personalised reminders.
 
@@ -59,8 +59,11 @@ Product promises that constrain the architecture:
 - Keyboard input observed only as **counts and timing**. Keycodes discarded at capture in Rust, before crossing to the frontend.
 - Mouse observed as **position and velocity** only.
 - No window titles, clipboard, screenshots, URLs or file paths.
-- No analytics, no crash telemetry, no network requests except explicit update checks.
-- Everything stored locally in plain readable files the user can inspect and delete.
+- No behavioral analytics or crash telemetry. Network requests are limited to
+  update checks and the separately consented active-install heartbeat.
+- Settings and pet state stay in local readable files. The optional counter
+  stores only a keyed installation hash and coarse release dimensions, and
+  supports deletion on opt-out.
 
 The product depends on being trusted with an input-monitoring permission. One violation ends it.
 

@@ -1,7 +1,7 @@
 {
-  "name": "myperro",
+  "name": "pawi",
   "private": true,
-  "version": "0.9.0-rc.10",
+  "version": "0.9.0-rc.11",
   "description": "A privacy-first virtual desktop companion for Windows, macOS, and Linux",
   "author": "Sabin Raut",
   "license": "MIT",
@@ -13,10 +13,11 @@
     "dev": "vite",
     "demo": "vite --open /demo.html",
     "brand:sync": "node scripts/sync-brand-assets.mjs",
-    "brand:icons": "npm run tauri icon assets/brand/myperro-app-icon.svg",
+    "brand:icons": "npm run tauri icon assets/brand/pawi-app-icon.svg",
     "site:assets": "npm run brand:sync && node scripts/build-website-assets.mjs",
     "site:dev": "npm run site:assets && vite --config website/vite.config.ts",
     "site:build": "npm run site:assets && vite build --config website/vite.config.ts",
+    "site:test": "node --test website/*.test.mjs",
     "art:shiba": "node scripts/generate-dog-atlases.mjs",
     "art:dogs": "node scripts/generate-dog-atlases.mjs",
     "art:companions": "node scripts/generate-dog-atlases.mjs",
@@ -32,10 +33,12 @@
     "validate-pack": "tsx scripts/validate-pack.mjs",
     "validate:packs": "node scripts/validate-all-packs.mjs",
     "smoke:dist": "node scripts/smoke-dist.mjs",
-    "sbom": "cyclonedx-npm --output-file myperro-web.cdx.json --spec-version 1.6",
+    "sbom": "cyclonedx-npm --output-file pawi-web.cdx.json --spec-version 1.6",
     "checksums": "node scripts/checksums.mjs",
+    "usage:test": "node --test services/usage-counter/test/*.test.mjs",
+    "usage:stats": "node scripts/usage-stats.mjs",
     "release:assets": "node scripts/prepare-release-assets.mjs",
-    "release:check": "npm run typecheck && npm test && npm run build && npm run site:build && npm run validate:packs && npm run smoke:dist && cargo test --manifest-path src-tauri/Cargo.toml"
+    "release:check": "npm run typecheck && npm test && npm run usage:test && npm run site:test && npm run build && npm run site:build && npm run validate:packs && npm run smoke:dist && cargo test --manifest-path src-tauri/Cargo.toml"
   },
   "devDependencies": {
     "@cyclonedx/cyclonedx-npm": "^6.0.0",

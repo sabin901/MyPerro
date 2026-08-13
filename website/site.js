@@ -1,12 +1,6 @@
-const RELEASE_TAG = "v0.9.0-rc.10";
-const RELEASE_ROOT = `https://github.com/sabin901/MyPerro/releases/download/${RELEASE_TAG}`;
-const DOWNLOADS = {
-  windows: `${RELEASE_ROOT}/MyPerro_0.9.0-rc.10_x64-setup.exe`,
-  "mac-arm": `${RELEASE_ROOT}/MyPerro_0.9.0-rc.10_aarch64.dmg`,
-  "mac-intel": `${RELEASE_ROOT}/MyPerro_0.9.0-rc.10_x64.dmg`,
-  "linux-appimage": `${RELEASE_ROOT}/MyPerro_0.9.0-rc.10_amd64.AppImage`,
-  "linux-deb": `${RELEASE_ROOT}/MyPerro_0.9.0-rc.10_amd64.deb`,
-};
+import { FALLBACK_RELEASE, downloadsFromRelease, platformFamily, releaseApiUrl } from "./release-links.js";
+
+let releaseInfo = FALLBACK_RELEASE;
 
 const companions = [
   { id: "shiba-inu", name: "Shiba Inu", nature: "Bright & curious", description: "An alert little shadow for busy days—quick to wander, tilt its head, and celebrate the smallest bit of attention." },
@@ -22,35 +16,49 @@ const companions = [
 
 const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-for (const link of document.querySelectorAll(".download-link")) {
-  const asset = link.dataset.asset;
-  if (asset && DOWNLOADS[asset]) {
-    link.href = DOWNLOADS[asset];
-    link.rel = "noopener";
+function applyReleaseLinks() {
+  for (const link of document.querySelectorAll(".download-link")) {
+    const asset = link.dataset.asset;
+    if (asset && releaseInfo.downloads[asset]) {
+      link.href = releaseInfo.downloads[asset];
+      link.rel = "noopener";
+    }
   }
+  const version = document.querySelector("#releaseVersion");
+  if (version) version.textContent = releaseInfo.tag;
 }
 
-function currentPlatform() {
-  const value = `${navigator.userAgent} ${navigator.platform}`.toLowerCase();
-  if (value.includes("win")) return "windows";
-  if (value.includes("mac")) return "mac-arm";
-  if (value.includes("linux")) return "linux";
-  return null;
-}
-
-const platform = currentPlatform();
-if (platform) {
+const platform = platformFamily(navigator.userAgent, navigator.platform);
+function applyPlatformRecommendation() {
+  const hero = document.querySelector("#heroDownload");
+  if (!hero || !platform) return;
+  if (platform === "mac") {
+    document.querySelectorAll('[data-platform^="mac-"]').forEach(row => row.classList.add("is-device-family"));
+    hero.href = "#download";
+    hero.querySelector("span").textContent = "Choose your Mac build";
+    return;
+  }
   const row = document.querySelector(`[data-platform="${platform}"]`);
   row?.classList.add("is-device");
-  const hero = document.querySelector("#heroDownload");
   const preferredAsset = platform === "linux" ? "linux-appimage" : platform;
-  if (hero && DOWNLOADS[preferredAsset]) {
-    hero.href = DOWNLOADS[preferredAsset];
-    hero.querySelector("span").textContent = platform === "windows"
-      ? "Download for Windows"
-      : platform === "linux" ? "Download for Linux" : "Download for Mac";
+  if (releaseInfo.downloads[preferredAsset]) {
+    hero.href = releaseInfo.downloads[preferredAsset];
+    hero.querySelector("span").textContent = platform === "windows" ? "Download for Windows" : "Download for Linux";
   }
 }
+
+applyReleaseLinks();
+applyPlatformRecommendation();
+fetch(releaseApiUrl(), {
+  headers: { Accept: "application/vnd.github+json" },
+})
+  .then(response => response.ok ? response.json() : Promise.reject(new Error(`GitHub returned ${response.status}`)))
+  .then(release => {
+    releaseInfo = downloadsFromRelease(release);
+    applyReleaseLinks();
+    applyPlatformRecommendation();
+  })
+  .catch(() => {});
 
 const companionRail = document.querySelector("#companionRail");
 const spotlightImage = document.querySelector("#spotlightImage");
@@ -68,6 +76,7 @@ let companionMotion = "idle";
 let companionMotionStarted = performance.now();
 let spotlightSheet;
 let spotlightLoadToken = 0;
+let activeCompanionTransition;
 
 const companionMotions = {
   idle: { frames: [0, 0, 1, 0, 2, 0, 0], frameMs: 360 },
@@ -103,8 +112,15 @@ function updateCompanion(index, moveFocus = false) {
   };
 
   let updateReady = Promise.resolve();
-  if (!reducedMotion && document.startViewTransition) {
-    updateReady = document.startViewTransition(commit).updateCallbackDone;
+  if (!reducedMotion && document.startViewTransition && document.readyState === "complete") {
+    activeCompanionTransition?.skipTransition();
+    const transition = document.startViewTransition(commit);
+    activeCompanionTransition = transition;
+    transition.ready.catch(() => {});
+    transition.finished.catch(() => {}).finally(() => {
+      if (activeCompanionTransition === transition) activeCompanionTransition = undefined;
+    });
+    updateReady = transition.updateCallbackDone;
   } else {
     commit();
   }
@@ -340,7 +356,7 @@ function setDayMoment(chapter) {
     if (dayImage) {
       const companion = companions.find(item => item.id === chapter.dataset.dayImage);
       dayImage.src = `./pets/${chapter.dataset.dayImage}.png`;
-      dayImage.alt = `${companion?.name ?? "MyPerro"} desktop companion`;
+      dayImage.alt = `${companion?.name ?? "Pawi"} desktop companion`;
       dayImage.classList.remove("is-changing");
     }
     if (dayTime) dayTime.textContent = chapter.dataset.dayTime;
@@ -407,7 +423,7 @@ addEventListener("scroll", () => {
 }, { passive: true });
 updateScrollState();
 
-const observedSections = ["companions", "life", "privacy", "download"]
+const observedSections = ["companions", "life", "privacy", "community", "download"]
   .map(id => document.getElementById(id))
   .filter(Boolean);
 if ("IntersectionObserver" in window) {

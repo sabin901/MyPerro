@@ -1,5 +1,5 @@
 /**
- * MyPerro — pet window renderer.
+ * Pawi — pet window renderer.
  *
  * Glue only. Every decision lives in engine.ts, every coordinate conversion in
  * coords.ts, and both are unit tested. This file owns the canvas, the Tauri
@@ -103,7 +103,9 @@ const FALLBACK_ATLAS_URL = "/placeholder/shiba_placeholder.png";
 const FALLBACK_META_URL  = "/placeholder/shiba_placeholder.json";
 const HIT_ALPHA = 8;
 const MESSAGE_DURATION_MS = 20_000;
-const INTERACTION_STORAGE_KEY = "myperro.companion-interaction.v1";
+const USAGE_HEARTBEAT_RETRY_MS = 6 * 60 * 60 * 1000;
+const INTERACTION_STORAGE_KEY = "pawi.companion-interaction.v1";
+const LEGACY_INTERACTION_STORAGE_KEY = "myperro.companion-interaction.v1";
 
 /** Head occupies roughly the top 45% of the cell — used for petting. */
 const HEAD_FRACTION = 0.45;
@@ -194,6 +196,7 @@ let frames = 0, lastFpsAt = performance.now(), fps = 0, eventCount = 0, eventRat
 async function boot() {
   bootStage = "loading saved settings";
   settings = await loadSettings();
+  void syncAnonymousUsageState();
   updatePollingEnabled = shouldPollForUpdates(await getVersion().catch(() => "0.0.0-dev"));
   needs = loadNeeds();
   interactionState = loadInteractionState();
@@ -219,6 +222,7 @@ async function boot() {
   setInterval(pollCompanionInteraction, 5000);
   setInterval(updateVirtualPet, 60_000);
   setInterval(pollDesktopContext, 2000);
+  setInterval(() => { void syncAnonymousUsageState(); }, USAGE_HEARTBEAT_RETRY_MS);
   if (updatePollingEnabled) setInterval(pollAvailableUpdate, UPDATE_CHECK_INTERVAL_MS);
 
   engine = new BehaviourEngine(performance.now());
@@ -275,6 +279,15 @@ async function boot() {
   bootStage = "ready";
   await invoke("mark_startup_ready").catch(() => false);
   await logInfo(`Pet ready with companion pack ${settings.appearance.breed}`).catch(() => {});
+}
+
+async function syncAnonymousUsageState() {
+  if (!settings) return;
+  const command = settings.anonymousUsageEnabled ? "send_usage_heartbeat" : "disable_usage_count";
+  const args = settings.anonymousUsageEnabled ? { enabled: true } : undefined;
+  await invoke(command, args).catch(error => {
+    void logWarn(`Anonymous active-install count unavailable: ${String(error)}`).catch(() => {});
+  });
 }
 
 function handleCare(action: CareAction) {
@@ -337,7 +350,8 @@ function showCareFrameUntil(frame: string, until: number) {
 
 function loadInteractionState(): CompanionInteractionState {
   try {
-    const raw = localStorage.getItem(INTERACTION_STORAGE_KEY);
+    const raw = localStorage.getItem(INTERACTION_STORAGE_KEY)
+      ?? localStorage.getItem(LEGACY_INTERACTION_STORAGE_KEY);
     return normaliseInteractionState(raw ? JSON.parse(raw) : null);
   } catch {
     return normaliseInteractionState(null);
@@ -903,7 +917,7 @@ function pollReminders() {
 function showNativeReminder(body: string) {
   if (!settings.notificationsEnabled || !notificationsGranted) return;
   try {
-    sendNotification({ title: `${settings.petName} · MyPerro`, body });
+    sendNotification({ title: `${settings.petName} · Pawi`, body });
   } catch (error) {
     void logWarn(`Native reminder could not be delivered: ${String(error)}`).catch(() => {});
   }
@@ -924,7 +938,7 @@ async function togglePeekMode() {
 /**
  * Locally classify the foreground application. Rust intentionally returns no
  * process path, window title, URL, or audio data—only none/video. Two
- * matching polls provide hysteresis when the user briefly focuses MyPerro.
+ * matching polls provide hysteresis when the user briefly focuses Pawi.
  */
 async function pollDesktopContext() {
   const next = await invoke<DesktopContext>("desktop_context").catch(() => null);
@@ -954,8 +968,8 @@ async function pollAvailableUpdate() {
   try {
     if (update.version === lastUpdateNotice) return;
     lastUpdateNotice = update.version;
-    flashNote(`MyPerro ${update.version} is ready. Press S to install the verified update.`);
-    showNativeReminder(`A verified MyPerro ${update.version} update is ready in Settings.`);
+    flashNote(`Pawi ${update.version} is ready. Press S to install the verified update.`);
+    showNativeReminder(`A verified Pawi ${update.version} update is ready in Settings.`);
   } finally {
     await update.close().catch(() => {});
   }
@@ -1162,8 +1176,9 @@ async function updateHitState(gx: number, gy: number) {
 
 /**
  * Without input monitoring there is no cursor position, so per-pixel hit
- * testing is impossible. Trade it for a solid rectangular window the user can
- * still grab — degraded, but not bricked.
+ * testing is impossible. Keep the pet click-through instead of turning its
+ * transparent window into an invisible rectangle over the user's desktop.
+ * Settings and permission recovery remain available from the tray.
  */
 function startDegradedWatchdog() {
   setInterval(async () => {
@@ -1171,8 +1186,8 @@ function startDegradedWatchdog() {
     if (stale === degraded) return;
     degraded = stale;
     if (degraded) {
-      ignoringCursor = false;
-      await win.setIgnoreCursorEvents(false);
+      ignoringCursor = true;
+      await win.setIgnoreCursorEvents(true);
     }
   }, 1000);
 }
@@ -1520,7 +1535,7 @@ async function renderHud() {
   const a = lastActivity;
   const vel = a ? normaliseVelocity(a.cursor_velocity, activityScaleFactor(a)) : 0;
   hudEl.textContent =
-    `MyPerro · phase 2\n` +
+    `Pawi · phase 2\n` +
     `state    ${engine?.state ?? "—"}  →  ${currentFrame}${facingLeft ? " ◀" : " ▶"}\n` +
     `fps      ${fps}  (mode ${mode}, cap ${FPS[mode]})\n` +
     `cpu      ${perf ? perf.cpu.toFixed(1) + "%" : "—"}\n` +
@@ -1540,7 +1555,7 @@ boot().catch(async err => {
   await logError(`Pet startup failed during ${bootStage}: ${message}`).catch(() => {});
   // Never expose an internal stack or URL on the desktop. Keep Settings
   // reachable so the user has a recovery path even if an art pack is damaged.
-  hudEl.textContent = "MyPerro startup stopped";
+  hudEl.textContent = "Pawi startup stopped";
   hudEl.classList.remove("hidden");
   hudEl.classList.add("error");
   noteEl.textContent = `Could not finish ${bootStage}. Press S or open Settings from the tray.`;

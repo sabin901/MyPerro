@@ -15,7 +15,7 @@ Rechecked after wiring Phase 4 into the windows. **118 tests pass, `tsc` clean a
 
 ## Phase 6 added this pass
 
-- **Dog-pack validator** (`pack.ts`) — rejects malformed community breeds before load, with 13 tests, mutation-verified. This is the mechanism behind community breeds, MyPerro's answer to ComNyang's pattern showcase.
+- **Dog-pack validator** (`pack.ts`) — rejects malformed community breeds before load, with 13 tests, mutation-verified. This is the mechanism behind community breeds, Pawi's answer to ComNyang's pattern showcase.
 - **`LICENSE`** (MIT for code, CC BY 4.0 for art noted), **`CONTRIBUTING.md`**, **`PRIVACY.md`** (the verifiable no-keylogging promise in plain words), **`docs/pack-format.md`**.
 - **GitHub Actions CI** (`.github/workflows/ci.yml`) — a fast typecheck+test lane on every push, and a three-OS native build lane. Written, not yet run (needs the repo on GitHub).
 - **`npm run validate-pack`** CLI so authors can check a pack before submitting.
@@ -54,7 +54,7 @@ Each critical module has been **mutation-tested** — deliberately broken to con
 ## The one action that unblocks everything
 
 ```bash
-cd ~/Desktop/MyPerro
+cd ~/Desktop/Pawi
 npm run demo     # the real engine + scheduler in a browser — no Rust
 npm test         # all 118 green
 npm run setup    # then the native app, once Rust + icons are in place

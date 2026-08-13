@@ -1,8 +1,8 @@
 //! File-based AI-agent status bridge.
 //!
-//! Any local tool can write `agent-status.json` in MyPerro's config directory:
+//! Any local tool can write `agent-status.json` in Pawi's config directory:
 //! `{ "status": "thinking" | "done" | "error", "message": "optional" }`.
-//! MyPerro polls it and turns that into a tiny dog reaction. This keeps the
+//! Pawi polls it and turns that into a tiny dog reaction. This keeps the
 //! integration private, local, and editor-agnostic.
 
 use serde_json::Value;

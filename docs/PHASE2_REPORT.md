@@ -84,4 +84,4 @@ Two details worth knowing when you read it:
 
 1. **Run the spike.** `RUNNING.md` has the commands. Phase 1 cannot close without the numbers.
 2. **Confirm the 96 px cell** so the artist brief can go out.
-3. **Drag `MYPERRO_MASTER_PROGRAM_PLAN.md` into `docs/`.**
+3. **Drag `PAWI_MASTER_PROGRAM_PLAN.md` into `docs/`.**

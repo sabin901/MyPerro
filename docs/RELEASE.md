@@ -43,10 +43,10 @@ The reproducible Debian 12 builder is available at
 `scripts/Dockerfile.linux-build`:
 
 ```bash
-docker build -f scripts/Dockerfile.linux-build -t myperro-linux-builder .
-docker volume create myperro-linux-target
+docker build -f scripts/Dockerfile.linux-build -t pawi-linux-builder .
+docker volume create pawi-linux-target
 docker run --rm -v "$PWD:/app" \
-  -v myperro-linux-target:/app/src-tauri/target myperro-linux-builder \
+  -v pawi-linux-target:/app/src-tauri/target pawi-linux-builder \
   bash -c 'npm ci && npm run release -- --bundles deb,appimage'
 ```
 
@@ -60,20 +60,21 @@ the chosen timeout has completed startup successfully.
 ## Updater
 
 The Tauri v2 updater is configured for Windows, macOS and Linux and points to
-`https://github.com/sabin901/MyPerro/releases/latest/download/latest.json`.
+`https://github.com/sabin901/Pawi/releases/latest/download/latest.json`.
 Every update bundle is signed with a permanent updater key and is rejected by
 the installed app if the signature is invalid. This updater signature is
 separate from Apple Developer ID and Windows Authenticode.
 
-The initial key was generated locally at `$env:USERPROFILE\.tauri\myperro.key`.
-Back it up offline before release, never commit it, and add it to GitHub without
-printing it:
+The updater key is unchanged by the Pawi rename. Do not generate a new one:
+installed release candidates trust the existing public key. The original local
+key may still use its pre-rename filename; back it up offline, never commit it,
+and add it to GitHub without printing it:
 
 ```powershell
-$updaterKey = Join-Path $env:USERPROFILE '.tauri\myperro.key'
-$updaterPassword = Join-Path $env:USERPROFILE '.tauri\myperro.key.password'
-Get-Content -Raw -LiteralPath $updaterKey | gh secret set TAURI_SIGNING_PRIVATE_KEY --repo sabin901/MyPerro
-Get-Content -Raw -LiteralPath $updaterPassword | gh secret set TAURI_SIGNING_PRIVATE_KEY_PASSWORD --repo sabin901/MyPerro
+$updaterKey = Join-Path $env:USERPROFILE '.tauri\pawi.key'
+$updaterPassword = Join-Path $env:USERPROFILE '.tauri\pawi.key.password'
+Get-Content -Raw -LiteralPath $updaterKey | gh secret set TAURI_SIGNING_PRIVATE_KEY --repo sabin901/Pawi
+Get-Content -Raw -LiteralPath $updaterPassword | gh secret set TAURI_SIGNING_PRIVATE_KEY_PASSWORD --repo sabin901/Pawi
 ```
 
 Tag builds create signed updater bundles for Windows x64, Linux x64, macOS
