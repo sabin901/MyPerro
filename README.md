@@ -7,7 +7,7 @@ reminds you to take breaks, asks to play, and quietly keeps you company.
 
 macOS · Windows · Linux (X11/XWayland) · MIT licensed · open source · no telemetry · no account
 
-**Website and downloads:** https://sabin901.github.io/MyPerro/
+**Website and downloads:** https://sabin901.github.io/Pawi/
 
 ## What It Does
 
