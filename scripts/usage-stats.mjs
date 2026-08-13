@@ -1,7 +1,7 @@
-const endpoint = process.env.IPET_USAGE_STATS_URL;
-const token = process.env.IPET_USAGE_STATS_TOKEN;
+const endpoint = process.env.PAWI_USAGE_STATS_URL ?? process.env.IPET_USAGE_STATS_URL;
+const token = process.env.PAWI_USAGE_STATS_TOKEN ?? process.env.IPET_USAGE_STATS_TOKEN;
 if (!endpoint || !token) {
-  console.error("Set IPET_USAGE_STATS_URL and IPET_USAGE_STATS_TOKEN first.");
+  console.error("Set PAWI_USAGE_STATS_URL and PAWI_USAGE_STATS_TOKEN first.");
   process.exit(1);
 }
 

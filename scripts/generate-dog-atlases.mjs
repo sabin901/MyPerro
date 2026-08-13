@@ -30,47 +30,47 @@ const FRAMES = [
 
 const BREEDS = [
   {
-    id: "shiba-inu", name: "Shiba Inu", author: "MyPerro",
+    id: "shiba-inu", name: "Shiba Inu", author: "Pawi",
     body: [201, 116, 52], light: [230, 151, 75], mark: [248, 219, 166],
     outline: [78, 52, 38], species: "dog", tail: "curl", ears: "point", spots: "none", fluff: 0, bodyScale: 1,
   },
   {
-    id: "pomeranian", name: "Pomeranian", author: "MyPerro",
+    id: "pomeranian", name: "Pomeranian", author: "Pawi",
     body: [221, 145, 82], light: [245, 182, 105], mark: [255, 225, 172],
     outline: [91, 59, 43], species: "dog", tail: "plume", ears: "small", spots: "mane", fluff: 8, bodyScale: 0.9,
   },
   {
-    id: "husky", name: "Husky", author: "MyPerro",
+    id: "husky", name: "Husky", author: "Pawi",
     body: [96, 111, 128], light: [132, 151, 168], mark: [239, 244, 240],
     outline: [43, 55, 69], species: "dog", tail: "sickle", ears: "point", spots: "mask", fluff: 3, bodyScale: 1.08,
   },
   {
-    id: "german-shepherd", name: "German Shepherd", author: "MyPerro",
+    id: "german-shepherd", name: "German Shepherd", author: "Pawi",
     body: [183, 119, 55], light: [218, 156, 79], mark: [61, 52, 43],
     outline: [50, 39, 32], species: "dog", tail: "long", ears: "tall", spots: "saddle", fluff: 0, bodyScale: 1.14,
   },
   {
-    id: "dalmatian", name: "Dalmatian", author: "MyPerro",
+    id: "dalmatian", name: "Dalmatian", author: "Pawi",
     body: [234, 233, 220], light: [255, 251, 232], mark: [54, 52, 49],
     outline: [58, 55, 49], species: "dog", tail: "long", ears: "floppy", spots: "spots", fluff: 0, bodyScale: 1,
   },
   {
-    id: "lhasa-apso", name: "Lhasa Apso", author: "MyPerro",
+    id: "lhasa-apso", name: "Lhasa Apso", author: "Pawi",
     body: [190, 154, 105], light: [226, 196, 143], mark: [245, 226, 184],
     outline: [80, 63, 47], species: "dog", tail: "plume", ears: "floppy", spots: "shag", fluff: 10, bodyScale: 0.95,
   },
   {
-    id: "calico-cat", name: "Calico Cat", author: "MyPerro",
+    id: "calico-cat", name: "Calico Cat", author: "Pawi",
     body: [247, 229, 197], light: [255, 241, 212], mark: [200, 117, 67],
     outline: [91, 61, 48], species: "cat", tail: "cat-curl", ears: "cat", spots: "calico", fluff: 1, bodyScale: 0.94,
   },
   {
-    id: "midnight-cat", name: "Midnight Cat", author: "MyPerro",
+    id: "midnight-cat", name: "Midnight Cat", author: "Pawi",
     body: [52, 48, 68], light: [78, 72, 98], mark: [232, 214, 245],
     outline: [26, 24, 36], species: "cat", tail: "cat-long", ears: "cat", spots: "moon", fluff: 0, bodyScale: 0.9,
   },
   {
-    id: "cream-tabby", name: "Cream Tabby", author: "MyPerro",
+    id: "cream-tabby", name: "Cream Tabby", author: "Pawi",
     body: [221, 170, 103], light: [245, 199, 128], mark: [142, 104, 70],
     outline: [82, 58, 42], species: "cat", tail: "cat-long", ears: "cat", spots: "tabby", fluff: 1, bodyScale: 0.92,
   },

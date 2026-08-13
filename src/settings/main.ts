@@ -255,7 +255,7 @@ function wireOnboarding() {
 
   const ua = navigator.userAgent.toLowerCase();
   $("onboardingPlatform").textContent = ua.includes("mac")
-    ? "macOS will ask for Accessibility permission so MyPerro can count activity while other apps are active."
+    ? "macOS will ask for Accessibility permission so Pawi can count activity while other apps are active."
     : ua.includes("linux")
       ? "Global reactions work on X11 and XWayland. Native Wayland may intentionally restrict them."
       : "Windows may ask your security software to allow the local activity listener.";
@@ -311,7 +311,7 @@ function wireProductionControls() {
       });
       if (!started) {
         const badge = $("saved");
-        badge.textContent = "Allow MyPerro in Mac Accessibility to finish setup";
+        badge.textContent = "Allow Pawi in Mac Accessibility to finish setup";
         badge.className = "saved error";
       }
     } else {
@@ -345,11 +345,11 @@ async function checkForUpdates() {
   try {
     update = await check({ timeout: 15_000 });
     if (!update) {
-      status.textContent = "MyPerro is up to date.";
+      status.textContent = "Pawi is up to date.";
       return;
     }
     status.textContent = `Version ${update.version} is ready.`;
-    if (!window.confirm(`Install MyPerro ${update.version} now? The app will restart.`)) return;
+    if (!window.confirm(`Install Pawi ${update.version} now? The app will restart.`)) return;
     let downloaded = 0;
     let total = 0;
     await update.downloadAndInstall(event => {
@@ -396,7 +396,7 @@ async function exportDiagnostics() {
     const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" }));
     const link = document.createElement("a");
     link.href = url;
-    link.download = `myperro-diagnostics-${new Date().toISOString().slice(0, 10)}.json`;
+    link.download = `pawi-diagnostics-${new Date().toISOString().slice(0, 10)}.json`;
     link.click();
     URL.revokeObjectURL(url);
     const badge = $("saved");
@@ -440,7 +440,7 @@ async function renderAppInfo() {
     } catch {
       $("inputDiagnostic").dataset.status = "unavailable";
       $("inputStatus").textContent = "Compatibility check unavailable";
-      $("inputGuidance").textContent = "Restart MyPerro and open Settings again.";
+      $("inputGuidance").textContent = "Restart Pawi and open Settings again.";
     }
   };
   await refresh();
@@ -449,7 +449,8 @@ async function renderAppInfo() {
 
 function wireTabs() {
   const buttons = [...document.querySelectorAll<HTMLButtonElement>("button[data-tab]")];
-  const stored = localStorage.getItem("myperro.settings-tab");
+  const stored = localStorage.getItem("pawi.settings-tab")
+    ?? localStorage.getItem("myperro.settings-tab");
   const initial = buttons.some(button => button.dataset.tab === stored) ? stored! : "home";
   const activate = (tab: string, animate = true) => {
     buttons.forEach(button => {
@@ -462,7 +463,7 @@ function wireTabs() {
       pane.setAttribute("role", "tabpanel");
       pane.setAttribute("aria-labelledby", `tab-${pane.dataset.pane}`);
     });
-    localStorage.setItem("myperro.settings-tab", tab);
+    localStorage.setItem("pawi.settings-tab", tab);
     window.scrollTo({ top: 0, behavior: animate ? "smooth" : "auto" });
   };
   buttons.forEach(button => button.addEventListener("click", () => activate(button.dataset.tab!)));

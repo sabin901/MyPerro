@@ -1,4 +1,4 @@
-# MyPerro — Product Requirements (Alpha, frozen)
+# Pawi — Product Requirements (Alpha, frozen)
 
 **Status:** frozen 8 August 2026. Changes require explicitly unfreezing, and every addition must be traded against something already on the list.
 

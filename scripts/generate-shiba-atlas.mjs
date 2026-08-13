@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Generate MyPerro's built-in Shiba placeholder atlas.
+ * Generate Pawi's built-in Shiba placeholder atlas.
  *
  * This is intentionally original, simple pixel art drawn from primitives. It
  * is not final commissioned art, but it is much closer to the product's visual

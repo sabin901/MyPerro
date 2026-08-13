@@ -63,7 +63,7 @@ pub fn input_health(health: &SharedInputHealth) -> InputHealth {
         INPUT_DISABLED => InputHealth {
             status: "disabled",
             summary: "Input reactions are off",
-            guidance: "Enable privacy-safe input reactions in Settings. MyPerro counts activity only; it never records keycodes.",
+            guidance: "Enable privacy-safe input reactions in Settings. Pawi counts activity only; it never records keycodes.",
         },
         _ => InputHealth {
             status: "starting",
@@ -75,7 +75,7 @@ pub fn input_health(health: &SharedInputHealth) -> InputHealth {
 
 #[cfg(target_os = "macos")]
 fn input_permission_guidance() -> &'static str {
-    "Open System Settings → Privacy & Security → Accessibility, allow MyPerro, then return here. Reactions reconnect without a restart."
+    "Open System Settings → Privacy & Security → Accessibility, allow Pawi, then return here. Reactions reconnect without a restart."
 }
 
 #[cfg(target_os = "linux")]
@@ -85,7 +85,7 @@ fn input_permission_guidance() -> &'static str {
 
 #[cfg(target_os = "windows")]
 fn input_permission_guidance() -> &'static str {
-    "Restart MyPerro. If the issue remains, check endpoint-security or accessibility restrictions."
+    "Restart Pawi. If the issue remains, check endpoint-security or accessibility restrictions."
 }
 
 /// Aggregated activity. Counts and geometry only — no keycodes, ever.
@@ -300,7 +300,7 @@ pub fn spawn_listener(
         if result.is_err() {
             mark_input_unavailable(&health);
             eprintln!(
-                "[myperro] input monitoring unavailable. \
+                "[pawi] input monitoring unavailable. \
                  Running in degraded mode — grant Accessibility permission to enable reactions."
             );
         }
@@ -345,7 +345,7 @@ pub fn spawn_listener(
         if let Err(e) = result {
             mark_input_unavailable(&health);
             eprintln!(
-                "[myperro] input monitoring unavailable ({:?}). \
+                "[pawi] input monitoring unavailable ({:?}). \
                  Running in degraded mode — grant Accessibility permission to enable reactions.",
                 e
             );

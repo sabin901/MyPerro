@@ -1,6 +1,6 @@
 # Optional active-install counting
 
-MyPerro can report the number of opted-in installations that are active today,
+Pawi can report the number of opted-in installations that are active today,
 over 7 days, and over 30 days. This is deliberately not a count of identifiable
 people: one person can install on multiple computers, reinstalling creates a new
 ID, and people who leave the option off are not counted.
@@ -23,7 +23,7 @@ ID, and people who leave the option off are not counted.
   metadata while delivering requests.
 
 The endpoint is intentionally absent from ordinary source builds. With no
-`IPET_USAGE_ENDPOINT` at compile time, the feature remains inert even if a user
+`PAWI_USAGE_ENDPOINT` at compile time, the feature remains inert even if a user
 selects it.
 
 ## One-time Cloudflare setup
@@ -33,14 +33,14 @@ Install/login with Wrangler and create the D1 database:
 ```powershell
 npx wrangler login
 Set-Location services/usage-counter
-npx wrangler d1 create ipet-usage
+npx wrangler d1 create pawi-usage
 ```
 
 Copy the returned database ID into `services/usage-counter/wrangler.toml`, then
 apply the migration:
 
 ```powershell
-npx wrangler d1 migrations apply ipet-usage --remote
+npx wrangler d1 migrations apply pawi-usage --remote
 ```
 
 Create two different random secrets of at least 32 characters and enter them
@@ -59,11 +59,15 @@ Invoke-RestMethod https://YOUR-WORKER.workers.dev/health
 ```
 
 In GitHub repository Settings → Secrets and variables → Actions → Variables,
-create `IPET_USAGE_ENDPOINT` with this value:
+create `PAWI_USAGE_ENDPOINT` with this value:
 
 ```text
 https://YOUR-WORKER.workers.dev/v1/heartbeat
 ```
+
+For a repository that already has the pre-rename `IPET_USAGE_ENDPOINT`
+variable, CI accepts it as a temporary fallback. Add `PAWI_USAGE_ENDPOINT`,
+verify one release, then remove the legacy variable.
 
 Only installers compiled after that variable is set can report heartbeats. The
 CI release workflow passes the variable to every Windows, macOS, and Linux
@@ -76,8 +80,8 @@ Set the protected statistics endpoint and the private token in the current
 PowerShell session, then run the included report:
 
 ```powershell
-$env:IPET_USAGE_STATS_URL = "https://YOUR-WORKER.workers.dev/v1/stats"
-$env:IPET_USAGE_STATS_TOKEN = "YOUR_PRIVATE_STATS_TOKEN"
+$env:PAWI_USAGE_STATS_URL = "https://YOUR-WORKER.workers.dev/v1/stats"
+$env:PAWI_USAGE_STATS_TOKEN = "YOUR_PRIVATE_STATS_TOKEN"
 npm run usage:stats
 ```
 

@@ -1,5 +1,5 @@
 /**
- * MyPerro — pet window renderer.
+ * Pawi — pet window renderer.
  *
  * Glue only. Every decision lives in engine.ts, every coordinate conversion in
  * coords.ts, and both are unit tested. This file owns the canvas, the Tauri
@@ -104,7 +104,8 @@ const FALLBACK_META_URL  = "/placeholder/shiba_placeholder.json";
 const HIT_ALPHA = 8;
 const MESSAGE_DURATION_MS = 20_000;
 const USAGE_HEARTBEAT_RETRY_MS = 6 * 60 * 60 * 1000;
-const INTERACTION_STORAGE_KEY = "myperro.companion-interaction.v1";
+const INTERACTION_STORAGE_KEY = "pawi.companion-interaction.v1";
+const LEGACY_INTERACTION_STORAGE_KEY = "myperro.companion-interaction.v1";
 
 /** Head occupies roughly the top 45% of the cell — used for petting. */
 const HEAD_FRACTION = 0.45;
@@ -349,7 +350,8 @@ function showCareFrameUntil(frame: string, until: number) {
 
 function loadInteractionState(): CompanionInteractionState {
   try {
-    const raw = localStorage.getItem(INTERACTION_STORAGE_KEY);
+    const raw = localStorage.getItem(INTERACTION_STORAGE_KEY)
+      ?? localStorage.getItem(LEGACY_INTERACTION_STORAGE_KEY);
     return normaliseInteractionState(raw ? JSON.parse(raw) : null);
   } catch {
     return normaliseInteractionState(null);
@@ -915,7 +917,7 @@ function pollReminders() {
 function showNativeReminder(body: string) {
   if (!settings.notificationsEnabled || !notificationsGranted) return;
   try {
-    sendNotification({ title: `${settings.petName} · MyPerro`, body });
+    sendNotification({ title: `${settings.petName} · Pawi`, body });
   } catch (error) {
     void logWarn(`Native reminder could not be delivered: ${String(error)}`).catch(() => {});
   }
@@ -936,7 +938,7 @@ async function togglePeekMode() {
 /**
  * Locally classify the foreground application. Rust intentionally returns no
  * process path, window title, URL, or audio data—only none/video. Two
- * matching polls provide hysteresis when the user briefly focuses MyPerro.
+ * matching polls provide hysteresis when the user briefly focuses Pawi.
  */
 async function pollDesktopContext() {
   const next = await invoke<DesktopContext>("desktop_context").catch(() => null);
@@ -966,8 +968,8 @@ async function pollAvailableUpdate() {
   try {
     if (update.version === lastUpdateNotice) return;
     lastUpdateNotice = update.version;
-    flashNote(`MyPerro ${update.version} is ready. Press S to install the verified update.`);
-    showNativeReminder(`A verified MyPerro ${update.version} update is ready in Settings.`);
+    flashNote(`Pawi ${update.version} is ready. Press S to install the verified update.`);
+    showNativeReminder(`A verified Pawi ${update.version} update is ready in Settings.`);
   } finally {
     await update.close().catch(() => {});
   }
@@ -1533,7 +1535,7 @@ async function renderHud() {
   const a = lastActivity;
   const vel = a ? normaliseVelocity(a.cursor_velocity, activityScaleFactor(a)) : 0;
   hudEl.textContent =
-    `MyPerro · phase 2\n` +
+    `Pawi · phase 2\n` +
     `state    ${engine?.state ?? "—"}  →  ${currentFrame}${facingLeft ? " ◀" : " ▶"}\n` +
     `fps      ${fps}  (mode ${mode}, cap ${FPS[mode]})\n` +
     `cpu      ${perf ? perf.cpu.toFixed(1) + "%" : "—"}\n` +
@@ -1553,7 +1555,7 @@ boot().catch(async err => {
   await logError(`Pet startup failed during ${bootStage}: ${message}`).catch(() => {});
   // Never expose an internal stack or URL on the desktop. Keep Settings
   // reachable so the user has a recovery path even if an art pack is damaged.
-  hudEl.textContent = "MyPerro startup stopped";
+  hudEl.textContent = "Pawi startup stopped";
   hudEl.classList.remove("hidden");
   hudEl.classList.add("error");
   noteEl.textContent = `Could not finish ${bootStage}. Press S or open Settings from the tray.`;

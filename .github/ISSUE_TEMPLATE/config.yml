@@ -1,11 +1,11 @@
 blank_issues_enabled: false
 contact_links:
   - name: Public review guestbook
-    url: https://github.com/sabin901/MyPerro/discussions/14
+    url: https://github.com/sabin901/Pawi/discussions/14
     about: Share what feels delightful and what still needs work.
   - name: Ideas and companion requests
-    url: https://github.com/sabin901/MyPerro/discussions/categories/ideas
+    url: https://github.com/sabin901/Pawi/discussions/categories/ideas
     about: Propose motions, animals, sounds, and improvements.
   - name: Community questions
-    url: https://github.com/sabin901/MyPerro/discussions/categories/q-a
+    url: https://github.com/sabin901/Pawi/discussions/categories/q-a
     about: Ask for setup help before filing a reproducible bug.

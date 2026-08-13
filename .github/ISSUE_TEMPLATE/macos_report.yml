@@ -9,8 +9,8 @@ body:
   - type: input
     id: version
     attributes:
-      label: MyPerro version
-      placeholder: 0.9.0-rc.10
+      label: Pawi version
+      placeholder: 0.9.0-rc.11
     validations:
       required: true
   - type: dropdown
@@ -44,7 +44,7 @@ body:
   - type: dropdown
     id: installed
     attributes:
-      label: Was MyPerro copied into Applications?
+      label: Was Pawi copied into Applications?
       options: ["Yes", "No", "I am not sure"]
     validations:
       required: true
@@ -54,9 +54,9 @@ body:
       label: Accessibility permission
       description: System Settings → Privacy & Security → Accessibility.
       options:
-        - MyPerro is enabled
-        - MyPerro is listed but disabled
-        - MyPerro is not listed
+        - Pawi is enabled
+        - Pawi is listed but disabled
+        - Pawi is not listed
         - I am not sure
     validations:
       required: true

@@ -1,5 +1,5 @@
 [advisories]
 # glib 0.18 is inherited through Tauri's current GTK/WebKit Linux stack.
-# MyPerro does not call the affected VariantStrIter methods. Remove this
+# Pawi does not call the affected VariantStrIter methods. Remove this
 # time-limited exception as soon as Tauri upgrades its GTK binding family.
 ignore = ["RUSTSEC-2024-0429"]

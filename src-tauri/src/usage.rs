@@ -14,9 +14,13 @@ use uuid::Uuid;
 
 const HEARTBEAT_INTERVAL_SECONDS: i64 = 24 * 60 * 60;
 const STATE_FILE: &str = "anonymous-usage.json";
-const ENDPOINT: &str = match option_env!("IPET_USAGE_ENDPOINT") {
+const ENDPOINT: &str = match option_env!("PAWI_USAGE_ENDPOINT") {
     Some(value) => value,
-    None => "",
+    // Temporary compatibility for builds produced before the product rename.
+    None => match option_env!("IPET_USAGE_ENDPOINT") {
+        Some(value) => value,
+        None => "",
+    },
 };
 static USAGE_LOCK: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
 
@@ -98,7 +102,7 @@ fn client() -> Result<reqwest::Client, String> {
     reqwest::Client::builder()
         .timeout(Duration::from_secs(8))
         .redirect(reqwest::redirect::Policy::none())
-        .user_agent("iPet-anonymous-active-count/1")
+        .user_agent("Pawi-anonymous-active-count/1")
         .build()
         .map_err(|error| format!("cannot create usage client: {error}"))
 }

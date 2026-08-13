@@ -49,7 +49,7 @@ function applyPlatformRecommendation() {
 
 applyReleaseLinks();
 applyPlatformRecommendation();
-fetch("https://api.github.com/repos/sabin901/MyPerro/releases/latest", {
+fetch("https://api.github.com/repos/sabin901/Pawi/releases/latest", {
   headers: { Accept: "application/vnd.github+json" },
 })
   .then(response => response.ok ? response.json() : Promise.reject(new Error(`GitHub returned ${response.status}`)))
@@ -356,7 +356,7 @@ function setDayMoment(chapter) {
     if (dayImage) {
       const companion = companions.find(item => item.id === chapter.dataset.dayImage);
       dayImage.src = `./pets/${chapter.dataset.dayImage}.png`;
-      dayImage.alt = `${companion?.name ?? "MyPerro"} desktop companion`;
+      dayImage.alt = `${companion?.name ?? "Pawi"} desktop companion`;
       dayImage.classList.remove("is-changing");
     }
     if (dayTime) dayTime.textContent = chapter.dataset.dayTime;

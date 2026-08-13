@@ -16,8 +16,8 @@ test("maps both native Mac DMGs from a GitHub release", () => {
   const release = downloadsFromRelease({
     tag_name: "v1.2.3",
     assets: [
-      { name: "MyPerro_1.2.3_aarch64.dmg", browser_download_url: "https://example.test/arm.dmg" },
-      { name: "MyPerro_1.2.3_x64.dmg", browser_download_url: "https://example.test/intel.dmg" },
+      { name: "Pawi_1.2.3_aarch64.dmg", browser_download_url: "https://example.test/arm.dmg" },
+      { name: "Pawi_1.2.3_x64.dmg", browser_download_url: "https://example.test/intel.dmg" },
     ],
   });
   assert.equal(release.tag, "v1.2.3");

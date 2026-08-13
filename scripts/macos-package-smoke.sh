@@ -9,8 +9,8 @@ if [[ -z "$dmg" ]]; then
 fi
 
 mount_point="$(mktemp -d)"
-log_file="$(mktemp -t myperro-package-smoke).log"
-ready_file="${TMPDIR:-/tmp}/myperro-startup-ready"
+log_file="$(mktemp -t pawi-package-smoke).log"
+ready_file="${TMPDIR:-/tmp}/pawi-startup-ready"
 pid=""
 
 cleanup() {
@@ -25,8 +25,8 @@ cleanup() {
 trap cleanup EXIT
 
 printf 'Y\n' | hdiutil attach "$dmg" -nobrowse -readonly -mountpoint "$mount_point"
-app="$mount_point/MyPerro.app"
-binary="$app/Contents/MacOS/myperro"
+app="$mount_point/Pawi.app"
+binary="$app/Contents/MacOS/pawi"
 
 test -x "$binary"
 echo "Runner architecture: $(uname -m)"
@@ -42,22 +42,22 @@ codesign --display --verbose=4 "$app" 2>&1 | sed -n '1,30p'
 otool -l "$binary" | awk '/LC_BUILD_VERSION/{show=1} show{print} /sdk/{if(show){exit}}'
 
 rm -f "$ready_file"
-MYPERRO_CI_SMOKE=1 "$binary" >"$log_file" 2>&1 &
+PAWI_CI_SMOKE=1 "$binary" >"$log_file" 2>&1 &
 pid=$!
 
 for _ in {1..40}; do
   if [[ -f "$ready_file" ]]; then
-    echo "Packaged MyPerro reached frontend ready state."
+    echo "Packaged Pawi reached frontend ready state."
     exit 0
   fi
   if ! kill -0 "$pid" 2>/dev/null; then
-    echo "Packaged MyPerro exited before startup completed." >&2
+    echo "Packaged Pawi exited before startup completed." >&2
     cat "$log_file" >&2
     exit 1
   fi
   sleep 0.5
 done
 
-echo "Packaged MyPerro stayed alive but did not reach frontend ready state." >&2
+echo "Packaged Pawi stayed alive but did not reach frontend ready state." >&2
 cat "$log_file" >&2
 exit 1

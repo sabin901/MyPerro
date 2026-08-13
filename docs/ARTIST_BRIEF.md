@@ -1,6 +1,6 @@
 # Commission Brief — Pixel Art Dog Sprite Set
 
-**Project:** MyPerro — an open-source desktop companion app (macOS, Windows, Linux)
+**Project:** Pawi — an open-source desktop companion app (macOS, Windows, Linux)
 **Client:** Sabin Raut
 **Date:** 8 August 2026
 **Send this document as-is when requesting quotes. Attach the five reference images from `art/reference/`.**
@@ -9,7 +9,7 @@
 
 ## 1. What this is
 
-MyPerro is a small pixel-art dog that lives on the user's desktop. It sits above other windows, watches the mouse cursor, reacts when the user types, sleeps when they walk away, and reminds them to stretch and drink water. It is free and open source.
+Pawi is a small pixel-art dog that lives on the user's desktop. It sits above other windows, watches the mouse cursor, reacts when the user types, sleeps when they walk away, and reminds them to stretch and drink water. It is free and open source.
 
 The dog is the entire product. The code is invisible; the animation is what people will fall in love with or ignore. I'm commissioning this rather than drawing it myself because the quality of the character work decides whether this succeeds.
 

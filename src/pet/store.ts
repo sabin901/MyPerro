@@ -11,7 +11,8 @@ import { emit } from "@tauri-apps/api/event";
 
 import { normaliseSettings, type Settings } from "./settings";
 
-const FALLBACK_KEY = "myperro.settings.v1";
+const FALLBACK_KEY = "pawi.settings.v1";
+const LEGACY_FALLBACK_KEY = "myperro.settings.v1";
 const isNative = () => typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
 
 function hasLocalStorage(): boolean {
@@ -24,7 +25,7 @@ function hasLocalStorage(): boolean {
 
 function loadFallback(): Settings {
   if (!hasLocalStorage()) return normaliseSettings(null);
-  const text = localStorage.getItem(FALLBACK_KEY);
+  const text = localStorage.getItem(FALLBACK_KEY) ?? localStorage.getItem(LEGACY_FALLBACK_KEY);
   if (text === null) return normaliseSettings(null);
   try {
     return normaliseSettings(JSON.parse(text));

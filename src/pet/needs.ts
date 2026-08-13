@@ -10,7 +10,8 @@ export interface PetNeeds {
   updatedAt: number;
 }
 
-const STORAGE_KEY = "myperro.pet-needs.v1";
+const STORAGE_KEY = "pawi.pet-needs.v1";
+const LEGACY_STORAGE_KEY = "myperro.pet-needs.v1";
 
 export const DEFAULT_NEEDS: PetNeeds = {
   hunger: 82,
@@ -100,7 +101,7 @@ export function needMessage(kind: NeedKind, petName: string): string {
 
 export function loadNeeds(now = Date.now(), resting = false): PetNeeds {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(STORAGE_KEY) ?? localStorage.getItem(LEGACY_STORAGE_KEY);
     return advanceNeeds(normaliseNeeds(raw ? JSON.parse(raw) : null, now), now, resting);
   } catch {
     return normaliseNeeds(null, now);

@@ -46,7 +46,7 @@ jobs:
       - name: Audit Rust dependencies
         working-directory: src-tauri
         # Mirrors audit.toml: glib 0.18 is inherited from Tauri's GTK stack,
-        # and MyPerro does not call the affected VariantStrIter API.
+        # and Pawi does not call the affected VariantStrIter API.
         run: cargo audit --ignore RUSTSEC-2024-0429
 
   # Slow lane: prove it actually builds a native app on all three platforms.
@@ -72,7 +72,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       # Repository variable, not a secret. Empty keeps anonymous counting inert.
-      IPET_USAGE_ENDPOINT: ${{ vars.IPET_USAGE_ENDPOINT }}
+      PAWI_USAGE_ENDPOINT: ${{ vars.PAWI_USAGE_ENDPOINT || vars.IPET_USAGE_ENDPOINT }}
       HAS_APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE != '' }}
       HAS_WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE != '' }}
       WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
@@ -111,7 +111,7 @@ jobs:
         if: matrix.os == 'windows-latest' && env.HAS_WINDOWS_CERTIFICATE == 'true'
         shell: pwsh
         run: |
-          $pfxPath = Join-Path $env:RUNNER_TEMP 'myperro-publisher.pfx'
+          $pfxPath = Join-Path $env:RUNNER_TEMP 'pawi-publisher.pfx'
           [IO.File]::WriteAllBytes($pfxPath, [Convert]::FromBase64String($env:WINDOWS_CERTIFICATE))
           $password = ConvertTo-SecureString $env:WINDOWS_CERTIFICATE_PASSWORD -AsPlainText -Force
           $certificate = Import-PfxCertificate -FilePath $pfxPath -CertStoreLocation Cert:\CurrentUser\My -Password $password
@@ -159,15 +159,15 @@ jobs:
       - name: Upload installer
         uses: actions/upload-artifact@v7
         with:
-          name: myperro-${{ matrix.artifact }}
+          name: pawi-${{ matrix.artifact }}
           path: src-tauri/target/release/bundle/**
           if-no-files-found: error
           retention-days: 30
       - name: Upload software bill of materials
         uses: actions/upload-artifact@v7
         with:
-          name: myperro-${{ matrix.artifact }}-sbom
-          path: myperro-web.cdx.json
+          name: pawi-${{ matrix.artifact }}-sbom
+          path: pawi-web.cdx.json
           if-no-files-found: error
           retention-days: 30
 
@@ -192,4 +192,4 @@ jobs:
           mapfile -d '' files < <(find release-assets -type f -print0)
           gh release create "$GITHUB_REF_NAME" "${files[@]}" \
             --repo "$GITHUB_REPOSITORY" --draft --prerelease --generate-notes \
-            --title "MyPerro $GITHUB_REF_NAME"
+            --title "Pawi $GITHUB_REF_NAME"

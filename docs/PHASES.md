@@ -1,6 +1,6 @@
-# MyPerro — Phase Plan
+# Pawi — Phase Plan
 
-Project name: **MyPerro** (provisional — see naming risk in README).
+Project name: **Pawi** (provisional — see naming risk in README).
 Start date: 8 August 2026. Target public beta: mid-September 2026.
 
 **Rule of engagement:** one phase at a time. At the end of each phase I self-check against that phase's exit criteria, report what passed and what didn't, and stop. Nothing from a later phase gets pulled forward.
@@ -11,7 +11,7 @@ Start date: 8 August 2026. Target public beta: mid-September 2026.
 
 Stop researching; get the long-lead item (artwork) moving in parallel.
 
-**Delivered:** `PHASES.md`, `PRD.md`, `ARTIST_BRIEF.md`, `breed-options.md`, `ART_REFERENCE_ASSESSMENT.md`, project repository at `~/Desktop/MyPerro`.
+**Delivered:** `PHASES.md`, `PRD.md`, `ARTIST_BRIEF.md`, `breed-options.md`, `ART_REFERENCE_ASSESSMENT.md`, project repository at `~/Desktop/Pawi`.
 
 **Exit criteria** — alpha list frozen ✅ · exclusion list longer than inclusion list ✅ · artist brief quote-ready ✅ · atlas contract locked ✅ · project has a real home ✅
 

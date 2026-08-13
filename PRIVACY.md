@@ -1,9 +1,9 @@
 # Privacy
 
-MyPerro's whole reason to exist is to be a friendly presence that you trust
+Pawi's whole reason to exist is to be a friendly presence that you trust
 enough to leave running all day. That trust depends on one promise:
 
-> MyPerro watches *how much* you move and type, never *what* you type.
+> Pawi watches *how much* you move and type, never *what* you type.
 
 ## What is observed
 
@@ -31,7 +31,7 @@ information never leaves that function.
 
 ## What leaves your computer
 
-MyPerro has two narrowly scoped network features:
+Pawi has two narrowly scoped network features:
 
 - Update checks contact the official GitHub release feed. Installing an update
   always remains your choice.
@@ -44,13 +44,13 @@ settings, application names, files, URLs, or any content from your computer.
 The counting service immediately converts the random ID to a keyed hash before
 storing it. Turning the option off requests deletion of that server record and
 deletes the local ID after the request succeeds; if the service is temporarily
-unavailable, MyPerro keeps only that random ID and retries the deletion later.
+unavailable, Pawi keeps only that random ID and retries the deletion later.
 
 The service database retains a record for no more than 400 days after its last
 heartbeat. Its protected report shows aggregate totals for active opted-in
 installations, platforms, and versions. Like every Internet service, the hosting
 provider receives connection metadata such as an IP address while routing a
-request; MyPerro's Worker and database do not log or store it. There is no
+request; Pawi's Worker and database do not log or store it. There is no
 account, advertising, cloud sync, crash telemetry, or behavioral analytics.
 
 ## What is stored
@@ -71,7 +71,7 @@ The Settings → App diagnostic download is user initiated and privacy safe.
 
 On macOS, the app asks for Accessibility / Input Monitoring permission only
 after the first-run privacy explanation and opt-in so it can
-see global mouse and keyboard activity. If you decline, MyPerro still runs — the
+see global mouse and keyboard activity. If you decline, Pawi still runs — the
 dog simply stops reacting to input. We explain this before asking, and you can
 revoke it any time in System Settings.
 

@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "MyPerro",
-  "version": "0.9.0-rc.10",
-  "identifier": "com.sabinraut.myperro",
+  "productName": "Pawi",
+  "version": "0.9.0-rc.11",
+  "identifier": "com.sabinraut.pawi",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:5173",
@@ -17,7 +17,7 @@
       {
         "label": "pet",
         "url": "index.html",
-        "title": "MyPerro",
+        "title": "Pawi",
         "width": 192,
         "height": 192,
         "resizable": false,
@@ -32,7 +32,7 @@
       {
         "label": "settings",
         "url": "settings.html",
-        "title": "MyPerro — Settings",
+        "title": "Pawi — Settings",
         "width": 560,
         "height": 760,
         "minWidth": 420,
@@ -55,7 +55,7 @@
     "licenseFile": "../LICENSE",
     "category": "Productivity",
     "shortDescription": "A private virtual pet that reacts to your desktop.",
-    "longDescription": "MyPerro is a privacy-first virtual desktop companion with animated input reactions, wellbeing care, reminders, focus tools, and nine built-in dog and cat characters.",
+    "longDescription": "Pawi is a privacy-first virtual desktop companion with animated input reactions, wellbeing care, reminders, focus tools, and nine built-in dog and cat characters.",
     "icon": ["icons/32x32.png", "icons/128x128.png", "icons/icon.icns", "icons/icon.ico"],
     "macOS": {
       "minimumSystemVersion": "12.0"
@@ -65,7 +65,7 @@
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEQwMTM5QURENTgwRjk0MUQKUldRZGxBOVkzWm9UMExVYU1YTm8zVDN2UWxPcEQ2Vzh3amxqTVdmMU1MUHJ0dGFjdHJ3VGpjV0oK",
       "endpoints": [
-        "https://github.com/sabin901/MyPerro/releases/latest/download/latest.json"
+        "https://github.com/sabin901/Pawi/releases/latest/download/latest.json"
       ],
       "windows": {
         "installMode": "passive"

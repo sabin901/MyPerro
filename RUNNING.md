@@ -1,4 +1,4 @@
-# Running MyPerro
+# Running Pawi
 
 ## Prerequisites
 
@@ -35,7 +35,7 @@ npm run start
 The first native build can take a few minutes. Later runs are usually fast.
 
 macOS will ask for Accessibility permission. Grant it in System Settings,
-Privacy & Security, Accessibility, then restart MyPerro. If permission is not
+Privacy & Security, Accessibility, then restart Pawi. If permission is not
 granted, the puppy still runs and can be dragged, but it cannot react to cursor,
 typing, petting, or scroll input.
 
@@ -74,7 +74,7 @@ to restore the desktop pet.
 
 ## AI-Agent Bridge
 
-MyPerro polls a local `agent-status.json` file in its app config directory. Write:
+Pawi polls a local `agent-status.json` file in its app config directory. Write:
 
 ```json
 {

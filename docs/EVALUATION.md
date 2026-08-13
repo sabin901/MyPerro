@@ -1,8 +1,8 @@
-# MyPerro production evaluation — 11 August 2026
+# Pawi production evaluation — 11 August 2026
 
 ## Executive verdict
 
-MyPerro `0.9.0-rc.10` is a credible public release candidate and a good fit for
+Pawi `0.9.0-rc.10` is a credible public release candidate and a good fit for
 a free, accountless public beta. It is no longer a prototype: the current
 Windows executable and installer build and run, the same revision produces
 Linux AppImage and Debian packages and reaches `Pet ready` in a native startup
@@ -49,7 +49,7 @@ as a stable public-release operation.
 | macOS artifacts | Pass in CI | rc.9 Apple Silicon and Intel DMGs mounted, matched the expected architecture, passed ad-hoc signature checks, and launched to frontend readiness; Developer ID notarization and physical runtime acceptance remain external |
 
 The Rust warnings are inherited primarily from Tauri's Linux GTK3/WebKitGTK
-stack. `RUSTSEC-2024-0429` is explicitly documented in `audit.toml`; MyPerro
+stack. `RUSTSEC-2024-0429` is explicitly documented in `audit.toml`; Pawi
 does not call the affected iterator API. The warnings remain upstream technical
 debt and must be revisited when the desktop stack migrates.
 
@@ -60,7 +60,7 @@ debt and must be revisited when the desktop stack migrates.
 - After clicking the companion, controls are F Feed, W Water, P Play, R Rest,
   N Peek, D Dance, T Typing, B Bark/meow, J Jump, and S Settings.
   They are deliberately scoped to the focused
-  pet window so MyPerro never steals ordinary typing from other applications.
+  pet window so Pawi never steals ordinary typing from other applications.
 - Right-click and the tray remain mouse-only/accessibility fallback paths.
 - “Ask to play” is optional and configurable from 5 to 240 quiet minutes; the
   default is 30 minutes and a new installation is not nagged immediately.
@@ -126,7 +126,7 @@ debt and must be revisited when the desktop stack migrates.
 
 ## Competitive position
 
-MyPerro is stronger than mascot-only competitors in privacy, feature visibility,
+Pawi is stronger than mascot-only competitors in privacy, feature visibility,
 free/accountless distribution, Linux packaging, and built-in companion
 interactions. It is broadly competitive with ComNyang's input-reaction and
 productivity concept while being easier to audit because it is local-only.

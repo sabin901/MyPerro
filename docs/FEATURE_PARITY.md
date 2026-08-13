@@ -1,10 +1,10 @@
-# ComNyang → MyPerro Feature Parity
+# ComNyang → Pawi Feature Parity
 
 Every one of ComNyang's 18 advertised motions, mapped to its dog equivalent, with an honest build status. Scraped from comnyang.com on 9 Aug 2026. These are behaviours, not copied assets — we reproduce what the cat *does*, in an original dog of our own.
 
 Legend: ✅ built & verified locally · 🎨 prototype art exists, final animation art still needed · 🧩 integration still needs external QA · ⬜ not started
 
-| # | ComNyang | MyPerro equivalent | Status |
+| # | ComNyang | Pawi equivalent | Status |
 |---|---|---|---|
 | 1 | Your cat's pattern (custom mapping) | Fur colour + marking mask, "match your real dog" | ✅ six breeds + runtime fur/marking/collar recolour; full mask painter is post-beta |
 | 2 | Eye follow | Puppy attention follows cursor | ✅ pointer-facing posture; source-authored premium eyes are preserved instead of drawing generic square pupils |
@@ -25,18 +25,18 @@ Legend: ✅ built & verified locally · 🎨 prototype art exists, final animati
 | 17 | Multi-device license | — (free & open source, no license) | n/a by design |
 | 18 | Peek mode | Peek from screen edge and stay out of the way | ✅ persistent `N`/Settings/tray toggle + privacy-safe automatic known-video-app detection |
 
-**Extra life:** MyPerro adds autonomous idle motions — blink, tail wag, look-up,
+**Extra life:** Pawi adds autonomous idle motions — blink, tail wag, look-up,
 scratch, yawn and sit-side variety — plus animated sleep glyphs and state-specific
 particles and video-aware edge peeking, so the dog does
 not freeze when the user is quiet.
 
-**Current state:** MyPerro matches the 18 public ComNyang behaviours in original
+**Current state:** Pawi matches the 18 public ComNyang behaviours in original
 companion form, except #17, which is intentionally not a product feature because
-MyPerro is free and open source. Each of the nine companions now has a premium
+Pawi is free and open source. Each of the nine companions now has a premium
 192px sheet with 16 key silhouettes, alternating work/walk/tail/petting cels,
 state-specific choreography, and a complete animation-tour control in Settings
 and the native tray.
 
 Two we can do *better* than the reference:
 - **Privacy is verifiable**, not just claimed — keycodes never leave Rust.
-- **Reduced-motion mode** — ComNyang has no accessibility alternative; every MyPerro state does.
+- **Reduced-motion mode** — ComNyang has no accessibility alternative; every Pawi state does.

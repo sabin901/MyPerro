@@ -1,4 +1,4 @@
-# Contributing to MyPerro
+# Contributing to Pawi
 
 Thanks for wanting to help the puppy along. This is a small, friendly project.
 
@@ -6,7 +6,7 @@ Thanks for wanting to help the puppy along. This is a small, friendly project.
 
 ```bash
 git clone <your fork>
-cd MyPerro
+cd Pawi
 npm run setup     # installs deps, runs tests, checks placeholder art
 npm run demo      # see the dog behave in a browser — no Rust needed
 npm test          # run the full suite
@@ -48,7 +48,7 @@ The validator will list exactly what's wrong if anything is. Packs must:
 
 ## Reporting bugs
 
-Open an issue with your OS, your MyPerro version, and — if it's a behaviour
+Open an issue with your OS, your Pawi version, and — if it's a behaviour
 bug — what the dog did versus what you expected. A short screen recording helps
 enormously.
 

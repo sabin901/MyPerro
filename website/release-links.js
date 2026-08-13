@@ -1,11 +1,11 @@
 export const FALLBACK_RELEASE = {
-  tag: "v0.9.0-rc.10",
+  tag: "v0.9.0-rc.11",
   downloads: {
-    windows: "https://github.com/sabin901/MyPerro/releases/download/v0.9.0-rc.10/MyPerro_0.9.0-rc.10_x64-setup.exe",
-    "mac-arm": "https://github.com/sabin901/MyPerro/releases/download/v0.9.0-rc.10/MyPerro_0.9.0-rc.10_aarch64.dmg",
-    "mac-intel": "https://github.com/sabin901/MyPerro/releases/download/v0.9.0-rc.10/MyPerro_0.9.0-rc.10_x64.dmg",
-    "linux-appimage": "https://github.com/sabin901/MyPerro/releases/download/v0.9.0-rc.10/MyPerro_0.9.0-rc.10_amd64.AppImage",
-    "linux-deb": "https://github.com/sabin901/MyPerro/releases/download/v0.9.0-rc.10/MyPerro_0.9.0-rc.10_amd64.deb",
+    windows: "https://github.com/sabin901/Pawi/releases/download/v0.9.0-rc.11/Pawi_0.9.0-rc.11_x64-setup.exe",
+    "mac-arm": "https://github.com/sabin901/Pawi/releases/download/v0.9.0-rc.11/Pawi_0.9.0-rc.11_aarch64.dmg",
+    "mac-intel": "https://github.com/sabin901/Pawi/releases/download/v0.9.0-rc.11/Pawi_0.9.0-rc.11_x64.dmg",
+    "linux-appimage": "https://github.com/sabin901/Pawi/releases/download/v0.9.0-rc.11/Pawi_0.9.0-rc.11_amd64.AppImage",
+    "linux-deb": "https://github.com/sabin901/Pawi/releases/download/v0.9.0-rc.11/Pawi_0.9.0-rc.11_amd64.deb",
   },
 };
 

@@ -174,7 +174,7 @@ fn diagnostic_report(app: tauri::AppHandle) -> Result<DiagnosticReport, String> 
         .app_log_dir()
         .map_err(|e| format!("no log directory: {e}"))?;
     Ok(DiagnosticReport {
-        app: "MyPerro",
+        app: "Pawi",
         version: app.package_info().version.to_string(),
         author: "Sabin Raut",
         os: std::env::consts::OS,
@@ -262,7 +262,7 @@ fn main() {
             let tray_builder = TrayIconBuilder::new()
                 .icon(tray_icon)
                 .menu(&menu)
-                .tooltip("MyPerro");
+                .tooltip("Pawi");
 
             #[cfg(target_os = "macos")]
             let tray_builder = tray_builder.icon_as_template(true);
@@ -384,17 +384,17 @@ fn main() {
             Ok(())
         })
         .run(tauri::generate_context!())
-        .expect("error while running MyPerro");
+        .expect("error while running Pawi");
 }
 
 /// A fixed-path, opt-in readiness marker used only by packaged-app CI.
 /// Normal installations never set the environment gate and never write it.
 #[tauri::command]
 fn mark_startup_ready() -> Result<bool, String> {
-    if std::env::var("MYPERRO_CI_SMOKE").as_deref() != Ok("1") {
+    if std::env::var("PAWI_CI_SMOKE").as_deref() != Ok("1") {
         return Ok(false);
     }
-    let marker = std::env::temp_dir().join("myperro-startup-ready");
+    let marker = std::env::temp_dir().join("pawi-startup-ready");
     std::fs::write(&marker, b"ready\n")
         .map_err(|error| format!("cannot write startup marker: {error}"))?;
     Ok(true)

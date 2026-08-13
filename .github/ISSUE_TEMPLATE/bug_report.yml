@@ -1,15 +1,15 @@
 name: Bug report
-description: Report a reproducible MyPerro problem
+description: Report a reproducible Pawi problem
 title: "[Bug]: "
 labels: ["bug"]
 body:
   - type: markdown
     attributes:
-      value: Thanks for helping improve MyPerro. Never include private typed content.
+      value: Thanks for helping improve Pawi. Never include private typed content.
   - type: input
     id: version
     attributes:
-      label: MyPerro version
+      label: Pawi version
     validations:
       required: true
   - type: dropdown

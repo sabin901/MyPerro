@@ -1,4 +1,4 @@
-# MyPerro — Master Art Guide
+# Pawi — Master Art Guide
 
 The binding rules every dog must follow. The artist works from `ARTIST_BRIEF.md`; this file is what a submitted sprite gets *checked against*, and what the asset validator will enforce in Phase 3.
 
@@ -30,7 +30,7 @@ This must be decided once and never revisited, because it determines which side 
 
 ## 3. Shared identity across breeds
 
-Every dog in MyPerro must read as the same family. Locked elements:
+Every dog in Pawi must read as the same family. Locked elements:
 
 - **Red collar with a round gold tag**, centred, identical geometry on all breeds
 - Same eye rendering style — small, dark, high-contrast, with a single highlight pixel

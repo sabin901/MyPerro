@@ -1,6 +1,6 @@
-# MyPerro on macOS
+# Pawi on macOS
 
-MyPerro publishes native builds for both Apple silicon and Intel Macs. The app
+Pawi publishes native builds for both Apple silicon and Intel Macs. The app
 features are shared; only the processor architecture differs.
 
 ## Choose the correct download
@@ -17,9 +17,9 @@ not expose a trustworthy distinction.
 ## Install
 
 1. Open the correct DMG.
-2. Drag MyPerro into **Applications**.
+2. Drag Pawi into **Applications**.
 3. Eject the disk image.
-4. Open MyPerro from Applications, not from inside the mounted DMG.
+4. Open Pawi from Applications, not from inside the mounted DMG.
 
 The current public release is ad-hoc signed while Developer ID credentials are
 being prepared. It is not yet Apple-notarized. macOS may require you to open
@@ -29,16 +29,16 @@ as Apple verified.
 
 ## Enable private reactions
 
-MyPerro needs Accessibility permission only for cursor, click, scroll, and
+Pawi needs Accessibility permission only for cursor, click, scroll, and
 key-count reactions outside its own window. It never receives typed text.
 
-1. In MyPerro Settings, enable **Private typing and pointer reactions**.
+1. In Pawi Settings, enable **Private typing and pointer reactions**.
 2. Approve the macOS prompt, or use **Open Mac Accessibility** in Settings.
-3. In **System Settings → Privacy & Security → Accessibility**, enable MyPerro.
-4. Return to MyPerro Settings. The status reconnects automatically; a restart
+3. In **System Settings → Privacy & Security → Accessibility**, enable Pawi.
+4. Return to Pawi Settings. The status reconnects automatically; a restart
    is no longer required.
 
-If MyPerro appears more than once in the Accessibility list, remove the older
+If Pawi appears more than once in the Accessibility list, remove the older
 entries, keep the copy in Applications, and enable that copy. Replacing an
 ad-hoc signed build can cause macOS to treat it as a new application; stable
 Developer ID signing is the permanent fix.
@@ -46,7 +46,7 @@ Developer ID signing is the permanent fix.
 ## If behavior is still wrong
 
 Open **Settings → App → Download diagnostics**, then submit the dedicated
-[macOS behavior report](https://github.com/sabin901/MyPerro/issues/new?template=macos_report.yml).
+[macOS behavior report](https://github.com/sabin901/Pawi/issues/new?template=macos_report.yml).
 The report contains app version, operating system, architecture, and permission
 health. It contains no keycodes, typed content, usernames, or application
 activity.

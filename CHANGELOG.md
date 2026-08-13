@@ -1,14 +1,29 @@
 # Changelog
 
-All notable MyPerro changes are documented here. The project follows Semantic
+All notable Pawi changes are documented here. The project follows Semantic
 Versioning once it reaches 1.0.
+
+## 0.9.0-rc.11 — 2026-08-12
+
+### Changed
+
+- Renamed the complete product from MyPerro to **Pawi** (pronounced “paw-ee”)
+  across the application, installers, website, updater, diagnostics, package
+  metadata, documentation, CI artifacts, and brand assets.
+- Moved new application data to the Pawi namespace while retaining read-only
+  migration paths for settings, virtual-pet needs, and interaction history.
+
+### Fixed
+
+- Preserved Apple Silicon and Intel-specific Mac packaging checks under the new
+  `Pawi.app` and `pawi` executable names.
 
 ## 0.9.0-rc.10 — 2026-08-11
 
 ### Changed
 
 - Unified the website, application, Settings, installer, dock/taskbar, and tray
-  artwork around one canonical MyPerro identity.
+  artwork around one canonical Pawi identity.
 - Added real in-app animation previews for all nine companions, companion deep
   links, preview sizing, swipe and keyboard navigation, responsive navigation,
   and a scroll-driven product story to the public website.
@@ -28,7 +43,7 @@ Versioning once it reaches 1.0.
 
 - Published signed builds, including release candidates, now check the official
   update channel 15 seconds after startup and every six hours thereafter.
-- Update discovery remains private and non-disruptive: MyPerro shows a local
+- Update discovery remains private and non-disruptive: Pawi shows a local
   notice, then waits for the user to confirm installation in Settings.
 - Developer and local builds remain disconnected from the public release
   channel.
@@ -234,7 +249,7 @@ Versioning once it reaches 1.0.
   20-second bark/message sequence that stops on petting, feeding, or play.
 - A true one-minute rest state that wakes early when the companion is touched.
 - Continuous desktop sizing from 65% to 200%, with monitor-edge clamping.
-- Clear in-app confirmation that MyPerro is free, local, accountless, and has
+- Clear in-app confirmation that Pawi is free, local, accountless, and has
   no subscription.
 
 ### Changed

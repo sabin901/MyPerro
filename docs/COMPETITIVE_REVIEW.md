@@ -1,4 +1,4 @@
-# MyPerro Competitive Review — 10 Aug 2026
+# Pawi Competitive Review — 10 Aug 2026
 
 Current public products reviewed:
 
@@ -13,7 +13,7 @@ Current public products reviewed:
 
 ## Position
 
-| Area | MyPerro | Competitive position |
+| Area | Pawi | Competitive position |
 |---|---|---|
 | Reactive desktop motion | Cursor, drag, shake, pet, type, overheat, scroll, reminders, AI states | Strong breadth; commercial transition polish still trails ComNyang |
 | Feature visibility | First-run guide, first-letter controls, right-click/tray actions, complete animation tour | Strong without adding permanent controls around the pet |
@@ -37,6 +37,6 @@ Current public products reviewed:
 4. Hardware QA matrix for macOS, Windows scaling, Linux X11, GNOME Wayland,
    KDE Wayland, and NVIDIA WebKitGTK.
 
-MyPerro is now a strong open-source release candidate rather than a prototype.
+Pawi is now a strong open-source release candidate rather than a prototype.
 Its next leap is professional frame-by-frame animation, an ecosystem, and deeper
 desktop physics—not another settings page.

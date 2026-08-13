@@ -1,6 +1,6 @@
 # Dog-pack format
 
-A dog pack adds a new breed to MyPerro without touching the app's code. It's a
+A dog pack adds a new breed to Pawi without touching the app's code. It's a
 folder anyone can make, share, and drop in.
 
 ## Folder layout
@@ -60,4 +60,4 @@ canvas isn't square.
 Packs must be your own original work. No traced art, no AI-generated frames, no
 assets lifted from other games or apps. Declare your licence honestly — CC BY 4.0
 is recommended and matches the project's own art, but you may choose another as
-long as it permits redistribution inside MyPerro.
+long as it permits redistribution inside Pawi.
