@@ -31,4 +31,10 @@ describe("animatedCel", () => {
     const frames = new Set(["walk_a"]);
     expect(animatedCel("walk_a", 170, frames)).toBe("walk_a");
   });
+
+  it("uses personality tempo without changing the available-frame contract", () => {
+    const frames = new Set(["walk_a", "walk_b"]);
+    expect(animatedCel("walk_a", 150, frames, 1.2)).toBe("walk_b");
+    expect(animatedCel("walk_a", 150, frames, .8)).toBe("walk_a");
+  });
 });

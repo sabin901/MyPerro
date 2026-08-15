@@ -140,6 +140,15 @@ describe("validatePack — atlas image", () => {
     expect(r.ok).toBe(false);
     expect(r.errors.some(e => e.includes("rectangular background"))).toBe(true);
   });
+
+  it("rejects locomotion cels that visibly jump between ground lines", () => {
+    const jumping: AtlasInfo = {
+      width: 480, height: 384, hasAlpha: true, locomotionBaselineSpread: 11,
+    };
+    const result = validatePack(goodManifest(), jumping);
+    expect(result.ok).toBe(false);
+    expect(result.errors.some(error => error.includes("ground line"))).toBe(true);
+  });
 });
 
 describe("validatePack — collects all problems at once", () => {

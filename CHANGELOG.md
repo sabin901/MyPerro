@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.9.0-rc.12 — 2026-08-15
+
+- Gave all nine built-in companions distinct, tested personality profiles that
+  change idle rhythm, autonomous roaming cadence, travel speed, play-roll
+  chance, and voice pitch/presence instead of behaving as visual skin swaps.
+- Replaced nine competing pet-window intervals with one cooperative runtime
+  scheduler. Slow native calls cannot overlap themselves or replay a backlog
+  after sleep/resume.
+- Fixed species audio: dogs no longer purr when petted, cat attention uses a
+  dedicated rise-and-fall meow, keyboard gestures unlock Web Audio, and the
+  Settings preview uses the selected companion's voice. Settings now includes
+  one-click recovery when sound, full motion, or automatic peek were disabled.
+- Reset squash, bounce, and effects timing on each presentation state to remove
+  phase jumps, while keeping motion tempo consistent with personality speed.
+- Added locomotion ground-line validation for every art pack, a privacy-safe
+  runtime snapshot in diagnostic exports, and a repository/stable release gate
+  covering version parity, platform bundles, publisher credentials, updater
+  signing, and physical acceptance evidence.
+
 All notable Pawi changes are documented here. The project follows Semantic
 Versioning once it reaches 1.0.
 

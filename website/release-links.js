@@ -1,11 +1,11 @@
 export const FALLBACK_RELEASE = {
-  tag: "v0.9.0-rc.11",
+  tag: "v0.9.0-rc.12",
   downloads: {
-    windows: "https://github.com/sabin901/Pawi/releases/download/v0.9.0-rc.11/Pawi_0.9.0-rc.11_x64-setup.exe",
-    "mac-arm": "https://github.com/sabin901/Pawi/releases/download/v0.9.0-rc.11/Pawi_0.9.0-rc.11_aarch64.dmg",
-    "mac-intel": "https://github.com/sabin901/Pawi/releases/download/v0.9.0-rc.11/Pawi_0.9.0-rc.11_x64.dmg",
-    "linux-appimage": "https://github.com/sabin901/Pawi/releases/download/v0.9.0-rc.11/Pawi_0.9.0-rc.11_amd64.AppImage",
-    "linux-deb": "https://github.com/sabin901/Pawi/releases/download/v0.9.0-rc.11/Pawi_0.9.0-rc.11_amd64.deb",
+    windows: "https://github.com/sabin901/Pawi/releases/download/v0.9.0-rc.12/Pawi_0.9.0-rc.12_x64-setup.exe",
+    "mac-arm": "https://github.com/sabin901/Pawi/releases/download/v0.9.0-rc.12/Pawi_0.9.0-rc.12_aarch64.dmg",
+    "mac-intel": "https://github.com/sabin901/Pawi/releases/download/v0.9.0-rc.12/Pawi_0.9.0-rc.12_x64.dmg",
+    "linux-appimage": "https://github.com/sabin901/Pawi/releases/download/v0.9.0-rc.12/Pawi_0.9.0-rc.12_amd64.AppImage",
+    "linux-deb": "https://github.com/sabin901/Pawi/releases/download/v0.9.0-rc.12/Pawi_0.9.0-rc.12_amd64.deb",
   },
 };
 

@@ -1,8 +1,8 @@
-# Pawi production evaluation — 11 August 2026
+# Pawi production evaluation — 15 August 2026
 
 ## Executive verdict
 
-Pawi `0.9.0-rc.10` is a credible public release candidate and a good fit for
+Pawi `0.9.0-rc.12` is a credible public release candidate and a good fit for
 a free, accountless public beta. It is no longer a prototype: the current
 Windows executable and installer build and run, the same revision produces
 Linux AppImage and Debian packages and reaches `Pet ready` in a native startup
@@ -22,17 +22,25 @@ physical clean-machine QA.
 Those require credentials and hardware outside this workspace and cannot be
 honestly replaced by source-level checks.
 
-**Readiness:** 9.3/10 as a product, 9.2/10 as a release candidate, and 8.4/10
-as a stable public-release operation.
+**Readiness:** repository-owned public-beta gates are complete. The code and
+release automation are approximately **85% of the way to a dependable 1.0**;
+the remaining work is deliberately blocked by publisher identity and real
+clean-machine evidence, not by an optimistic version-number change.
+
+The `release:readiness` command now enforces version parity, identity,
+cross-platform bundle configuration, updater trust, all nine art packs, and the
+native build matrix. A stable tag additionally fails unless Windows and Apple
+publisher credentials, updater signing, a matching stable version/tag, and
+committed physical acceptance evidence are all present.
 
 ## Acceptance evidence
 
 | Check | Result | Evidence |
 |---|---:|---|
 | TypeScript | Pass | `tsc --noEmit` on Windows and Linux |
-| Frontend logic | Pass | 17 Vitest files, 196 tests, including the presentation conflict matrix, roaming phases, direction, native-cel mirroring, mirrored hit-testing primitives, and release-channel policy |
+| Frontend logic | Pass | 19 Vitest files, 209 tests, including personality bounds, cooperative scheduling, presentation conflicts, roaming phases, direction, native-cel mirroring, mirrored hit-testing, and release-channel policy |
 | Interaction timing | Pass | explicit tests for 20-second requests, cooldown, initial anti-nag behavior, 60-second rest, and touch-to-wake |
-| Native privacy logic | Pass | 5 Rust tests, including no-keycode serialization and coarse video classification, on Windows |
+| Native privacy logic | Pass | 7 Rust tests, including no-keycode serialization, usage payload limits, input cadence, and coarse video classification, on Windows |
 | Production frontend | Pass | Vite 8.2.1 build and packaged CSP/asset smoke test |
 | Companion art | Pass | all 9 premium packs; semantic source-pose, boundary-alpha, frame-density and frame-uniqueness validation; generic eye artifacts and Husky idle bowls removed |
 | Direction and DPI | Pass locally | travel direction owns facing; every cel declares native direction; cursor geometry and velocity share a physical-coordinate plus monitor-scale contract |
@@ -113,11 +121,11 @@ debt and must be revisited when the desktop stack migrates.
 
 | Area | Score | Honest assessment |
 |---|---:|---|
-| Core virtual-pet loop | 9.0 | Play requests, interruptible rest, persistent wellbeing and kind offline caps create attachment without punishing absence. Long-term progression and learned tricks remain shallow. |
+| Core virtual-pet loop | 9.2 | Play requests, interruptible rest, persistent wellbeing and nine distinct personality profiles create attachment without punishing absence. Long-term progression and learned tricks remain shallow. |
 | Reactive behavior | 9.3 | Cursor attention, drag, shake, pet, typing, scrolling, directed roaming, sleep, reminders, requests, video peek and task states are broad. Arbitrary-window perching remains absent. |
 | Feature discoverability | 9.1 | The desktop is cleaner but less self-explanatory. First-run guidance, Settings shortcut cards, accessibility metadata, right-click and tray labels compensate without permanent controls. |
 | Character art | 8.7 | Clean, transparent and semantically mapped across nine companions; neutral poses are prop-free and generic pupil artifacts are removed. It still uses fewer principal drawings than bespoke commercial frame-by-frame production. |
-| Motion quality | 8.8 | A single presentation director now prevents sliding care poses and timer conflicts; roaming has anticipate, travel and settle phases, plus a visible play roll. More unique in-between drawings would still improve transition continuity. |
+| Motion quality | 9.0 | One presentation director and one cooperative runtime clock prevent state/timer conflicts; per-state motion phases, personality tempo, grounded roaming and optional rolls reduce visible discontinuities. More unique in-between drawings still require an art pass. |
 | Settings/accessibility | 9.0 | Clear information architecture, native keyboard tabs, auto-save status, range controls, reduced motion and large targets. Screen-reader/high-contrast audits still need real OS coverage. |
 | Privacy/security | 9.3 | Local-first operation, narrow capabilities, restrictive CSP, input consent, no account, and separately consented minimal active-install counting are strong. Unsigned global-input software will still attract antivirus scrutiny. |
 | Cross-platform engineering | 8.9 | One Tauri codebase, verified Windows/Linux packages, dual-architecture macOS CI. Native Wayland input is compositor-limited and macOS runtime acceptance is external. |

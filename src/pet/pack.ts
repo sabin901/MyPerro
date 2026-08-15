@@ -50,6 +50,8 @@ export interface AtlasInfo {
   uniqueVisualFrameRatio?: number;
   /** Highest opaque-pixel fraction in any frame. Catches keyed backdrop blocks. */
   maxFrameOpaqueRatio?: number;
+  /** Pixel spread between the lowest opaque points in locomotion cels. */
+  locomotionBaselineSpread?: number;
 }
 
 export interface ValidationResult {
@@ -165,6 +167,9 @@ export function validatePack(raw: unknown, atlas?: AtlasInfo): ValidationResult 
   }
   if (atlas?.maxFrameOpaqueRatio !== undefined && atlas.maxFrameOpaqueRatio > 0.7) {
     errors.push(`an atlas frame is ${(atlas.maxFrameOpaqueRatio * 100).toFixed(0)}% opaque; remove the rectangular background`);
+  }
+  if (atlas?.locomotionBaselineSpread !== undefined && atlas.locomotionBaselineSpread > 6) {
+    errors.push(`locomotion feet drift by ${atlas.locomotionBaselineSpread}px; align walk/run cels to one ground line`);
   }
 
   return { ok: errors.length === 0, errors, warnings };
