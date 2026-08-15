@@ -287,10 +287,10 @@ describe("engine — degradation", () => {
 describe("engine — sound firing", () => {
   it("reports a sound exactly once per state entry, not every frame", () => {
     const e = new BehaviourEngine(0);
-    const a = e.update(0, sig({ petting: true }));
+    const a = e.update(0, sig({ clicking: true }));
     expect(a.changed).toBe(true);
-    expect(a.sound).toBe("purr");
-    const b = e.update(50, sig({ petting: true }));
+    expect(a.sound).toBe("bark");
+    const b = e.update(50, sig({ clicking: true }));
     expect(b.changed).toBe(false);
     expect(b.sound).toBeUndefined();
   });

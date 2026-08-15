@@ -28,6 +28,9 @@ export interface PlanRoamArgs {
   horizontalSeed: number;
   verticalSeed: number;
   playful: boolean;
+  speedScale?: number;
+  rollSeed?: number;
+  rollChance?: number;
 }
 
 const MARGIN = 18;
@@ -59,8 +62,10 @@ export function planRoam(args: PlanRoamArgs): RoamPlan | null {
   const distance = Math.hypot(target.x - start.x, target.y - start.y);
   if (distance < 36) return null;
 
-  const speed = args.playful ? 155 : 78;
+  const speedScale = Math.max(.7, Math.min(1.35, args.speedScale ?? 1));
+  const speed = (args.playful ? 155 : 78) * speedScale;
   const travelMs = Math.max(args.playful ? 1700 : 2600, Math.min(10_000, distance / speed * 1000));
+  const rolls = args.playful && clamp01(args.rollSeed ?? 0) < clamp01(args.rollChance ?? .5);
   return {
     start,
     target,
@@ -70,8 +75,8 @@ export function planRoam(args: PlanRoamArgs): RoamPlan | null {
     settleMs: SETTLE_MS,
     gait: args.playful || distance > 620 ? "run" : "walk",
     playful: args.playful,
-    rollFrom: args.playful ? .38 : 2,
-    rollTo: args.playful ? .64 : 2,
+    rollFrom: rolls ? .38 : 2,
+    rollTo: rolls ? .64 : 2,
   };
 }
 

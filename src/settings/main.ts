@@ -21,6 +21,7 @@ import {
   type CareAction, type PetNeeds,
 } from "../pet/needs";
 import { playCompanionSound } from "../pet/audio";
+import { companionPersonality } from "../pet/personality";
 
 const $ = <T extends HTMLElement = HTMLInputElement>(id: string) =>
   document.getElementById(id) as T;
@@ -293,10 +294,23 @@ function renderAnonymousUsageStatus(status: UsageResult["status"]) {
 }
 
 function wireProductionControls() {
+  $("livelyDefaults").addEventListener("click", () => {
+    ($("soundEnabled") as HTMLInputElement).checked = true;
+    ($("reducedMotion") as HTMLInputElement).checked = false;
+    ($("peekMode") as HTMLInputElement).checked = false;
+    const volume = $("soundVolume") as HTMLInputElement;
+    volume.value = String(Math.max(80, Number(volume.value) || 80));
+    $("soundVolumeValue").textContent = `${volume.value}%`;
+    queueAutoSave();
+    const badge = $("saved");
+    badge.textContent = "Sound and full motion restored";
+    badge.className = "saved show";
+  });
   $("testSound").addEventListener("click", async () => {
     const button = $("testSound") as HTMLButtonElement;
     button.disabled = true;
-    const played = await playCompanionSound("happy", Number(text("soundVolume")) / 100).catch(() => false);
+    const profile = companionPersonality(($('breed') as HTMLSelectElement).value);
+    const played = await playCompanionSound("happy", Number(text("soundVolume")) / 100, profile.voice).catch(() => false);
     const badge = $("saved");
     badge.textContent = played ? "Happy sound played" : "Sound is unavailable on this device";
     badge.className = played ? "saved" : "saved error";
@@ -391,7 +405,8 @@ async function exportDiagnostics() {
       generatedAt: new Date().toISOString(),
       inputHealth: health,
       settingsSchema: collect().schemaVersion,
-      note: "This report contains no keycodes, typed text, usernames, or application activity.",
+      runtime: readRuntimeDiagnostic(),
+      note: "This report contains no keycodes, typed text, usernames, window titles, URLs, or application activity.",
     };
     const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" }));
     const link = document.createElement("a");
@@ -409,6 +424,15 @@ async function exportDiagnostics() {
     badge.className = "saved error";
   } finally {
     button.disabled = false;
+  }
+}
+
+function readRuntimeDiagnostic(): unknown {
+  try {
+    const value = localStorage.getItem("pawi.runtime-diagnostics.v1");
+    return value ? JSON.parse(value) : null;
+  } catch {
+    return null;
   }
 }
 
@@ -545,7 +569,8 @@ function renderBreedCards(activeBreed: string) {
     button.type = "button";
     button.className = `breed-card${id === activeBreed ? " active" : ""}`;
     button.dataset.breed = id;
-    button.innerHTML = `<em>${preset.species}</em><strong>${preset.label}</strong><small>${preset.petName}</small>`;
+    const profile = companionPersonality(id);
+    button.innerHTML = `<em>${preset.species}</em><strong>${preset.label}</strong><small>${profile.nature}</small>`;
     button.addEventListener("click", () => applyBreed(id));
     host.appendChild(button);
   }

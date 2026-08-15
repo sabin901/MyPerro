@@ -1,5 +1,6 @@
 import type { Mode } from "./behaviour";
 import { idleLifeFrame } from "./idleLife";
+import type { IdleStyle } from "./personality";
 import { isRoamRolling, roamPhase, type RoamPlan } from "./roaming";
 
 export type PresentationSource = "pose" | "roll" | "roam" | "play" | "attention" | "engine";
@@ -17,6 +18,7 @@ export interface PresentationInput {
   lastActivityAt: number;
   availableFrames: ReadonlySet<string>;
   reducedMotion: boolean;
+  idleStyle?: IdleStyle;
   pose: TimedPose | null;
   roam: RoamPlan | null;
   playUntil: number;
@@ -52,6 +54,7 @@ export function resolvePresentation(input: PresentationInput): Presentation {
     lastActivityAt: input.lastActivityAt,
     availableFrames: input.availableFrames,
     reducedMotion: input.reducedMotion,
+    idleStyle: input.idleStyle,
   });
 
   // A deliberate pose (care, sleep, touch, shortcut, or preview) always owns

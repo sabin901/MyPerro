@@ -140,7 +140,7 @@ export const STATES: readonly StateDef[] = [
     when: s => s.dragging },
 
   { id: "pet", priority: 3, loop: "pet_happy", mode: "normal", minMs: 600, maxMs: 6000,
-    cooldownMs: 400, interruptible: true, sound: "purr", fallback: "idle",
+    cooldownMs: 400, interruptible: true, fallback: "idle",
     when: s => s.petting },
 
   { id: "reminder", priority: 4, entry: "bark", loop: "deliver_note", mode: "normal",

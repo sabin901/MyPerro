@@ -113,19 +113,25 @@ if (existsSync(atlasPath)) {
   let opaqueBoundaryPixels = 0;
   const visualHashes = new Set();
   let maxFrameOpaqueRatio = 0;
+  const locomotionBaselines = [];
+  const locomotionNames = new Set(["walk", "walk_a", "walk_b", "run", "run_alt", "chase"]);
   for (const frame of frames) {
     if (!frame || !Number.isInteger(frame.x) || !Number.isInteger(frame.y) ||
         !Number.isInteger(frame.w) || !Number.isInteger(frame.h)) continue;
     const hash = createHash("sha256");
     let framePixels = 0;
     let opaqueFramePixels = 0;
+    let opaqueBottom = -1;
     for (let y = 0; y < frame.h; y++) {
       for (let x = 0; x < frame.w; x++) {
         const px = frame.x + x, py = frame.y + y;
         if (px < 0 || py < 0 || px >= png.width || py >= png.height) continue;
         const offset = (py * png.width + px) * 4;
         framePixels++;
-        if (png.data[offset + 3] > 8) opaqueFramePixels++;
+        if (png.data[offset + 3] > 8) {
+          opaqueFramePixels++;
+          opaqueBottom = Math.max(opaqueBottom, y);
+        }
         hash.update(png.data.subarray(offset, offset + 4));
         if (x < 2 || y < 2 || x >= frame.w - 2 || y >= frame.h - 2) {
           boundaryPixels++;
@@ -135,6 +141,8 @@ if (existsSync(atlasPath)) {
     }
     if (framePixels > 0) maxFrameOpaqueRatio = Math.max(maxFrameOpaqueRatio, opaqueFramePixels / framePixels);
     visualHashes.add(hash.digest("hex"));
+    const frameName = Object.entries(manifest.frames).find(([, value]) => value === frame)?.[0];
+    if (frameName && locomotionNames.has(frameName) && opaqueBottom >= 0) locomotionBaselines.push(opaqueBottom);
   }
   atlas = {
     width: png.width,
@@ -143,6 +151,9 @@ if (existsSync(atlasPath)) {
     boundaryOpaqueRatio: boundaryPixels === 0 ? 0 : opaqueBoundaryPixels / boundaryPixels,
     uniqueVisualFrameRatio: frames.length === 0 ? 1 : visualHashes.size / frames.length,
     maxFrameOpaqueRatio,
+    locomotionBaselineSpread: locomotionBaselines.length < 2
+      ? 0
+      : Math.max(...locomotionBaselines) - Math.min(...locomotionBaselines),
   };
 }
 

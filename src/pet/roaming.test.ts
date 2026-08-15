@@ -51,4 +51,18 @@ describe("desktop roaming", () => {
       horizontalSeed: .5, verticalSeed: .5, playful: false,
     })).toBeNull();
   });
+
+  it("applies personality speed and roll chance deterministically", () => {
+    const quick = planRoam({
+      viewport, monitor, now: 0, horizontalSeed: .9, verticalSeed: .3,
+      playful: true, speedScale: 1.3, rollSeed: .8, rollChance: .2,
+    })!;
+    const calm = planRoam({
+      viewport, monitor, now: 0, horizontalSeed: .9, verticalSeed: .3,
+      playful: true, speedScale: .8, rollSeed: .1, rollChance: .2,
+    })!;
+    expect(quick.durationMs).toBeLessThan(calm.durationMs);
+    expect(quick.rollFrom).toBe(2);
+    expect(calm.rollFrom).toBeLessThan(calm.rollTo);
+  });
 });

@@ -60,6 +60,8 @@ import { DEFAULT_SETTINGS, personalise, REMINDER_TEXT, type Settings } from "./s
 import {
   INITIAL_UPDATE_CHECK_MS, UPDATE_CHECK_INTERVAL_MS, shouldPollForUpdates,
 } from "./updatePolicy";
+import { companionPersonality, type CompanionPersonality } from "./personality";
+import { RuntimeScheduler } from "./runtimeScheduler";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -106,6 +108,7 @@ const MESSAGE_DURATION_MS = 20_000;
 const USAGE_HEARTBEAT_RETRY_MS = 6 * 60 * 60 * 1000;
 const INTERACTION_STORAGE_KEY = "pawi.companion-interaction.v1";
 const LEGACY_INTERACTION_STORAGE_KEY = "myperro.companion-interaction.v1";
+const RUNTIME_DIAGNOSTIC_KEY = "pawi.runtime-diagnostics.v1";
 
 /** Head occupies roughly the top 45% of the cell — used for petting. */
 const HEAD_FRACTION = 0.45;
@@ -139,6 +142,7 @@ let viewport: Viewport = {
 
 let currentFrame = "idle";
 let visibleFrame = "idle";
+let presentationSource = "engine";
 let mode: Mode = "idle";
 let facingLeft = false;
 let dragging = false;
@@ -186,6 +190,8 @@ let lastAgentStatusSignature = "";
 
 let settings: Settings;
 let scheduler: SchedulerState;
+let runtimeScheduler: RuntimeScheduler | null = null;
+let personality: CompanionPersonality = companionPersonality(DEFAULT_SETTINGS.appearance.breed);
 let notificationsGranted = false;
 let bootStage = "initialising";
 
@@ -196,6 +202,7 @@ let frames = 0, lastFpsAt = performance.now(), fps = 0, eventCount = 0, eventRat
 async function boot() {
   bootStage = "loading saved settings";
   settings = await loadSettings();
+  personality = companionPersonality(settings.appearance.breed);
   void syncAnonymousUsageState();
   updatePollingEnabled = shouldPollForUpdates(await getVersion().catch(() => "0.0.0-dev"));
   needs = loadNeeds();
@@ -215,17 +222,9 @@ async function boot() {
   applyPinnedNote();
   manualPeekMode = settings.peekMode;
   await applyPeekMode(manualPeekMode);
-  setInterval(pollReminders, 1000);   // the scheduler ticks once a second
-  setInterval(pollAgentStatus, 1000);
-  setInterval(autoWander, 2200);
-  setInterval(tickRoaming, 50);
-  setInterval(pollCompanionInteraction, 5000);
-  setInterval(updateVirtualPet, 60_000);
-  setInterval(pollDesktopContext, 2000);
-  setInterval(() => { void syncAnonymousUsageState(); }, USAGE_HEARTBEAT_RETRY_MS);
-  if (updatePollingEnabled) setInterval(pollAvailableUpdate, UPDATE_CHECK_INTERVAL_MS);
-
   engine = new BehaviourEngine(performance.now());
+  runtimeScheduler = buildRuntimeScheduler(performance.now());
+  runtimeScheduler.start();
 
   bootStage = "connecting desktop events";
   await listen<Activity>("activity", e => {
@@ -262,11 +261,8 @@ async function boot() {
   await listen<CareAction>("care-action", e => handleCare(e.payload));
   await listen<string>("preview-action", e => previewAction(e.payload));
   void pollDesktopContext();
-  if (updatePollingEnabled) setTimeout(() => { void pollAvailableUpdate(); }, INITIAL_UPDATE_CHECK_MS);
-
   wireDrag();
   wireHud();
-  startDegradedWatchdog();
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) {
       pollReminders();
@@ -274,11 +270,30 @@ async function boot() {
     }
   });
   window.addEventListener("focus", () => pollReminders());
+  window.addEventListener("beforeunload", () => runtimeScheduler?.stop(), { once: true });
   requestAnimationFrame(loop);
   updateVirtualPet();
   bootStage = "ready";
   await invoke("mark_startup_ready").catch(() => false);
   await logInfo(`Pet ready with companion pack ${settings.appearance.breed}`).catch(() => {});
+}
+
+function buildRuntimeScheduler(now: number): RuntimeScheduler {
+  return new RuntimeScheduler([
+    { id: "roam", everyMs: 50, run: tickRoaming },
+    { id: "reminders", everyMs: 1_000, run: pollReminders },
+    { id: "agent", everyMs: 1_000, run: pollAgentStatus },
+    { id: "input-health", everyMs: 1_000, run: pollDegradedInputHealth },
+    { id: "desktop-context", everyMs: 2_000, run: pollDesktopContext },
+    { id: "wander", everyMs: 2_200, run: autoWander },
+    { id: "interaction", everyMs: 5_000, run: pollCompanionInteraction },
+    { id: "needs", everyMs: 60_000, run: updateVirtualPet },
+    { id: "usage", everyMs: USAGE_HEARTBEAT_RETRY_MS, run: syncAnonymousUsageState },
+    {
+      id: "updates", everyMs: UPDATE_CHECK_INTERVAL_MS, firstAfterMs: INITIAL_UPDATE_CHECK_MS,
+      enabled: () => updatePollingEnabled, run: pollAvailableUpdate,
+    },
+  ], now);
 }
 
 async function syncAnonymousUsageState() {
@@ -388,7 +403,7 @@ function beginPlayRequest(now: number) {
   saveInteractionState();
   const cat = settings.appearance.breed.endsWith("-cat");
   const call = cat ? "Meow meow!" : "Woof woof!";
-  const sound = cat ? "purr" : "bark";
+  const sound = cat ? "meow" : "bark";
   playRequestUntil = performance.now() + PLAY_REQUEST_DURATION_MS;
   showCareFrameUntil("beg", playRequestUntil);
   flashNote(call, PLAY_REQUEST_DURATION_MS);
@@ -476,6 +491,7 @@ function wirePetOnlyControls() {
     if (event.button === 0) handlePetTouch();
   });
   window.addEventListener("pointerdown", () => { void unlockAndFlushAudio(); }, { capture: true });
+  window.addEventListener("keydown", () => { void unlockAndFlushAudio(); }, { capture: true });
   window.addEventListener("keydown", event => {
     if (isEditableTarget(event.target)) return;
     const shortcut = petShortcutForKey(event);
@@ -496,7 +512,7 @@ function wirePetOnlyControls() {
       case "typing": showCareFrame("type_paw", 6000); break;
       case "bark":
         showCareFrame("bark", 2200);
-        playSound(settings.appearance.breed.endsWith("-cat") ? "purr" : "bark");
+        playSound(settings.appearance.breed.endsWith("-cat") ? "meow" : "bark");
         break;
       case "jump":
         showCareFrame(reducedMotion ? "tail_wag" : "happy_jump", 3200);
@@ -599,6 +615,7 @@ async function fetchJson<T>(url: string): Promise<T> {
 
 async function applySettings(next: Settings) {
   settings = next;
+  personality = companionPersonality(settings.appearance.breed);
   if (!settings.soundEnabled) pendingSound = null;
   if (!settings.playRequestEnabled) stopPlayRequest(false);
   reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches || settings.reducedMotion;
@@ -825,7 +842,9 @@ function onActivity(a: Activity) {
   if (out.changed && out.state === "reminder") pendingReminder = null;
   if (out.changed && out.state === "agent" && pendingAgentEvent !== "thinking") pendingAgentEvent = null;
 
-  if (out.changed && out.sound) playSound(out.sound);
+  if (out.changed && out.sound) {
+    playSound(personality.species === "cat" && out.sound === "bark" ? "meow" : out.sound);
+  }
   if (out.changed && out.state === "pet") handlePetTouch();
 
   if (!dragging) {
@@ -851,7 +870,7 @@ function playSound(name: string) {
   // safe activity stream. Keep that from becoming two overlapping animal calls.
   if (now - lastSoundAt < 220) return;
   lastSoundAt = now;
-  void playCompanionSound(sound, settings.soundVolume).then(played => {
+  void playCompanionSound(sound, settings.soundVolume, personality.voice).then(played => {
     pendingSound = played ? null : sound;
   }).catch(() => { pendingSound = sound; });
 }
@@ -861,7 +880,7 @@ async function unlockAndFlushAudio() {
   if (!audio || !pendingSound || !settings.soundEnabled || quietMode) return;
   const sound = pendingSound;
   pendingSound = null;
-  const played = await playCompanionSound(sound, settings.soundVolume).catch(() => false);
+  const played = await playCompanionSound(sound, settings.soundVolume, personality.voice).catch(() => false);
   if (!played) pendingSound = sound;
 }
 
@@ -1074,7 +1093,7 @@ async function autoWander() {
   const idleFor = lastActivity?.idle_ms ?? now;
   if (
     reducedMotion || dragging || peekMode || now < restUntil || now < careUntil || activeRoam ||
-    mode !== "idle" || idleFor < 8_000 || now - lastAutoWanderAt < 5_000
+    mode !== "idle" || idleFor < personality.roamAfterMs || now - lastAutoWanderAt < personality.roamCooldownMs
   ) return;
 
   await startRoam(false);
@@ -1097,6 +1116,9 @@ async function startRoam(playful: boolean) {
   const plan = planRoam({
     viewport, monitor: area, now,
     horizontalSeed: Math.random(), verticalSeed: Math.random(), playful,
+    speedScale: personality.tempo,
+    rollSeed: Math.random(),
+    rollChance: personality.rollChance,
   });
   if (!plan) return;
   activeRoam = plan;
@@ -1180,16 +1202,14 @@ async function updateHitState(gx: number, gy: number) {
  * transparent window into an invisible rectangle over the user's desktop.
  * Settings and permission recovery remain available from the tray.
  */
-function startDegradedWatchdog() {
-  setInterval(async () => {
-    const stale = isDegraded(performance.now(), lastActivityAt);
-    if (stale === degraded) return;
-    degraded = stale;
-    if (degraded) {
-      ignoringCursor = true;
-      await win.setIgnoreCursorEvents(true);
-    }
-  }, 1000);
+async function pollDegradedInputHealth() {
+  const stale = isDegraded(performance.now(), lastActivityAt);
+  if (stale === degraded) return;
+  degraded = stale;
+  if (degraded) {
+    ignoringCursor = true;
+    await win.setIgnoreCursorEvents(true);
+  }
 }
 
 // ─── Dragging ─────────────────────────────────────────────────────────────────
@@ -1260,33 +1280,35 @@ function draw() {
     lastActivityAt: lastUserActivityAt,
     availableFrames: available,
     reducedMotion,
+    idleStyle: personality.idleStyle,
     pose: now < careUntil ? { frame: careFrame, startedAt: careFrameStartedAt, until: careUntil } : null,
     roam: activeRoam,
     playUntil,
     attentionWalkUntil: wanderUntil,
   });
-  visibleFrame = animatedCel(presentation.frame, presentation.elapsedMs, available);
+  presentationSource = presentation.source;
+  visibleFrame = animatedCel(presentation.frame, presentation.elapsedMs, available, personality.tempo);
   const f = atlas.frames[visibleFrame] ?? atlas.frames[currentFrame] ?? atlas.frames["idle"];
   if (!f) return;
-  const offset = motionOffset(now);
+  const offset = motionOffset(now, presentation.elapsedMs);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.save();
   if (shouldMirrorCurrentFrame()) { ctx.translate(canvas.width, 0); ctx.scale(-1, 1); }
-  drawSpriteCel(f, offset, now);
+  drawSpriteCel(f, offset, now, presentation.elapsedMs);
   drawMarkingStyle(offset);
   drawEyeFollow(offset);
   ctx.restore();
-  drawStateEffects(now);
+  drawStateEffects(now, presentation.elapsedMs);
 }
 
 /** Apply pose-specific squash, stretch and anticipation around the sprite centre. */
-function drawSpriteCel(f: Frame, offset: { x: number; y: number }, now: number) {
+function drawSpriteCel(f: Frame, offset: { x: number; y: number }, now: number, elapsedMs: number) {
   if (reducedMotion) {
     ctx.drawImage(sheet, f.x, f.y, f.w, f.h, offset.x, offset.y, f.w, f.h);
     return;
   }
   const base = visibleFrame.replace(/_alt$/, "");
-  const t = now / 1000;
+  const t = elapsedMs / 1000;
   let sx = 1, sy = 1, rotate = 0;
   if (isRoamRolling(activeRoam, now)) {
     const direction = facingLeft ? -1 : 1;
@@ -1314,10 +1336,10 @@ function drawSpriteCel(f: Frame, offset: { x: number; y: number }, now: number) 
   ctx.drawImage(sheet, f.x, f.y, f.w, f.h, offset.x, offset.y, f.w, f.h);
 }
 
-function drawStateEffects(now: number) {
+function drawStateEffects(now: number, elapsedMs: number) {
   if (reducedMotion) return;
   const frame = visibleFrame.replace(/_alt$/, "");
-  const t = now / 1000;
+  const t = elapsedMs / 1000;
   ctx.save();
   ctx.imageSmoothingEnabled = false;
   ctx.scale(canvas.width / 96, canvas.height / 96);
@@ -1437,9 +1459,9 @@ function drawMarkingStyle(offset: { x: number; y: number }) {
   }
 }
 
-function motionOffset(now: number): { x: number; y: number } {
+function motionOffset(now: number, elapsedMs: number): { x: number; y: number } {
   if (reducedMotion) return { x: 0, y: 0 };
-  const t = now / 1000;
+  const t = elapsedMs / 1000;
 
   const s = canvas.width / 96;
   if (isRoamRolling(activeRoam, now)) {
@@ -1548,6 +1570,25 @@ async function renderHud() {
     `motion   ${reducedMotion ? "reduced" : "full"}\n` +
     `quiet    ${quietMode ? "on" : "off"}\n` +
     `[ctrl+shift+h] hide  [ctrl+shift+m] reduced motion`;
+  try {
+    localStorage.setItem(RUNTIME_DIAGNOSTIC_KEY, JSON.stringify({
+      capturedAt: new Date().toISOString(),
+      breed: settings.appearance.breed,
+      personality: personality.idleStyle,
+      engineState: engine?.state ?? "starting",
+      engineFrame: currentFrame,
+      visibleFrame,
+      presentationSource,
+      facing: facingLeft ? "left" : "right",
+      roaming: activeRoam !== null,
+      peekMode,
+      quietMode,
+      reducedMotion,
+      inputHealth: degraded ? "degraded" : "active",
+      fps,
+      eventRate,
+    }));
+  } catch { /* diagnostics are optional and never allowed to affect the pet */ }
 }
 
 boot().catch(async err => {

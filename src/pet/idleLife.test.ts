@@ -55,6 +55,17 @@ describe("idleLifeFrame", () => {
     })).toBe("sit_side");
   });
 
+  it("gives playful and watchful companions distinct idle timing", () => {
+    expect(idleLifeFrame({
+      frame: "idle", mode: "idle", now: 7_000, lastActivityAt: 0,
+      availableFrames: frames, reducedMotion: false, idleStyle: "playful",
+    })).toBe("tail_wag");
+    expect(idleLifeFrame({
+      frame: "idle", mode: "idle", now: 7_000, lastActivityAt: 0,
+      availableFrames: frames, reducedMotion: false, idleStyle: "watchful",
+    })).toBe("blink");
+  });
+
   it("falls back to the engine frame when a pack lacks the chosen idle frame", () => {
     expect(idleLifeFrame({
       frame: "idle", mode: "idle", now: 21_000, lastActivityAt: 0,

@@ -1,7 +1,8 @@
 import type { CareAction } from "./needs";
+import type { CompanionVoiceProfile } from "./personality";
 
 export type CompanionSoundName =
-  | "bark" | "purr" | "chime" | "snack" | "slurp"
+  | "bark" | "meow" | "purr" | "chime" | "snack" | "slurp"
   | "happy" | "sleepy" | "wake" | "yip";
 
 export interface SoundVoice {
@@ -25,7 +26,24 @@ const voice = (
 ): SoundVoice => ({ hz, delayMs, durationMs, gain, wave, endHz });
 
 /** Warm, short sound recipes designed to read as a tiny animal—not an alert. */
-export function soundRecipe(name: CompanionSoundName): SoundRecipe {
+export function soundRecipe(name: CompanionSoundName, voiceProfile?: CompanionVoiceProfile): SoundRecipe {
+  const recipe = baseSoundRecipe(name);
+  if (!voiceProfile) return recipe;
+  const pitch = Math.max(.65, Math.min(1.45, voiceProfile.pitch));
+  const presence = Math.max(.6, Math.min(1.2, voiceProfile.presence));
+  return {
+    ...recipe,
+    masterGain: Math.min(.2, recipe.masterGain * presence),
+    voices: recipe.voices.map(item => ({
+      ...item,
+      hz: item.hz * pitch,
+      endHz: item.endHz === undefined ? undefined : item.endHz * pitch,
+    })),
+    noise: recipe.noise ? { ...recipe.noise, gain: recipe.noise.gain * presence } : undefined,
+  };
+}
+
+function baseSoundRecipe(name: CompanionSoundName): SoundRecipe {
   switch (name) {
     case "bark": return {
       masterGain: .18,
@@ -38,6 +56,14 @@ export function soundRecipe(name: CompanionSoundName): SoundRecipe {
     case "yip": return {
       masterGain: .13,
       voices: [voice(610, 0, 105, .7, "triangle", 880), voice(760, 125, 90, .5, "sine", 980)],
+    };
+    case "meow": return {
+      masterGain: .105,
+      voices: [
+        voice(420, 0, 210, .52, "triangle", 690),
+        voice(690, 185, 240, .46, "sine", 390),
+      ],
+      noise: { gain: .018, frequency: 1450, durationMs: 390 },
     };
     case "purr": return {
       masterGain: .1,
@@ -86,7 +112,7 @@ export function careSound(action: CareAction, species: "dog" | "cat"): Companion
   if (action === "feed") return "snack";
   if (action === "water") return "slurp";
   if (action === "rest") return "sleepy";
-  return species === "cat" ? "purr" : "yip";
+  return species === "cat" ? "meow" : "yip";
 }
 
 let sharedContext: AudioContext | null = null;
@@ -101,10 +127,14 @@ export async function unlockCompanionAudio(): Promise<AudioContext | null> {
 }
 
 /** Plays in either the pet or Settings webview. Returns false when autoplay is blocked. */
-export async function playCompanionSound(name: CompanionSoundName, volume = .75): Promise<boolean> {
+export async function playCompanionSound(
+  name: CompanionSoundName,
+  volume = .75,
+  voiceProfile?: CompanionVoiceProfile,
+): Promise<boolean> {
   const audio = await unlockCompanionAudio();
   if (!audio) return false;
-  const recipe = soundRecipe(name);
+  const recipe = soundRecipe(name, voiceProfile);
   const now = audio.currentTime;
   const master = audio.createGain();
   const peak = Math.max(.0001, recipe.masterGain * Math.max(0, Math.min(1, volume)));
