@@ -49,4 +49,31 @@ describe("RuntimeScheduler", () => {
     await Promise.resolve();
     expect(run).toHaveBeenCalledTimes(1);
   });
+
+  it("reports failures and exposes privacy-safe task statistics", async () => {
+    const onError = vi.fn();
+    const scheduler = new RuntimeScheduler([
+      { id: "native", everyMs: 50, run: () => Promise.reject(new Error("offline")) },
+    ], 0, onError);
+    scheduler.tick(50);
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(onError).toHaveBeenCalledWith("native", expect.any(Error));
+    expect(scheduler.snapshot()).toEqual([expect.objectContaining({
+      id: "native", runs: 1, failures: 1, skippedWhileRunning: 0,
+    })]);
+  });
+
+  it("counts skipped due runs without replaying them", async () => {
+    let finish!: () => void;
+    const scheduler = new RuntimeScheduler([
+      { id: "slow", everyMs: 50, run: () => new Promise<void>(resolve => { finish = resolve; }) },
+    ], 0);
+    scheduler.tick(50);
+    scheduler.tick(100);
+    scheduler.tick(150);
+    expect(scheduler.snapshot()[0].skippedWhileRunning).toBe(2);
+    finish();
+    await Promise.resolve();
+  });
 });

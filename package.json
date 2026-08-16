@@ -1,7 +1,7 @@
 {
   "name": "pawi",
   "private": true,
-  "version": "0.9.0-rc.12",
+  "version": "0.9.0-rc.13",
   "description": "A privacy-first virtual desktop companion for Windows, macOS, and Linux",
   "author": "Sabin Raut",
   "license": "MIT",
@@ -32,14 +32,18 @@
     "typecheck": "tsc --noEmit",
     "validate-pack": "tsx scripts/validate-pack.mjs",
     "validate:packs": "node scripts/validate-all-packs.mjs",
+    "character:acceptance": "node scripts/character-acceptance.mjs",
     "smoke:dist": "node scripts/smoke-dist.mjs",
+    "performance:budget": "node scripts/performance-budget.mjs",
+    "update:verify": "tsx scripts/verify-update-manifest.mjs",
+    "qa:evidence": "node scripts/qa-evidence.mjs",
     "release:readiness": "node scripts/release-readiness.mjs",
     "sbom": "cyclonedx-npm --output-file pawi-web.cdx.json --spec-version 1.6",
     "checksums": "node scripts/checksums.mjs",
     "usage:test": "node --test services/usage-counter/test/*.test.mjs",
     "usage:stats": "node scripts/usage-stats.mjs",
     "release:assets": "node scripts/prepare-release-assets.mjs",
-    "release:check": "npm run typecheck && npm test && npm run usage:test && npm run site:test && npm run build && npm run site:build && npm run validate:packs && npm run smoke:dist && npm run release:readiness && cargo test --manifest-path src-tauri/Cargo.toml"
+    "release:check": "npm run typecheck && npm test && npm run usage:test && npm run site:test && npm run build && npm run site:build && npm run validate:packs && npm run character:acceptance && npm run smoke:dist && npm run performance:budget && npm run release:readiness && cargo test --manifest-path src-tauri/Cargo.toml"
   },
   "devDependencies": {
     "@cyclonedx/cyclonedx-npm": "^6.0.0",

@@ -25,13 +25,15 @@ jobs:
       - run: npm run site:test
       - run: npm run build
       - run: npm run validate:packs
+      - run: npm run character:acceptance
       - run: npm run smoke:dist
+      - run: npm run performance:budget
       - run: npm run release:readiness
       - run: npm audit --audit-level=high
       - name: Install Linux native test dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libxcb-ewmh-dev libxcb-randr0-dev libdbus-1-dev pkg-config
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libxcb-ewmh-dev libxcb-randr0-dev libdbus-1-dev pkg-config xvfb dbus-x11
       - run: cargo test --manifest-path src-tauri/Cargo.toml
 
   security:
@@ -88,7 +90,7 @@ jobs:
         if: startsWith(matrix.os, 'ubuntu-')
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libxcb-ewmh-dev libxcb-randr0-dev libdbus-1-dev pkg-config
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libxcb-ewmh-dev libxcb-randr0-dev libdbus-1-dev pkg-config xvfb dbus-x11
 
       - uses: actions/setup-node@v7
         with:
@@ -132,6 +134,13 @@ jobs:
       - name: Build Windows or Linux package
         if: ${{ !startsWith(matrix.os, 'macos-') }}
         run: npm run release -- --bundles ${{ matrix.bundle }}
+      - name: Launch packaged Windows application
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: ./scripts/windows-package-smoke.ps1
+      - name: Launch packaged Linux application
+        if: startsWith(matrix.os, 'ubuntu-')
+        run: bash scripts/linux-package-smoke.sh
       - name: Verify Windows publisher signature
         if: matrix.os == 'windows-latest' && env.HAS_WINDOWS_CERTIFICATE == 'true'
         shell: pwsh
@@ -195,6 +204,8 @@ jobs:
           node scripts/prepare-release-assets.mjs release-files release-assets "$GITHUB_REF_NAME" "$GITHUB_REPOSITORY"
           (cd release-assets && sha256sum -- * > SHA256SUMS.txt)
           mapfile -d '' files < <(find release-assets -type f -print0)
+          release_flags=(--draft --generate-notes)
+          if [[ "$GITHUB_REF_NAME" == *-* ]]; then release_flags+=(--prerelease); fi
           gh release create "$GITHUB_REF_NAME" "${files[@]}" \
-            --repo "$GITHUB_REPOSITORY" --draft --prerelease --generate-notes \
+            --repo "$GITHUB_REPOSITORY" "${release_flags[@]}" \
             --title "Pawi $GITHUB_REF_NAME"

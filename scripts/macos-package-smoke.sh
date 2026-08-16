@@ -39,6 +39,11 @@ fi
 
 codesign --verify --deep --strict --verbose=2 "$app"
 codesign --display --verbose=4 "$app" 2>&1 | sed -n '1,30p'
+if [[ "${HAS_APPLE_CERTIFICATE:-false}" == "true" ]]; then
+  codesign --display --verbose=4 "$app" 2>&1 | grep -q 'Authority=Developer ID Application:'
+  xcrun stapler validate "$dmg"
+  spctl --assess --type open --context context:primary-signature --verbose=2 "$dmg"
+fi
 otool -l "$binary" | awk '/LC_BUILD_VERSION/{show=1} show{print} /sdk/{if(show){exit}}'
 
 rm -f "$ready_file"

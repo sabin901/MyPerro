@@ -30,5 +30,6 @@ test("requests the exact tested beta instead of an older latest release", () => 
     releaseApiUrl(),
     `https://api.github.com/repos/sabin901/Pawi/releases/tags/${FALLBACK_RELEASE.tag}`,
   );
-  assert.match(FALLBACK_RELEASE.downloads.windows, /\/Pawi_0\.9\.0-rc\.12_x64-setup\.exe$/);
+  const version = FALLBACK_RELEASE.tag.replace(/^v/, "");
+  assert.ok(FALLBACK_RELEASE.downloads.windows.endsWith(`/Pawi_${version}_x64-setup.exe`));
 });
