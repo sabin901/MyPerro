@@ -1,8 +1,8 @@
-# Pawi production evaluation — 15 August 2026
+# Pawi production evaluation — 16 August 2026
 
 ## Executive verdict
 
-Pawi `0.9.0-rc.12` is a credible public release candidate and a good fit for
+Pawi `0.9.0-rc.13` is a credible public release candidate and a good fit for
 a free, accountless public beta. It is no longer a prototype: the current
 Windows executable and installer build and run, the same revision produces
 Linux AppImage and Debian packages and reaches `Pet ready` in a native startup
@@ -38,23 +38,23 @@ committed physical acceptance evidence are all present.
 | Check | Result | Evidence |
 |---|---:|---|
 | TypeScript | Pass | `tsc --noEmit` on Windows and Linux |
-| Frontend logic | Pass | 19 Vitest files, 209 tests, including personality bounds, cooperative scheduling, presentation conflicts, roaming phases, direction, native-cel mirroring, mirrored hit-testing, and release-channel policy |
+| Frontend logic | Pass | 22 Vitest files, 216 tests, including an eight-hour nine-personality soak, scheduler failure/overlap telemetry, presentation conflicts, direction, native-cel mirroring, and signed update-manifest policy |
 | Interaction timing | Pass | explicit tests for 20-second requests, cooldown, initial anti-nag behavior, 60-second rest, and touch-to-wake |
 | Native privacy logic | Pass | 7 Rust tests, including no-keycode serialization, usage payload limits, input cadence, and coarse video classification, on Windows |
 | Production frontend | Pass | Vite 8.2.1 build and packaged CSP/asset smoke test |
-| Companion art | Pass | all 9 premium packs; semantic source-pose, boundary-alpha, frame-density and frame-uniqueness validation; generic eye artifacts and Husky idle bowls removed |
+| Companion art | Pass | all 9 premium packs expose 49 poses and 98% unique cels; alternate pairs differ by at least 24.32%; semantic source, boundary alpha, baseline and facing checks pass |
 | Direction and DPI | Pass locally | travel direction owns facing; every cel declares native direction; cursor geometry and velocity share a physical-coordinate plus monitor-scale contract |
 | Sound design | Pass with human acceptance pending | tested bark/purr/yip, snack, slurp, happy, sleep/wake and chime recipes; volume persists and Settings includes a direct preview |
 | JavaScript audit | Pass | 0 known npm vulnerabilities |
 | RustSec audit | Reviewed | 0 classified vulnerabilities; 17 allowed upstream warnings |
-| Windows native runtime | Pass | responsive release executable; transparent pet-only surface verified without a focus rectangle or message card |
+| Windows native runtime | Pass | newly compiled release executable reached the frontend-ready marker through the packaged launch smoke; transparent pet-only surface remains the runtime contract |
 | Windows size control | Pass | accessibility tree exposes 65–200%; 150% produced a 288×288 pet window from the 192×192 base |
 | Windows Settings | Pass | free/accountless message, play-request controls, sound volume/preview, Wellbeing, actions, tabs and creator attribution visible |
 | Windows package | Pass | current x64 NSIS installer and SHA-256 manifest generated |
-| Linux native runtime | Pass in CI | rc.9 AppImage and Debian packages built successfully; package metadata and native package smoke checks passed |
+| Linux native runtime | Pending new CI evidence | AppImage now launches under DBus/Xvfb and must reach the same frontend-ready marker; rc.13 CI is the first enforcement run |
 | Linux packages | Pass | x64 AppImage and `.deb`; Debian metadata identifies Sabin Raut |
 | SBOM/checksums | Pass | CycloneDX web SBOM and SHA-256 manifests generated |
-| macOS artifacts | Pass in CI | rc.9 Apple Silicon and Intel DMGs mounted, matched the expected architecture, passed ad-hoc signature checks, and launched to frontend readiness; Developer ID notarization and physical runtime acceptance remain external |
+| macOS artifacts | Pass in prior CI | Apple Silicon and Intel DMGs mount, match architecture, pass signature checks and launch to frontend readiness; signed builds now also require Developer ID authority, a stapled ticket and Gatekeeper assessment |
 
 The Rust warnings are inherited primarily from Tauri's Linux GTK3/WebKitGTK
 stack. `RUSTSEC-2024-0429` is explicitly documented in `audit.toml`; Pawi

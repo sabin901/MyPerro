@@ -62,6 +62,7 @@ import {
 } from "./updatePolicy";
 import { companionPersonality, type CompanionPersonality } from "./personality";
 import { RuntimeScheduler } from "./runtimeScheduler";
+import { RuntimeJournal } from "./runtimeJournal";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -191,6 +192,8 @@ let lastAgentStatusSignature = "";
 let settings: Settings;
 let scheduler: SchedulerState;
 let runtimeScheduler: RuntimeScheduler | null = null;
+const runtimeJournal = new RuntimeJournal();
+let lastJournalSignature = "";
 let personality: CompanionPersonality = companionPersonality(DEFAULT_SETTINGS.appearance.breed);
 let notificationsGranted = false;
 let bootStage = "initialising";
@@ -293,7 +296,10 @@ function buildRuntimeScheduler(now: number): RuntimeScheduler {
       id: "updates", everyMs: UPDATE_CHECK_INTERVAL_MS, firstAfterMs: INITIAL_UPDATE_CHECK_MS,
       enabled: () => updatePollingEnabled, run: pollAvailableUpdate,
     },
-  ], now);
+  ], now, (taskId, error) => {
+    runtimeJournal.record({ at: Date.now(), kind: "scheduler-error", task: taskId });
+    void logWarn(`Scheduled task ${taskId} failed: ${String(error)}`).catch(() => {});
+  });
 }
 
 async function syncAnonymousUsageState() {
@@ -1288,6 +1294,17 @@ function draw() {
   });
   presentationSource = presentation.source;
   visibleFrame = animatedCel(presentation.frame, presentation.elapsedMs, available, personality.tempo);
+  const journalSignature = `${engine?.state ?? "starting"}|${visibleFrame}|${presentationSource}`;
+  if (journalSignature !== lastJournalSignature) {
+    lastJournalSignature = journalSignature;
+    runtimeJournal.record({
+      at: Date.now(),
+      kind: "behavior",
+      state: engine?.state ?? "starting",
+      frame: visibleFrame,
+      source: presentationSource,
+    });
+  }
   const f = atlas.frames[visibleFrame] ?? atlas.frames[currentFrame] ?? atlas.frames["idle"];
   if (!f) return;
   const offset = motionOffset(now, presentation.elapsedMs);
@@ -1587,6 +1604,8 @@ async function renderHud() {
       inputHealth: degraded ? "degraded" : "active",
       fps,
       eventRate,
+      scheduler: runtimeScheduler?.snapshot() ?? [],
+      recentRuntimeEvents: runtimeJournal.snapshot(),
     }));
   } catch { /* diagnostics are optional and never allowed to affect the pet */ }
 }

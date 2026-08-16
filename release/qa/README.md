@@ -18,3 +18,12 @@ stable version such as `1.0.0`, create `release/qa/v1.0.0.json` with this shape:
 Do not mark a result as pass from CI compilation alone. Verify transparency,
 click-through, tray controls, sound, input permission recovery, mixed scaling,
 sleep/wake, one-minute rest, and install/update/uninstall behavior.
+
+For every companion, also verify idle, walk left, walk right, run, roll, pet,
+feed, water, play/dance, rest/wake, play-request voice, reduced motion and scale
+at the smallest and largest setting. Confirm movement faces the destination and
+front-facing poses are never mirrored. Test sound once muted and once enabled.
+
+Create a non-overwriting pending template with
+`npm run qa:evidence -- template 1.0.0`. After real testing, validate the
+completed file with `npm run qa:evidence -- validate 1.0.0`.

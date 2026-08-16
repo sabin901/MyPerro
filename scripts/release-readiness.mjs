@@ -33,6 +33,8 @@ check("cross-platform bundles", ["dmg", "nsis", "appimage", "deb"].every(target 
   `configured: ${[...targets].join(", ")}`);
 check("updater trust root", typeof tauri.plugins?.updater?.pubkey === "string" && tauri.plugins.updater.pubkey.length > 40,
   "a non-empty updater public key is required");
+check("prerelease-capable update channel", tauri.plugins?.updater?.endpoints?.[0] === "https://sabin901.github.io/Pawi/latest.json",
+  "the updater must not use GitHub releases/latest, which excludes prereleases");
 
 const artRoot = resolve(root, "art/exported");
 const packs = existsSync(artRoot)
@@ -45,6 +47,10 @@ check("built-in companions", packs.length === 9 && packs.every(id =>
 const workflow = readFileSync(join(root, ".github/workflows/ci.yml"), "utf8");
 check("native build matrix", ["windows-latest", "macos-15", "macos-15-intel", "ubuntu-22.04"]
   .every(os => workflow.includes(os)), "Windows, both Mac architectures, and Linux must build in CI");
+check("packaged launch matrix", ["macos-package-smoke.sh", "windows-package-smoke.ps1", "linux-package-smoke.sh"]
+  .every(script => workflow.includes(script)), "every packaged desktop build must reach frontend ready state in CI");
+check("character acceptance", existsSync(join(root, "art/CHARACTER_ACCEPTANCE.md")),
+  "generate the nine-companion acceptance report");
 
 if (stable) {
   check("stable semantic version", /^\d+\.\d+\.\d+$/.test(pkg.version) && Number(pkg.version.split(".")[0]) >= 1,
@@ -63,7 +69,12 @@ if (stable) {
     try { evidence = JSON.parse(readFileSync(evidencePath, "utf8")); } catch { /* reported below */ }
   }
   const required = ["windows", "macArm", "macIntel", "linuxGnome", "linuxKde", "upgrade", "rollback"];
-  check("physical acceptance evidence", evidence !== null && required.every(key => evidence[key]?.status === "pass"),
+  check("physical acceptance evidence", evidence !== null && required.every(key => {
+    const item = evidence[key];
+    return item?.status === "pass" && typeof item.tester === "string" && item.tester.trim()
+      && /^\d{4}-\d{2}-\d{2}$/.test(item.date ?? "")
+      && typeof item.notes === "string" && item.notes.trim().length >= 8;
+  }),
     `commit ${evidencePath} with pass evidence for ${required.join(", ")}`);
 }
 

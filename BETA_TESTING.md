@@ -1,6 +1,6 @@
 # Pawi public beta
 
-Pawi `v0.9.0-rc.12` is the current public beta for Windows, Apple-silicon Mac,
+Pawi `v0.9.0-rc.13` is the current public beta for Windows, Apple-silicon Mac,
 Intel Mac, and 64-bit Linux. Share the official website—not an installer copied
 from one computer—so every tester receives the right platform build and the
 published checksums:

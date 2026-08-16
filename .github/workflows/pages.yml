@@ -11,6 +11,8 @@ on:
       - "package-lock.json"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
+  release:
+    types: [published]
 
 permissions:
   contents: read
@@ -32,6 +34,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run site:build
+      - name: Add the newest published signed update manifest
+        run: npx tsx scripts/publish-update-channel.mjs
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v4
         with:

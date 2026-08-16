@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.9.0-rc.13 — 2026-08-16
+
+- Added a bounded privacy-safe behavior journal and scheduler run/skip/failure
+  statistics to diagnostic exports; scheduled task failures are no longer
+  silently discarded.
+- Added an eight-hour simulated behavior soak for all nine personalities,
+  automated per-character cel/facing acceptance, and runtime/atlas size budgets.
+- Added real frontend-ready package launch smoke tests for Windows and Linux,
+  matching the existing Apple Silicon and Intel Mac package checks.
+- Fixed beta update discovery by moving new builds to a Pages-hosted signed
+  manifest; GitHub's `releases/latest` route excludes prereleases and had left
+  installed betas behind on rc.11.
+- Added stable-release scope, severity and evidence gates, signed manifest
+  verification, non-overwriting QA templates, and stricter notarization checks.
+
 ## 0.9.0-rc.12 — 2026-08-15
 
 - Gave all nine built-in companions distinct, tested personality profiles that
