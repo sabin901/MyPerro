@@ -72,7 +72,9 @@ The Tauri v2 updater is configured for Windows, macOS and Linux and points to
 `https://sabin901.github.io/Pawi/latest.json`. GitHub's `releases/latest` route
 excludes releases marked as prereleases, so it is not a valid beta update
 channel. The Pages workflow copies the signed manifest from the exact published
-Pawi tag and redeploys whenever a release is published.
+Pawi tag and redeploys whenever a release is published. The release event
+dispatches the deploy from `main`, because the protected GitHub Pages
+environment rejects deployments whose source ref is a release tag.
 Every update bundle is signed with a permanent updater key and is rejected by
 the installed app if the signature is invalid. This updater signature is
 separate from Apple Developer ID and Windows Authenticode.
