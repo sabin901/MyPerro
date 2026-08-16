@@ -15,6 +15,7 @@ on:
     types: [published]
 
 permissions:
+  actions: write
   contents: read
   pages: write
   id-token: write
@@ -24,7 +25,17 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  refresh-after-release:
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy from the Pages-approved main ref
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --repo "$GITHUB_REPOSITORY" --ref main
+
   build:
+    if: github.event_name != 'release'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
